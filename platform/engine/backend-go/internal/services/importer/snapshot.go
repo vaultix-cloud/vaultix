@@ -16,6 +16,11 @@ type Source struct {
 	Address     string            `json:"address"`
 	APIVersions map[string]string `json:"apiVersions"`
 	ReadAt      time.Time         `json:"readAt"`
+	// Precedence is how the source resolves a name that several imports provide: "last-wins"
+	// (Infisical: the bottom-most import) or "first-wins" (Doppler). Vaultix defaults to
+	// last-wins with a per-project setting for first-wins (owner decision 2026-11-14), so an
+	// import keeps the source's behavior by setting the project accordingly.
+	Precedence string `json:"precedence"`
 }
 
 type Snapshot struct {
@@ -42,6 +47,22 @@ type Environment struct {
 	Parent   string   `json:"parent,omitempty"`
 	Folders  []string `json:"folders"`
 	Secrets  []Secret `json:"secrets"`
+	Imports  []Import `json:"imports"`
+}
+
+// Import brings another folder's secrets into a folder, in Position order. From may name another
+// project. Replication copies the secrets instead of reading through to them.
+type Import struct {
+	Folder      string     `json:"folder"`
+	From        ImportFrom `json:"from"`
+	Position    int        `json:"position"`
+	Replication bool       `json:"replication,omitempty"`
+}
+
+type ImportFrom struct {
+	Project     string `json:"project,omitempty"`
+	Environment string `json:"environment"`
+	Folder      string `json:"folder"`
 }
 
 // Address is where a secret lives within a project, as a structured object rather than one

@@ -31,7 +31,7 @@ const (
 )
 
 // The Infisical API versions this adapter reads, recorded on every snapshot.
-var apiVersions = map[string]string{"login": "v1", "projects": "v1", "folders": "v2", "secrets": "v4"}
+var apiVersions = map[string]string{"login": "v1", "projects": "v1", "folders": "v2", "secrets": "v4", "secretImports": "v2"}
 
 type Credentials struct {
 	ClientID     string
@@ -228,6 +228,37 @@ func (c *Client) environment(ctx context.Context, projectID, slug string) ([]str
 	return paths, secrets.Secrets, nil
 }
 
+// imports reads the secret imports of every folder, the root included.
+func (c *Client) imports(ctx context.Context, projectID, slug string, folders []string) ([]importer.Import, error) {
+	out := []importer.Import{}
+	for _, folder := range append([]string{"/"}, folders...) {
+		var answer struct {
+			SecretImports []struct {
+				ImportPath    string `json:"importPath"`
+				Position      int    `json:"position"`
+				IsReplication *bool  `json:"isReplication"`
+				ImportEnv     struct {
+					Slug      string `json:"slug"`
+					ProjectID string `json:"projectId"`
+				} `json:"importEnv"`
+			} `json:"secretImports"`
+		}
+		query := url.Values{"projectId": {projectID}, "environment": {slug}, "path": {folder}}
+		if err := c.do(ctx, http.MethodGet, "/api/v2/secret-imports", query, nil, &answer); err != nil {
+			return nil, err
+		}
+		for _, item := range answer.SecretImports {
+			from := importer.ImportFrom{Environment: item.ImportEnv.Slug, Folder: item.ImportPath}
+			if item.ImportEnv.ProjectID != "" && item.ImportEnv.ProjectID != projectID {
+				from.Project = item.ImportEnv.ProjectID
+			}
+			out = append(out, importer.Import{Folder: folder, From: from, Position: item.Position,
+				Replication: item.IsReplication != nil && *item.IsReplication})
+		}
+	}
+	return out, nil
+}
+
 // Snapshot reads every secret-manager project the identity can see.
 func (c *Client) Snapshot(ctx context.Context) (*importer.Snapshot, error) {
 	if c.token == "" {
@@ -237,7 +268,7 @@ func (c *Client) Snapshot(ctx context.Context) (*importer.Snapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	snap := &importer.Snapshot{Source: importer.Source{Kind: "infisical", Address: c.base, APIVersions: apiVersions, ReadAt: c.now().UTC()},
+	snap := &importer.Snapshot{Source: importer.Source{Kind: "infisical", Address: c.base, APIVersions: apiVersions, ReadAt: c.now().UTC(), Precedence: "last-wins"},
 		Projects: []importer.Project{}, Gaps: []importer.Gap{}}
 	for _, p := range projects {
 		out := importer.Project{SourceID: p.ID, Name: p.Name, Slug: p.Slug, Environments: []importer.Environment{}}
@@ -246,7 +277,11 @@ func (c *Client) Snapshot(ctx context.Context) (*importer.Snapshot, error) {
 			if err != nil {
 				return nil, err
 			}
-			e := importer.Environment{SourceID: env.ID, Name: env.Name, Slug: env.Slug, Folders: folders, Secrets: []importer.Secret{}}
+			imports, err := c.imports(ctx, p.ID, env.Slug, folders)
+			if err != nil {
+				return nil, err
+			}
+			e := importer.Environment{SourceID: env.ID, Name: env.Name, Slug: env.Slug, Folders: folders, Secrets: []importer.Secret{}, Imports: imports}
 			for _, s := range secrets {
 				folder := s.SecretPath
 				if folder == "" {
@@ -281,8 +316,6 @@ func (c *Client) Snapshot(ctx context.Context) (*importer.Snapshot, error) {
 			out.Environments = append(out.Environments, e)
 		}
 		snap.Projects = append(snap.Projects, out)
-		snap.Gaps = append(snap.Gaps, importer.Gap{Kind: "secret-imports", Reason: importer.GapUnsupported, Where: p.Slug,
-			Message: "Secret imports between folders and environments are not brought over yet; they are next in docs/0127's order."})
 	}
 	return snap, nil
 }

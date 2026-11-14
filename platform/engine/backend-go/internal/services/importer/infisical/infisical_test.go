@@ -51,6 +51,14 @@ func standIn(t *testing.T, projects int) (*httptest.Server, *[]string) {
 			_, _ = fmt.Fprintf(w, `{"projects":[%s],"totalCount":%d}`, strings.Join(items, ","), projects)
 		case "/api/v2/folders":
 			_, _ = io.WriteString(w, `{"folders":[{"id":"f1","name":"db","relativePath":"/app/db","envId":"e0","createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}]}`)
+		case "/api/v2/secret-imports":
+			if r.URL.Query().Get("path") == "/app/db" {
+				_, _ = io.WriteString(w, `{"message":"ok","secretImports":[
+					{"id":"i1","importPath":"/shared","position":1,"folderId":"f1","isReplication":false,"importEnv":{"id":"e9","name":"Production","slug":"prod"},"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"},
+					{"id":"i2","importPath":"/","position":2,"folderId":"f1","isReplication":true,"importEnv":{"id":"e8","name":"Dev","slug":"dev","projectId":"other-project"},"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}]}`)
+				return
+			}
+			_, _ = io.WriteString(w, `{"message":"ok","secretImports":[]}`)
 		case "/api/v4/secrets":
 			_, _ = io.WriteString(w, `{"secrets":[
 				{"id":"s1","_id":"s1","workspace":"p0","environment":"dev","version":3,"type":"shared","secretKey":"DATABASE_URL","secretValue":"`+canaryValue+`","secretComment":"primary","secretPath":"/app/db","secretValueHidden":false,"tags":[{"id":"t","slug":"backend","name":"Backend"}],"secretMetadata":[{"key":"owner","value":"payments","isEncrypted":false},{"key":"vault","value":"","isEncrypted":true}],"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"},
@@ -102,7 +110,13 @@ func TestSnapshot_NormalizesProjectsFoldersSecretsAndNamesEveryGap(t *testing.T)
 			t.Fatalf("a gap must say where and what to do: %+v", g)
 		}
 	}
-	if reasons[importer.GapPersonal] != 1 || reasons[importer.GapUnreadable] != 1 || reasons[importer.GapUnsupported] != 2 {
+	imports := env.Imports
+	if snap.Source.Precedence != "last-wins" || len(imports) != 2 ||
+		imports[0] != (importer.Import{Folder: "/app/db", From: importer.ImportFrom{Environment: "prod", Folder: "/shared"}, Position: 1}) ||
+		imports[1].From.Project != "other-project" || !imports[1].Replication {
+		t.Fatalf("imports %+v precedence %q", imports, snap.Source.Precedence)
+	}
+	if reasons[importer.GapPersonal] != 1 || reasons[importer.GapUnreadable] != 1 || reasons[importer.GapUnsupported] != 1 {
 		t.Fatalf("gaps %v", reasons)
 	}
 	var secretsQuery string
