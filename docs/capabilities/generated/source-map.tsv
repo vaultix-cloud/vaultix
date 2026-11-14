@@ -1193,6 +1193,9 @@ platform/engine/backend-go/internal/services/auth/nomen/testdata/password-node-v
 platform/engine/backend-go/internal/services/auth/nomen/totp.go	access	identity	platform/engine/backend-go/internal/services/auth	9c18150d609f9f6913726ea55d9c61432e8d3b45	verified
 platform/engine/backend-go/internal/services/auth/nomen/totp_test.go	access	identity	platform/engine/backend-go/internal/services/auth	069db5665782a5e010eabda522a785f00cc5e8b1	verified
 platform/engine/backend-go/internal/services/auth/session/service.go	access	identity	platform/engine/backend-go/internal/services/auth	94fc7b2f1db8b726dc53e0fd9d3422ff3cd41880	unread
+platform/engine/backend-go/internal/services/importer/infisical/infisical.go	operate	foundation	platform/engine/backend-go/internal/services/importer	54782a6a697e1e525d30274bcead40a06acb4ee7	unread
+platform/engine/backend-go/internal/services/importer/infisical/infisical_test.go	operate	foundation	platform/engine/backend-go/internal/services/importer	e1d6a6f157fb914a1f6a5a87168bb5e3b84b295e	unread
+platform/engine/backend-go/internal/services/importer/snapshot.go	operate	foundation	platform/engine/backend-go/internal/services/importer	fc2e87212e2f83777b236842588519891c3f9b91	unread
 platform/engine/backend-go/internal/services/kms/authentication_factor.go	kms	kms	platform/engine/backend-go/internal/services/kms	58455f956b8edfd76efdc396f27430f901594d42	verified
 platform/engine/backend-go/internal/services/kms/authentication_factor_test.go	kms	kms	platform/engine/backend-go/internal/services/kms	ee0e497d94732ffdfb54a6680cc93c5a5f6ac354	verified
 platform/engine/backend-go/internal/services/kms/kms.go	kms	kms	platform/engine/backend-go/internal/services/kms	ace5a7dea6c553d4bb79bb954067e43e143e58e3	unread

@@ -109,6 +109,7 @@ platform/engine/backend-go/internal/services/assistant	foundation	Go-native	18	d
 platform/engine/backend-go/internal/services/assumeprivilege	authorization	Go-native	4	6ab594ed64dcbfa57fe695639d0da9be597737566109cbee6cbd7e078b9ad604	4	unassessed
 platform/engine/backend-go/internal/services/auditlog	audit	Go-native	8	da4168c54a6477600084ca395e8cb97b030b992281648d4ac0f889b7ecfc2ee1	5	unassessed
 platform/engine/backend-go/internal/services/auth	identity	Go-native	45	410390517de5e9968d6aeb95d44c3c0c5cca8ee6ddb491e772e0c441f624708a	42	unassessed
+platform/engine/backend-go/internal/services/importer	foundation	Go-native	3	8c0e76a63db6c365726bab802e1706346f422f7cb314d181fd8ed0b11cacf598	0	unassessed
 platform/engine/backend-go/internal/services/kms	kms	Go-native	5	ceab30530ac71c9a79d3324d8ebc101741e7a1cfd0b5276bce31e56b4c2884cf	2	unassessed
 platform/engine/backend-go/internal/services/permission	authorization	Go-native	18	4df1ed45307f123bad73402930e514f43e60067403cb489a17d58cfc08100242	16	unassessed
 platform/engine/backend-go/internal/services/project	secrets	Go-native	1	c3caf8abe6b977e47553c1e7340c3995d3b0e522a4971f8b392fb690ea2ee9c1	1	unassessed

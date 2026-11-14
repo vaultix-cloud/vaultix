@@ -953,8 +953,9 @@ docs/0123-signal-fabric.md	14ce108b30e7615e033744ea43a348a0a814105c	documentatio
 docs/0124-ai-personas-and-machine-loops.md	cc182dd092e2b8c957e78d76d1f94a0ffde56320	documentation	unread
 docs/0125-hosted-control-panel.md	38525e5b3e8d9a5017f67390fdca85d4f3f70198	documentation	unread
 docs/0126-ai-configuration-schema.md	8ca0faee7a952f258049c784f7bd0c4ef8907221	documentation	unread
-docs/0127-one-api-infisical-as-a-source.md	7b1cf9b5efe2cccb3825f9e792356bd8baac49f7	documentation	unread
+docs/0127-one-api-infisical-as-a-source.md	5357f472931b157c547209de745079002d79cffa	documentation	unread
 docs/0128-api-lessons-learned.md	570305dc12637420b7bf854f5c31c3bcaf4e47d9	documentation	unread
+docs/0129-single-source-schema.md	4de2ea39607f823750cc2c12374f62979c84351d	documentation	unread
 docs/auth/authority-review.json	905b7ffef0609f47eb7f236948ff5df05979c418	product-code	unread
 docs/auth/authority-review.schema.json	666418f1376435385aea1f98ad367999abff4e27	product-code	unread
 docs/auth/device-api-consumers.md	676d7222e052a2a29484750677ed36242a5dd752	documentation	unread
@@ -978,8 +979,8 @@ docs/capabilities/catalog.mjs	fc1197d55be7b3b76750d031efb6082dbe370731	product-c
 docs/capabilities/explorer.css	136bbc57d7afe0eee89bcf406c0571afd9e1c634	product-code	verified
 docs/capabilities/explorer.html	c579dacf8e759bafa29c058b9e08374ea908fc42	product-code	verified
 docs/capabilities/explorer.mjs	699fa26c919398b097895b3ee53cf01cb0721c86	product-code	verified
-docs/capabilities/generated/catalog.json	1f81a6ed7f22f3bc150540f5e3b3fb72d8238b00	generated	unread
-docs/capabilities/generated/source-map.tsv	6af5dcf3ca427231d6ffc9ddc0d055acb5701752	generated	unread
+docs/capabilities/generated/catalog.json	31c8447ba3536cb7ce6308dddaf1831fcc1affa0	generated	unread
+docs/capabilities/generated/source-map.tsv	b40d4a0140782a5a2fe5b0667806c09a91da9ef8	generated	unread
 docs/capabilities/generated/surface-map.tsv	c1ab8c47d801726c20ee3e1e772a60f35fa59e34	generated	unread
 docs/capabilities/vaultix-capabilities.md	2921e43176626920f642ba82929a1893e1ebebf3	documentation	authored
 docs/delivery/acceptance.md	c6176b238bfd0dbf6ce13c0200b0d25cde30cd94	documentation	authored
@@ -991,9 +992,9 @@ docs/interaction/ui-benchmark-receipt.example.v1.json	b422b903ce3a62a189be2293ab
 docs/interaction/workflows.json	47c4034ef2acbdca39f05a84de9b6aa21104e874	product-code	unread
 docs/mcp-embedded-apps.md	21e2f44647d3a3d07f30c74371d3e6147fcb329f	documentation	authored
 docs/migration/README.md	d50481a9f543fb1a723b053acd249a919f75efe7	documentation	reviewed
-docs/migration/generated/files.tsv	d85dfd17dee58fae38f08e8dfd63984e066f6d91	generated	unread
-docs/migration/generated/modules.tsv	3698eb791aa132c72b40a791e4c08047f24a72ac	generated	unread
-docs/migration/generated/summary.json	688e0b81bcec91b73b43811b9b3c12d77dcde25e	generated	unread
+docs/migration/generated/files.tsv	3a4818ebf7457fe0754134ba56b3ffe78aac0003	generated	unread
+docs/migration/generated/modules.tsv	a5b40c3ed772373236d20e05fe34efd4b4ec1989	generated	unread
+docs/migration/generated/summary.json	94e794c5dabcfdbb6f4b791b663c011dad028c8b	generated	unread
 docs/migration/workstreams.json	7cb000d9f20a57624e4ae0ca0e00d08b09c2e0c2	product-code	reviewed
 docs/plan/action-plan.md	2700611de78557356d50ea829a9bfdc2525f481a	documentation	unread
 docs/plan/naming.md	5864fda0319b9656eda20aae09e2a44e9ac4fbfd	documentation	unread
@@ -1361,6 +1362,9 @@ platform/engine/backend-go/internal/services/auth/nomen/testdata/password-node-v
 platform/engine/backend-go/internal/services/auth/nomen/totp.go	9c18150d609f9f6913726ea55d9c61432e8d3b45	product-code	verified
 platform/engine/backend-go/internal/services/auth/nomen/totp_test.go	069db5665782a5e010eabda522a785f00cc5e8b1	test	verified
 platform/engine/backend-go/internal/services/auth/session/service.go	94fc7b2f1db8b726dc53e0fd9d3422ff3cd41880	product-code	unread
+platform/engine/backend-go/internal/services/importer/infisical/infisical.go	54782a6a697e1e525d30274bcead40a06acb4ee7	product-code	unread
+platform/engine/backend-go/internal/services/importer/infisical/infisical_test.go	e1d6a6f157fb914a1f6a5a87168bb5e3b84b295e	test	unread
+platform/engine/backend-go/internal/services/importer/snapshot.go	fc2e87212e2f83777b236842588519891c3f9b91	product-code	unread
 platform/engine/backend-go/internal/services/kms/authentication_factor.go	58455f956b8edfd76efdc396f27430f901594d42	product-code	verified
 platform/engine/backend-go/internal/services/kms/authentication_factor_test.go	ee0e497d94732ffdfb54a6680cc93c5a5f6ac354	test	verified
 platform/engine/backend-go/internal/services/kms/kms.go	ace5a7dea6c553d4bb79bb954067e43e143e58e3	product-code	unread
