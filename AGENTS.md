@@ -10,6 +10,13 @@ This file is the agent router. Specs live in `docs/`. Humans start at
 
 ## Current direction
 
+One API; Infisical is a source (2026-11-14, owner): Vaultix has one API, `/api/vx/v1`. Every
+inherited route moves under it and the old one is deleted; no Infisical-compatible routes are kept.
+Infisical is a third-party product customers import from, through its own connector speaking
+Infisical's API, and they must get more, never less: every Infisical capability exists in Vaultix
+with proof, and the import brings every kind of object or names what it cannot. Read
+`docs/0127-one-api-infisical-as-a-source.md`. This supersedes treating Infisical's API as Vaultix's.
+
 Layout (2026-11-12): the product tree moved from `core/` to `platform/engine/`. Commercial cloud code
 goes in `platform/shippin/` and nowhere else. `platform/shippin/` may depend on `platform/engine/`;
 the engine never depends on it (`node scripts/test-platform-boundary.mjs`). `platform` is a folder
@@ -196,6 +203,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | AI connections and personas: schema, guided setup, Hugging Face, Custom | `docs/0126-ai-configuration-schema.md` + `platform/engine/backend-go/internal/services/assistant/spec/` |
 | AI providers, personas and specialists, value requests, inject/redeem, local endpoint | `docs/0124-ai-personas-and-machine-loops.md` + `platform/engine/ai/personas/` + `platform/engine/backend-go/internal/services/assistant/` |
 | Hosted instances, the private control panel (`platform/shippin/`) | `docs/0125-hosted-control-panel.md` + `platform/shippin/README.md` |
+| One API, Infisical as an import source, "more, never less" | `docs/0127-one-api-infisical-as-a-source.md` |
 | Provider import (Doppler, Infisical/Vaultix instances) | `docs/0121-provider-import.md` + `services/external-migration/provider-import.ts` |
 | Estate / Nomen sibling | `nomen/Nomen/docs/product/estate.md` (sibling tree; do not edit it from here) |
 | Public API | `contracts/shippin.vaultix.panel.v1.json` |

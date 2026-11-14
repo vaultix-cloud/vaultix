@@ -1,0 +1,86 @@
+# 0127 — One Vaultix API; Infisical is a source we import from
+
+**Status:** accepted (owner, 2026-11-14). **Changes:** [0121](0121-provider-import.md),
+[0023](0023-capability-convergence.md), [0026](0026-capability-preservation.md), and Stage 7 of
+[0122](0122-completion-plan.md). Where they differ, this wins.
+
+## Decision
+
+1. **Vaultix has one API: `/api/vx/v1/<domain>`** ([0119](0119-schema-and-api-namespaces.md)).
+   - Every inherited route (`/api/v1` to `/api/v4`, about 1,570 operations, shaped like Infisical's
+     because the engine was forked from it) moves under the Vaultix API, domain by domain. The old
+     route is deleted in the same change, with every caller moved: the UI, CLI, MCP tools, scripts,
+     tests and docs.
+   - No Infisical-compatible routes are kept, and there are no aliases.
+   - Vaultix's own clients (the web app, `vaultix`, MCP, the SDKs) are the supported way in.
+2. **Infisical is a third-party source.** Customers move their data from Infisical with a dedicated
+   Infisical connector. It speaks Infisical's own public API, signing in as an Infisical machine
+   identity. It does not depend on Vaultix still speaking that API. Vaultix-to-Vaultix import uses
+   the Vaultix API. Doppler stays a third-party source as it is.
+3. **More, never less.** A customer who moves from Infisical (or Doppler) loses nothing:
+   - Every Infisical capability has a Vaultix equivalent, proven on the image, before Vaultix is
+     offered to Infisical customers.
+   - The import brings over every kind of object Infisical holds, not only secret values.
+   - Anything it cannot bring is named in the review, with the reason and what to do instead.
+     Nothing is dropped silently.
+
+## What changes
+
+### The API (0122 Stage 7, unchanged in method, now the only target)
+
+- The inherited API's capability baseline (`contracts/vaultix-capability-surface.v1.json`) stops
+  being something to preserve. It becomes the work list: each inherited operation is checked off
+  only when its use case runs on the Vaultix API, its caller has moved, and the old operation is
+  gone.
+- Its order stays foundation, identity, authorization, secrets, then the rest.
+- The UI, CLI and MCP keep working at every step, because each move takes their callers with it.
+
+### Importing from Infisical (0121 extended)
+
+- **Connection.** A new `infisical` provider with its own app connection: the Infisical address
+  (Cloud US, Cloud EU, or self-hosted), plus a machine identity's Universal Auth client ID and
+  secret, entered in the UI and encrypted like every connection.
+- **Review first, then import exactly what was approved.** The review lists, per kind, what
+  exists, what will be created, and what cannot come over and why. Values never leave the server
+  and never reach a response, the UI, chat or an AI. As today, a stale review is refused and
+  governed paths open change requests.
+- **Kinds covered**, built in this order, with each one proven before the next:
+  1. Projects and environments.
+  2. Folders.
+  3. Secrets: values, comments, tags and metadata. References are rewritten to their Vaultix
+     form.
+  4. Secret imports.
+  5. Personal overrides.
+  6. Version history, where Infisical's API returns it.
+  7. Roles and their permissions.
+  8. Machine identities and their auth methods. Credentials are not copied: the review says which
+     ones to issue again.
+  9. Groups and memberships, by email.
+  10. Approval policies and access-request policies.
+  11. Secret rotation and dynamic secret configurations. Provider credentials are re-entered by the
+      owner.
+  12. Secret syncs and integrations, as configurations, with their app connections to re-enter.
+  13. Webhooks.
+  14. PKI (CAs, templates, alerts). Private keys come over only where Infisical exports them;
+      otherwise the review says to re-issue.
+  15. KMS keys, where exportable.
+  16. Audit log export, for the customer's records.
+- **Credentials held by third parties** (cloud keys, database passwords inside dynamic secrets,
+  SMTP, sync targets) cannot be read through Infisical's API by design. The review names each one
+  and where to enter it in Vaultix.
+
+### Coverage (0023 and 0122 Stage 4c)
+
+- The capability matrix in 0023 becomes the "more, never less" gate.
+- Every row needs:
+  - a Vaultix workflow proven on the image (positive, denied, cross-tenant, provider outage);
+  - an import path, or a named, deliberate gap the owner has accepted.
+- Gaps known today: Terraform provider, Kubernetes operator, typed values, and the families with no
+  test (0122 Stage 4c).
+
+## Done when
+
+1. No route outside `/api/vx/v1` remains, and the old capability baseline is empty.
+2. A copy of a real Infisical organization imports into Vaultix with every kind above either
+   brought over or named in the review. The owner's checklist compares the two side by side.
+3. Every Infisical capability in 0023 has a Vaultix workflow proven on the image.

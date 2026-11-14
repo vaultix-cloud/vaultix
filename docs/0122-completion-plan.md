@@ -158,6 +158,10 @@ Still to build, each proven on the image before the next:
 
 ## Stage 4c — Infisical and Doppler coverage, proven
 
+> The gate for this stage is now "more, never less" ([0127](0127-one-api-infisical-as-a-source.md)).
+> It needs a dedicated Infisical import connector covering every kind of object, plus a proven
+> Vaultix workflow for every Infisical capability.
+
 Coverage checked on 2026-11-11 against [0023](0023-capability-convergence.md):
 
 - **Missing entirely:** Terraform provider, Kubernetes operator, Doppler config inheritance, branch
@@ -197,6 +201,9 @@ values leaving the server. The AI-registered triggers part is delivered by Stage
 of the ask gets fixed here.
 
 ## Stage 7 — The Vaultix API and the Go/Rust port, one domain at a time
+
+> [0127](0127-one-api-infisical-as-a-source.md): `/api/vx/v1` is the only API. The inherited
+> capability baseline is the work list to empty, not a surface to preserve.
 
 These are one job. Moving a route to `/api/vx/v1/<domain>` and porting it to Go or Rust touch the
 same use case, and [0027](0027-native-stack-and-ai-migration.md) already says to move complete use

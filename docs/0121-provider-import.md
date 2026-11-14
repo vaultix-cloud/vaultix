@@ -1,5 +1,10 @@
 # 0121 — Provider import: review, approve, import
 
+> Changed by [0127](0127-one-api-infisical-as-a-source.md) (2026-11-14): Infisical gets its own
+> connector speaking Infisical's API and importing every kind of object, not only secrets. The
+> `external-vaultix` path below reaches Infisical only because Vaultix still carries the inherited
+> API, which is being removed.
+
 Status: implemented 2026-11-09 for Doppler and for instances speaking the Vaultix API
 (Infisical Cloud, self-hosted Infisical, another Vaultix). Extends
 [0023](0023-capability-convergence.md) and [0026](0026-capability-preservation.md):
