@@ -26,7 +26,17 @@
 
 ## What changes
 
-### The API (0122 Stage 7, unchanged in method, now the only target)
+### The API (0122 Stage 7, now the only target)
+
+- **Moving a domain means redesigning it, not renaming its paths.** A domain gets its own Vaultix
+  resource model, informed by what has hurt Infisical and Doppler users
+  ([0128](0128-api-lessons-learned.md), research pending the owner's review). It is not
+  Infisical's shape under a new prefix.
+- **Before the first public release**, old routes are deleted outright, because no outside client
+  depends on them.
+- **After the first public release**, a change that breaks clients follows a published deprecation
+  policy: a notice, a sunset date, and an upgrade guide. That is a commitment to Vaultix's own
+  customers, not to another product's API.
 
 - The inherited API's capability baseline (`contracts/vaultix-capability-surface.v1.json`) stops
   being something to preserve. It becomes the work list: each inherited operation is checked off
@@ -36,6 +46,12 @@
 - The UI, CLI and MCP keep working at every step, because each move takes their callers with it.
 
 ### Importing from Infisical (0121 extended)
+
+- **Every source version lands on the latest Vaultix model.** Each source has its own adapter,
+  which reads whatever the source's API returns, such as Infisical's older and newer secret
+  endpoints or Doppler's root and branch configs. The adapter translates it into one internal model
+  and writes the current Vaultix form. When Vaultix changes, only the adapter's mapping changes;
+  nothing of the source's shape leaks into Vaultix.
 
 - **Connection.** A new `infisical` provider with its own app connection: the Infisical address
   (Cloud US, Cloud EU, or self-hosted), plus a machine identity's Universal Auth client ID and
