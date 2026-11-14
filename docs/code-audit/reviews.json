@@ -2674,10 +2674,10 @@
     },
     {
       "path": "scripts/build-self-hosted.mjs",
-      "blob": "74cba51d363a6382d4e25825d28267a1e301b854",
+      "blob": "e6f4284de73e4b3393583a37efc329eb84b17874",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete canonical build/acceptance orchestration; insert offline action-contract and existing-reference compatibility gates before image construction. Existing image gates unchanged; current candidate image acceptance remains pending. 2026-11-13: account recovery without email (admin reset link, owner recovery from the host, issue-password-reset-link audit event, password-reset image step) authored and re-read. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step.",
+      "scope": "Read complete canonical build/acceptance orchestration; insert offline action-contract and existing-reference compatibility gates before image construction. Existing image gates unchanged; current candidate image acceptance remains pending. 2026-11-13: account recovery without email (admin reset link, owner recovery from the host, issue-password-reset-link audit event, password-reset image step) authored and re-read. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the ai-migration build step (scripts/test-ai-migration.mjs).",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",
