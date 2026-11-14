@@ -849,7 +849,7 @@ platform/engine/frontend/src/mcp-app	ui	React-TypeScript	3	8353bffc34096f81a7a6b
 platform/engine/frontend/src/pages	ui	React-TypeScript	6	a3b4f52e825aa9c2ae050c1740cd235bd6baadc04cb8bcb11f6376fd89e3e782	6	unassessed
 platform/engine/frontend/src/pages/MfaSessionPage	identity	React-TypeScript	3	0db14278aa5a4afce81db91999b157618a653bba2d0fdf609f4eb471a9807e7f	0	unassessed
 platform/engine/frontend/src/pages/admin	ui	React-TypeScript	1	04a8e5a58f374e018e119afb977672caacdcb3c649aea4c9b3c156182cb0940d	0	unassessed
-platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	14	01f4fa26b95c98546a2ed3db530d9d0e78e76d2b76679e23f9270af4ae4a21fe	0	unassessed
+platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	14	ae1fd44aba6f56234bfd77f531c88757fb11469fc425728a04c7e97b96f61ecb	0	unassessed
 platform/engine/frontend/src/pages/admin/AccessManagementPage	ui	React-TypeScript	5	76c89165f545371ce6e6ee3995c118b9e25c0cf5d389bc49cbebfd5387c1f103	0	unassessed
 platform/engine/frontend/src/pages/admin/AuthenticationPage	identity	React-TypeScript	4	8854810efd771cdbca6d36e895d652e1db330c933dd3d77e3cc38c88c76237ba	0	unassessed
 platform/engine/frontend/src/pages/admin/CachingPage	ui	React-TypeScript	4	36ed40cc307940b29d4b1afaa00fa1244c48436e32a5622961215a0d74ea4caf	0	unassessed
@@ -1095,7 +1095,7 @@ platform/shippin/cmd/vaultix-control	hosted-service	Go-hosted-service	1	2f43f1d5
 platform/shippin/console	hosted-service	Go-hosted-service	3	43190eb6519717e7717f83fcf04a180117b919bc86af938ae7187f1526adc88c	0	unassessed
 platform/shippin/fleet	hosted-service	Go-hosted-service	2	d1b1550ad8014a22c430dbe01228fbcb20e06c1c5edfa828004aa72e92fad073	0	unassessed
 schemas	foundation	supporting-tooling-or-contract	1	534be90812c40ddc241923daaf745576e8f7579142b0d8dda5f4ab290b370fde	0	unassessed
-scripts	delivery	supporting-tooling-or-contract	146	26c9057700f52e8ade68fa23a0644b2ca48b279fd03e5249a6b3f21ab83964f5	111	unassessed
+scripts	delivery	supporting-tooling-or-contract	147	5230920fbe14b1f63ce8b3f76af7210efbf69b57d9b5e7b3e421f3cfc8fd4e1a	111	unassessed
 scripts/fixtures	delivery	supporting-tooling-or-contract	3	1d2aff89334f56081fcbebbab47c6ff9f8f2ef514fd4bc927067e3d6fe619259	3	unassessed
 scripts/fixtures/quic-peer	delivery	supporting-tooling-or-contract	2	d2d724187d04f25b91851d774d02663e060f51a9fe26b9203b393beb175ed3d5	2	unassessed
 scripts/fixtures/windows-install	delivery	supporting-tooling-or-contract	2	ec46359d82e85605c79c1f82b5dc1754d959eafcb99ee59868c36d43d5253d61	0	unassessed

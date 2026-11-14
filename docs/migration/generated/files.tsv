@@ -7462,7 +7462,7 @@ platform/engine/frontend/src/pages/admin/AIAssistantPage/components/ConnectionsT
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/HuggingFaceSheet.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	99de440c8f8ed297e151af7399400144adf4c108	unread
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/MemoriesSection.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	db80757f7c7c7aba1491eae1196d1f4b80488cf3	unread
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/PersonaSheet.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	001783226f84f3638e61d97a5dacf720021535ca	unread
-platform/engine/frontend/src/pages/admin/AIAssistantPage/components/PersonasTab.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	8c35c92a45fcc165b5a58adcac302c4529a40958	unread
+platform/engine/frontend/src/pages/admin/AIAssistantPage/components/PersonasTab.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	f9160f0ec49ed9d528a107eed96b698dca3f36e3	unread
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/RoutingTab.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	a5bce211122c52d41fb657f22f0fd9123962e3f9	unread
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/TryItTab.tsx	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	tsx	07e18a9266f624bcf4183834e09a291d7878b03f	unread
 platform/engine/frontend/src/pages/admin/AIAssistantPage/components/connection-kinds.ts	platform/engine/frontend/src/pages/admin/AIAssistantPage	ui	React-TypeScript	ts	bb2a4380d4f521ea1395c91ca51d26a9b99abc2b	unread
@@ -9750,6 +9750,7 @@ scripts/run-local-auth-e2e.mjs	scripts	delivery	supporting-tooling-or-contract	m
 scripts/serve-capability-plan.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	69b7f9db4c491b4dedcde0340f420cebb3ec0115	verified
 scripts/sign-release.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	306c88e1d4b9c98c893f52791c8c8a6e5fb51a25	reviewed
 scripts/smoke-image.sh	scripts	delivery	supporting-tooling-or-contract	sh	d4af9bd9e34654fb334be2b45edc128b842d3fad	verified
+scripts/test-ai-admin-ui.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	e190e96990bde398cadbbfb6b73e38046a57ebaf	unread
 scripts/test-ai-contracts.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	142230f719faf27d7031685fb160f29a8e960359	unread
 scripts/test-ai-migration.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	0c6ea44a7a7035e8b1cb447f5785a5989639b64d	unread
 scripts/test-api-request-errors.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	930660062217b4797619f36773c7ccca9dcadb4a	verified
@@ -9786,7 +9787,7 @@ scripts/test-go-test-evidence.mjs	scripts	delivery	supporting-tooling-or-contrac
 scripts/test-guidance-contract.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	7153b39187db20806420139226829d2faed4eb61	verified
 scripts/test-guided-interactions.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	5b707a9e6510abaacb66bece6615a4545220e837	verified
 scripts/test-identity-policy-startup.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	0b987ad6360d321ac5126d81634a38abfa98a504	verified
-scripts/test-image-app.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	c9ea82937e7956083d23e1c74c14dc54e2314106	reviewed
+scripts/test-image-app.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	515cb0dc3d1c7cbf0dfbe7883b2a59b3303701de	reviewed
 scripts/test-invite-only-access.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	cecf13427d4681354e192cf0ef86c02e6dffef46	reviewed
 scripts/test-learning-content.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	dc7029ac338d70ff9a7ae8128b4f416355f0b5ae	verified
 scripts/test-login-failure.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	a4aa4b2983a43084117c9c44c1982fc28d322411	verified

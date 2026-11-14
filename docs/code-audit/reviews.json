@@ -267,10 +267,10 @@
     },
     {
       "path": "scripts/test-image-app.mjs",
-      "blob": "c9ea82937e7956083d23e1c74c14dc54e2314106",
+      "blob": "515cb0dc3d1c7cbf0dfbe7883b2a59b3303701de",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete real-image application consumer. Add five-product guidance acceptance after actual sign-in; existing setup, recovery, project/secret mutations, authorization and navigation assertions retained. 2026-11-13: only change since review is the core/ to platform/engine/ path rename, verified by normalized comparison.",
+      "scope": "Read complete real-image application consumer. Add five-product guidance acceptance after actual sign-in; existing setup, recovery, project/secret mutations, authorization and navigation assertions retained. 2026-11-13: only change since review is the core/ to platform/engine/ path rename, verified by normalized comparison. 2026-11-14: authored the ai-admin phase calling test-ai-admin-ui.mjs.",
       "evidence": [
         "docs/0116-domain-mesh-and-ui-workbench.md",
         "scripts/test-domain-workbench.mjs",
@@ -4979,10 +4979,10 @@
     },
     {
       "path": "AGENTS.md",
-      "blob": "5dcc86fc085a4ee794fd8c9cb5830d0c954d21ee",
+      "blob": "d20ef2156fe26130b04201b7e65fc2fc76b6e115",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step.",
+      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127).",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",
