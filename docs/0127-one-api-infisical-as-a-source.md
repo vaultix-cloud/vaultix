@@ -94,6 +94,28 @@
 - Gaps known today: Terraform provider, Kubernetes operator, typed values, and the families with no
   test (0122 Stage 4c).
 
+## API decisions (owner, 2026-11-14, from [0128](0128-api-lessons-learned.md))
+
+1. **Errors.** `error` is a stable code that programs check. `message` is the human sentence, and
+   its wording can improve without breaking anyone. Every error also carries `requestId`, and
+   validation errors carry `details.fields[{path, message}]`.
+2. **Secret address.** An address is a structured object `{project, environment, folder, name}`,
+   never one string to parse; Doppler names may contain `/`, `.` and `:`. How that schema is
+   defined once and shared by everything that uses it is being researched in
+   [0129](0129-single-source-schema.md), aimed at one developer maintaining it.
+3. **Doppler branch configs** import as child environments that inherit from their parent, so
+   Doppler customers keep the model they know.
+4. **Import precedence.** By default the last import wins, matching Infisical. A project setting
+   switches to first-wins, matching Doppler. Importers translate either way. (Read from the owner's
+   answer; confirm if the default should be first-wins instead.)
+5. **Versions.** After the first public release, breaking changes go behind a dated
+   `Vaultix-Version` header, with 24 months of support per version. Retired versions answer 410.
+   `Deprecation` and `Sunset` headers announce changes ahead of time.
+6. **Reading values.** An environment can require a stated reason to read a value, recorded in the
+   audit log. It is optional per environment and offered for production first.
+7. **Webhook signing.** Both HMAC and ed25519, so a receiver can verify without holding a shared
+   secret.
+
 ## Done when
 
 1. No route outside `/api/vx/v1` remains, and the old capability baseline is empty.
