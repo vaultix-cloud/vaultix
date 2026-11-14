@@ -78,6 +78,7 @@ try {
   step("ui-action-standard", process.execPath, ["--experimental-strip-types", "--test", "scripts/ui-action-standard.test.mjs"]);
   step("warp-points", process.execPath, ["--experimental-strip-types", "--test", "scripts/warp-points.test.mjs"]);
   node("ai-contracts", "scripts/test-ai-contracts.mjs");
+  step("ai-migration", process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/test-ai-migration.mjs"]);
   step("ui-command-compatibility", process.execPath, ["--experimental-strip-types", "scripts/test-reference-commands.mjs"]);
   step("login-failure-policy", process.execPath, ["--experimental-strip-types", "scripts/test-login-failure.mjs"]);
   step("owned-source", bash, ["scripts/check-owned.sh"]);

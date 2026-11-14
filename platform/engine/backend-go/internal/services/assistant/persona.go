@@ -3,6 +3,7 @@ package assistant
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -34,51 +35,79 @@ const (
 
 // Domains are the canonical interaction domains (docs/interaction/workflows.json),
 // one MCP warp point each at /api/vx/v1/<domain>/mcp.
-var Domains = []string{"public", "auth", "workspace", "secrets", "access", "automation", "connect", "pki", "kms",
-	"pam", "detect", "ai", "governance", "operate", "experience"}
+var Domains = spec.Domains
 
 var (
-	Roles            = []Role{RoleRouter, RoleSpecialist, RoleGuard}
-	Tiers            = []string{"fast", "standard", "deep"}
-	slugPattern      = regexp.MustCompile(`^[a-z][a-z0-9-]{1,31}$`)
-	maxInstructions  = 16 * 1024
-	maxDescription   = 300
-	maxPersonaDomain = 8
+	Roles       = []Role{RoleRouter, RoleSpecialist, RoleGuard}
+	Tiers       = spec.Tiers
+	slugPattern = regexp.MustCompile(`^[a-z][a-z0-9-]{1,31}$`)
 )
 
 // Persona is a default persona from platform/engine/ai/personas, possibly changed by an
-// administrator, or a custom one. It narrows what the assistant does; it never
-// grants anything (docs/0124).
+// administrator, or a custom one: a vaultix.ai-persona.v1 document (docs/0126). It narrows what
+// the assistant does; it never grants anything.
 type Persona struct {
-	Slug         string     `json:"slug"`
-	ID           string     `json:"id"`
-	Name         string     `json:"name"`
-	Role         Role       `json:"role"`
-	Domains      []string   `json:"domains"`
-	Tier         string     `json:"tier"`
-	Model        string     `json:"model"`
-	Description  string     `json:"description"`
-	Instructions string     `json:"instructions"`
-	ProviderID   *uuid.UUID `json:"providerId"`
-	Enabled      bool       `json:"enabled"`
-	BuiltIn      bool       `json:"builtIn"`
-	Customized   bool       `json:"customized"`
-	UpdatedAt    *time.Time `json:"updatedAt"`
+	Slug          string
+	Name          string
+	Role          Role
+	Domains       []string
+	Tier          string
+	Model         string
+	Description   string
+	Instructions  string
+	ProviderID    *uuid.UUID
+	ModelSettings *spec.ModelSettings
+	Tools         []string // nil: every read-only tool of its domains
+	Handoffs      []string // router only; nil: every enabled specialist
+	MemoryUse     string
+	Enabled       bool
+	BuiltIn       bool
+	Customized    bool
+	UpdatedAt     *time.Time
 }
 
-// PersonaInput creates or changes a persona. Nil fields stay as they are.
-type PersonaInput struct {
-	Slug          *string    `json:"slug"`
-	Name          *string    `json:"name"`
-	Role          *Role      `json:"role"`
-	Domains       []string   `json:"domains"`
-	Tier          *string    `json:"tier"`
-	Model         *string    `json:"model"`
-	Description   *string    `json:"description"`
-	Instructions  *string    `json:"instructions"`
-	ProviderID    *uuid.UUID `json:"providerId"`
-	ClearProvider bool       `json:"clearProvider"`
-	Enabled       *bool      `json:"enabled"`
+// PersonaView is how a persona is shown: its v1 document plus what the server knows about it.
+type PersonaView struct {
+	spec.Persona
+	ID         string     `json:"id"`
+	BuiltIn    bool       `json:"builtIn"`
+	Customized bool       `json:"customized"`
+	UpdatedAt  *time.Time `json:"updatedAt"`
+}
+
+func (p *Persona) View() PersonaView {
+	enabled := p.Enabled
+	doc := spec.Persona{SchemaVersion: spec.PersonaVersion, Slug: p.Slug, Name: p.Name, Description: p.Description, Role: string(p.Role),
+		Domains: p.Domains, Instructions: p.Instructions, Model: spec.PersonaModel{Tier: p.Tier, ID: optional(p.Model)},
+		ModelSettings: p.ModelSettings, Tools: p.Tools, Handoffs: p.Handoffs, Memory: &spec.MemoryUse{Use: p.MemoryUse}, Enabled: &enabled}
+	if p.ProviderID != nil {
+		id := p.ProviderID.String()
+		doc.Model.ConnectionID = &id
+	}
+	return PersonaView{Persona: doc, ID: "vaultix.persona." + p.Slug, BuiltIn: p.BuiltIn, Customized: p.Customized, UpdatedAt: p.UpdatedAt}
+}
+
+// personaFrom checks a v1 document, after trimming the text a person typed, and turns it into
+// the stored form.
+func personaFrom(doc *spec.Persona) (*Persona, error) {
+	doc.Name, doc.Description, doc.Instructions = strings.TrimSpace(doc.Name), strings.TrimSpace(doc.Description), strings.TrimSpace(doc.Instructions)
+	if err := CheckPersona(doc); err != nil {
+		return nil, fieldErrors(err)
+	}
+	p := &Persona{Slug: doc.Slug, Name: doc.Name, Role: Role(doc.Role), Domains: doc.Domains, Tier: doc.Model.Tier, Model: deref(doc.Model.ID),
+		Description: doc.Description, Instructions: doc.Instructions, ModelSettings: doc.ModelSettings, Tools: doc.Tools,
+		Handoffs: doc.Handoffs, MemoryUse: "all", Enabled: doc.Enabled == nil || *doc.Enabled}
+	if doc.Memory != nil {
+		p.MemoryUse = doc.Memory.Use
+	}
+	if doc.Model.ConnectionID != nil {
+		id, err := uuid.Parse(*doc.Model.ConnectionID)
+		if err != nil {
+			return nil, errutil.BadRequest("model.connectionId: Choose a connection.")
+		}
+		p.ProviderID = &id
+	}
+	return p, nil
 }
 
 // LoadDefaultPersonas reads <dir>/personas/<slug>/PERSONA.md: front matter that is a
@@ -143,58 +172,13 @@ func parsePersona(slug string, raw []byte) (*Persona, error) {
 	if file.Slug != slug {
 		return nil, fmt.Errorf("slug %q must match its folder %q", file.Slug, slug)
 	}
-	file.Instructions = strings.TrimSpace(string(body))
-	if err := CheckPersona(&file); err != nil {
+	file.Instructions = string(body)
+	p, err := personaFrom(&file)
+	if err != nil {
 		return nil, err
 	}
-	p := &Persona{Slug: slug, ID: "vaultix.persona." + slug, Name: file.Name, Role: Role(file.Role), Domains: file.Domains,
-		Tier: file.Model.Tier, Description: file.Description, Instructions: file.Instructions, Enabled: true, BuiltIn: true}
-	if file.Model.ID != nil {
-		p.Model = *file.Model.ID
-	}
-	if err := checkPersona(p); err != nil {
-		return nil, err
-	}
+	p.BuiltIn = true
 	return p, nil
-}
-
-func checkPersona(p *Persona) error {
-	p.Name = strings.TrimSpace(p.Name)
-	p.Description = strings.TrimSpace(p.Description)
-	p.Instructions = strings.TrimSpace(p.Instructions)
-	if !slugPattern.MatchString(p.Slug) {
-		return errutil.BadRequest("Persona slug '%s' must be 2 to 32 lowercase letters, digits or dashes, starting with a letter.", p.Slug)
-	}
-	if p.Name == "" || len(p.Name) > maxNameLength {
-		return errutil.BadRequest("Give the persona a name of 1 to %d characters.", maxNameLength)
-	}
-	if !slices.Contains(Roles, p.Role) {
-		return errutil.BadRequest("Role '%s' is not router, specialist or guard.", p.Role)
-	}
-	if !slices.Contains(Tiers, p.Tier) {
-		return errutil.BadRequest("Tier '%s' is not fast, standard or deep.", p.Tier)
-	}
-	p.Model = strings.TrimSpace(p.Model)
-	if p.Model != "" && !validModel(p.Model) {
-		return errutil.BadRequest("Model '%s' is not a valid model ID.", p.Model)
-	}
-	if len(p.Domains) == 0 || len(p.Domains) > maxPersonaDomain {
-		return errutil.BadRequest("Give the persona 1 to %d domains.", maxPersonaDomain)
-	}
-	seen := map[string]bool{}
-	for _, domain := range p.Domains {
-		if !slices.Contains(Domains, domain) || seen[domain] {
-			return errutil.BadRequest("Domain '%s' is not a Vaultix domain, or is listed twice.", domain)
-		}
-		seen[domain] = true
-	}
-	if len(p.Description) > maxDescription {
-		return errutil.BadRequest("Keep the description under %d characters.", maxDescription)
-	}
-	if p.Instructions == "" || len(p.Instructions) > maxInstructions {
-		return errutil.BadRequest("Give the persona instructions of 1 to %d characters.", maxInstructions)
-	}
-	return nil
 }
 
 // Personas merges the shipped defaults with what administrators changed or added.
@@ -213,41 +197,45 @@ func NewPersonas(_ context.Context, logger *slog.Logger, deps *PersonasDeps) *Pe
 	return &Personas{logger: logger.With(slog.String("service", "assistant-personas")), db: deps.DB, defaults: deps.Defaults}
 }
 
-type personaRow struct {
-	slug, name, role, tier, model, description, instructions string
-	domains                                                  []string
-	providerID                                               *uuid.UUID
-	enabled, builtIn                                         bool
-	updatedAt                                                time.Time
+const personaColumns = `slug, name, role, tier, model, description, instructions, domains, "providerId", "modelSettings", tools, handoffs,
+	"memoryUse", enabled, "builtIn", "updatedAt"`
+
+func scanPersona(row pgx.Row) (*Persona, error) {
+	var p Persona
+	var role string
+	var settings []byte
+	var updated time.Time
+	if err := row.Scan(&p.Slug, &p.Name, &role, &p.Tier, &p.Model, &p.Description, &p.Instructions, &p.Domains, &p.ProviderID,
+		&settings, &p.Tools, &p.Handoffs, &p.MemoryUse, &p.Enabled, &p.BuiltIn, &updated); err != nil {
+		return nil, err
+	}
+	if len(settings) > 0 {
+		if err := json.Unmarshal(settings, &p.ModelSettings); err != nil {
+			return nil, fmt.Errorf("modelSettings: %w", err)
+		}
+	}
+	p.Role, p.Customized, p.UpdatedAt = Role(role), true, &updated
+	return &p, nil
 }
 
-func (s *Personas) rows(ctx context.Context) (map[string]personaRow, error) {
-	rows, err := s.db.Primary().Query(ctx, `SELECT slug, name, role, tier, model, description, instructions, domains,
-		"providerId", enabled, "builtIn", "updatedAt" FROM vx_ai_personas WHERE "orgId" IS NULL`)
+func (s *Personas) rows(ctx context.Context) (map[string]*Persona, error) {
+	rows, err := s.db.Primary().Query(ctx, `SELECT `+personaColumns+` FROM vx_ai_personas WHERE "orgId" IS NULL`)
 	if err != nil {
 		return nil, errutil.DatabaseErr("Could not load AI personas.").WithErrf("assistant.personas: %w", err)
 	}
 	defer rows.Close()
-	out := map[string]personaRow{}
+	out := map[string]*Persona{}
 	for rows.Next() {
-		var r personaRow
-		if err := rows.Scan(&r.slug, &r.name, &r.role, &r.tier, &r.model, &r.description, &r.instructions, &r.domains,
-			&r.providerID, &r.enabled, &r.builtIn, &r.updatedAt); err != nil {
+		p, err := scanPersona(rows)
+		if err != nil {
 			return nil, errutil.DatabaseErr("Could not load AI personas.").WithErrf("assistant.personas scan: %w", err)
 		}
-		out[r.slug] = r
+		out[p.Slug] = p
 	}
 	if err := rows.Err(); err != nil {
 		return nil, errutil.DatabaseErr("Could not load AI personas.").WithErrf("assistant.personas rows: %w", err)
 	}
 	return out, nil
-}
-
-func (r personaRow) persona(builtIn bool) Persona {
-	updated := r.updatedAt
-	return Persona{Slug: r.slug, ID: "vaultix.persona." + r.slug, Name: r.name, Role: Role(r.role), Domains: r.domains,
-		Tier: r.tier, Model: r.model, Description: r.description, Instructions: r.instructions, ProviderID: r.providerID,
-		Enabled: r.enabled, BuiltIn: builtIn, Customized: true, UpdatedAt: &updated}
 }
 
 // List returns every persona: the defaults first, as changed, then custom ones.
@@ -258,10 +246,9 @@ func (s *Personas) List(ctx context.Context) ([]Persona, error) {
 	}
 	out := make([]Persona, 0, len(s.defaults)+len(rows))
 	for _, d := range s.defaults {
-		if row, ok := rows[d.Slug]; ok && row.builtIn {
-			changed := row.persona(true)
-			changed.Role = d.Role
-			out = append(out, changed)
+		if row, ok := rows[d.Slug]; ok && row.BuiltIn {
+			row.Role = d.Role
+			out = append(out, *row)
 			delete(rows, d.Slug)
 			continue
 		}
@@ -269,8 +256,8 @@ func (s *Personas) List(ctx context.Context) ([]Persona, error) {
 	}
 	custom := make([]Persona, 0, len(rows))
 	for _, row := range rows {
-		if !row.builtIn {
-			custom = append(custom, row.persona(false))
+		if !row.BuiltIn {
+			custom = append(custom, *row)
 		}
 	}
 	sort.Slice(custom, func(i, j int) bool { return personaOrder(&custom[i]) < personaOrder(&custom[j]) })
@@ -299,58 +286,51 @@ func (s *Personas) isDefault(slug string) *Persona {
 	return nil
 }
 
-func apply(p *Persona, input *PersonaInput) {
-	if input.Name != nil {
-		p.Name = *input.Name
-	}
-	if input.Role != nil {
-		p.Role = *input.Role
-	}
-	if input.Domains != nil {
-		p.Domains = input.Domains
-	}
-	if input.Tier != nil {
-		p.Tier = *input.Tier
-	}
-	if input.Model != nil {
-		p.Model = *input.Model
-	}
-	if input.Description != nil {
-		p.Description = *input.Description
-	}
-	if input.Instructions != nil {
-		p.Instructions = *input.Instructions
-	}
-	if input.ProviderID != nil {
-		p.ProviderID = input.ProviderID
-	}
-	if input.ClearProvider {
-		p.ProviderID = nil
-	}
-	if input.Enabled != nil {
-		p.Enabled = *input.Enabled
-	}
-}
-
-func (s *Personas) save(ctx context.Context, p *Persona, builtIn bool) (*Persona, error) {
+// checkReferences confirms that what a persona names exists: its connection, and for the router,
+// specialists to hand off to.
+func (s *Personas) checkReferences(ctx context.Context, p *Persona) error {
 	if p.ProviderID != nil {
 		var exists bool
 		if err := s.db.Primary().QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM vx_ai_providers WHERE id = @id AND "orgId" IS NULL)`,
 			pgx.NamedArgs{"id": *p.ProviderID}).Scan(&exists); err != nil {
-			return nil, errutil.DatabaseErr("Could not save the persona.").WithErrf("assistant.personas provider: %w", err)
+			return errutil.DatabaseErr("Could not save the persona.").WithErrf("assistant.personas connection: %w", err)
 		}
 		if !exists {
-			return nil, errutil.BadRequest("AI provider '%s' was not found.", *p.ProviderID)
+			return errutil.BadRequest("model.connectionId: AI connection '%s' was not found.", *p.ProviderID)
 		}
 	}
+	if len(p.Handoffs) > 0 {
+		all, err := s.List(ctx)
+		if err != nil {
+			return err
+		}
+		for _, slug := range p.Handoffs {
+			if !slices.ContainsFunc(all, func(o Persona) bool { return o.Slug == slug && o.Role == RoleSpecialist }) {
+				return errutil.BadRequest("handoffs: '%s' is not a specialist.", slug)
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Personas) save(ctx context.Context, p *Persona) (*Persona, error) {
+	if err := s.checkReferences(ctx, p); err != nil {
+		return nil, err
+	}
+	var settings []byte
+	if p.ModelSettings != nil {
+		settings, _ = json.Marshal(p.ModelSettings)
+	}
 	_, err := s.db.Primary().Exec(ctx, `INSERT INTO vx_ai_personas
-		(slug, name, role, tier, model, description, instructions, domains, "providerId", enabled, "builtIn")
-		VALUES (@slug, @name, @role, @tier, @model, @description, @instructions, @domains, @providerId, @enabled, @builtIn)
+		(slug, name, role, tier, model, description, instructions, domains, "providerId", "modelSettings", tools, handoffs, "memoryUse", enabled, "builtIn")
+		VALUES (@slug, @name, @role, @tier, @model, @description, @instructions, @domains, @providerId, @settings, @tools, @handoffs, @memoryUse, @enabled, @builtIn)
 		ON CONFLICT (slug) WHERE "orgId" IS NULL DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role, tier = EXCLUDED.tier, model = EXCLUDED.model,
-		description = EXCLUDED.description, instructions = EXCLUDED.instructions, domains = EXCLUDED.domains,
-		"providerId" = EXCLUDED."providerId", enabled = EXCLUDED.enabled`, pgx.NamedArgs{
+		description = EXCLUDED.description, instructions = EXCLUDED.instructions, domains = EXCLUDED.domains, "providerId" = EXCLUDED."providerId",
+		"modelSettings" = EXCLUDED."modelSettings", tools = EXCLUDED.tools, handoffs = EXCLUDED.handoffs, "memoryUse" = EXCLUDED."memoryUse",
+		enabled = EXCLUDED.enabled`, pgx.NamedArgs{
 		"slug": p.Slug, "name": p.Name, "role": string(p.Role), "tier": p.Tier, "model": p.Model, "description": p.Description,
-		"instructions": p.Instructions, "domains": p.Domains, "providerId": p.ProviderID, "enabled": p.Enabled, "builtIn": builtIn,
+		"instructions": p.Instructions, "domains": p.Domains, "providerId": p.ProviderID, "settings": settings, "tools": p.Tools,
+		"handoffs": p.Handoffs, "memoryUse": p.MemoryUse, "enabled": p.Enabled, "builtIn": p.BuiltIn,
 	})
 	if err != nil {
 		return nil, errutil.DatabaseErr("Could not save the persona.").WithErrf("assistant.personas save(slug=%s): %w", p.Slug, err)
@@ -358,53 +338,45 @@ func (s *Personas) save(ctx context.Context, p *Persona, builtIn bool) (*Persona
 	return s.find(ctx, p.Slug)
 }
 
-// Create adds a custom persona. Default slugs are taken.
-func (s *Personas) Create(ctx context.Context, input *PersonaInput) (*Persona, error) {
-	if input.Slug == nil {
-		return nil, errutil.BadRequest("Give the persona a slug.")
-	}
-	slug := strings.TrimSpace(*input.Slug)
-	if s.isDefault(slug) != nil {
-		return nil, errutil.BadRequest("'%s' is a default persona. Change it instead of creating another.", slug)
-	}
-	if _, err := s.find(ctx, slug); err == nil {
-		return nil, errutil.BadRequest("A persona named '%s' already exists.", slug)
-	}
-	p := &Persona{Slug: slug, Role: RoleSpecialist, Tier: "standard", Enabled: true}
-	apply(p, input)
-	if p.Role == RoleRouter {
-		return nil, errutil.BadRequest("There is one router, Clyffy. Add specialists or guards instead.")
-	}
-	if err := checkPersona(p); err != nil {
+// Create adds a custom persona. Default slugs are taken, and there is one router.
+func (s *Personas) Create(ctx context.Context, doc *spec.Persona) (*Persona, error) {
+	p, err := personaFrom(doc)
+	if err != nil {
 		return nil, err
 	}
-	return s.save(ctx, p, false)
+	if s.isDefault(p.Slug) != nil {
+		return nil, errutil.BadRequest("slug: '%s' is a default persona. Change it instead of creating another.", p.Slug)
+	}
+	if _, err := s.find(ctx, p.Slug); err == nil {
+		return nil, errutil.BadRequest("slug: A persona named '%s' already exists.", p.Slug)
+	}
+	if p.Role == RoleRouter {
+		return nil, errutil.BadRequest("role: There is one router, Clyffy. Add specialists or guards instead.")
+	}
+	return s.save(ctx, p)
 }
 
-// Update changes a persona. A default keeps its role.
-func (s *Personas) Update(ctx context.Context, slug string, input *PersonaInput) (*Persona, error) {
+// Replace stores a whole v1 document over a persona. A default keeps its slug and role.
+func (s *Personas) Replace(ctx context.Context, slug string, doc *spec.Persona) (*Persona, error) {
 	current, err := s.find(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
-	if input.Slug != nil && *input.Slug != slug {
-		return nil, errutil.BadRequest("A persona's slug cannot change.")
-	}
-	next := *current
-	apply(&next, input)
-	if current.BuiltIn && next.Role != current.Role {
-		return nil, errutil.BadRequest("A default persona keeps its role.")
-	}
-	if !current.BuiltIn && next.Role == RoleRouter {
-		return nil, errutil.BadRequest("There is one router, Clyffy.")
-	}
-	if next.Role == RoleRouter && !next.Enabled {
-		return nil, errutil.BadRequest("Clyffy routes every conversation and cannot be turned off. Turn off the assistant by deactivating its provider.")
-	}
-	if err := checkPersona(&next); err != nil {
+	next, err := personaFrom(doc)
+	if err != nil {
 		return nil, err
 	}
-	return s.save(ctx, &next, current.BuiltIn)
+	if next.Slug != slug {
+		return nil, errutil.BadRequest("slug: A persona's short name cannot change.")
+	}
+	if current.BuiltIn && next.Role != current.Role {
+		return nil, errutil.BadRequest("role: A default persona keeps its role.")
+	}
+	if !current.BuiltIn && next.Role == RoleRouter {
+		return nil, errutil.BadRequest("role: There is one router, Clyffy.")
+	}
+	next.BuiltIn = current.BuiltIn
+	return s.save(ctx, next)
 }
 
 // Reset returns a default persona to the shipped text and settings.
@@ -418,7 +390,8 @@ func (s *Personas) Reset(ctx context.Context, slug string) (*Persona, error) {
 	return s.find(ctx, slug)
 }
 
-// Delete removes a custom persona. Defaults are turned off or reset instead.
+// Delete removes a custom persona and the memories that applied only to it, which would
+// otherwise point at nothing. Defaults are turned off or reset instead.
 func (s *Personas) Delete(ctx context.Context, slug string) (*Persona, error) {
 	if s.isDefault(slug) != nil {
 		return nil, errutil.BadRequest("'%s' is a default persona. Turn it off or reset it instead.", slug)
@@ -427,8 +400,21 @@ func (s *Personas) Delete(ctx context.Context, slug string) (*Persona, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := s.db.Primary().Exec(ctx, `DELETE FROM vx_ai_personas WHERE slug = @slug AND "orgId" IS NULL`, pgx.NamedArgs{"slug": slug}); err != nil {
-		return nil, errutil.DatabaseErr("Could not remove the persona.").WithErrf("assistant.personas delete(slug=%s): %w", slug, err)
+	tx, err := s.db.Primary().Begin(ctx)
+	if err != nil {
+		return nil, errutil.DatabaseErr("Could not remove the persona.").WithErrf("assistant.personas delete begin: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	for _, statement := range []string{
+		`DELETE FROM vx_ai_memories WHERE persona = @slug AND "orgId" IS NULL`,
+		`DELETE FROM vx_ai_personas WHERE slug = @slug AND "orgId" IS NULL`,
+	} {
+		if _, err := tx.Exec(ctx, statement, pgx.NamedArgs{"slug": slug}); err != nil {
+			return nil, errutil.DatabaseErr("Could not remove the persona.").WithErrf("assistant.personas delete(slug=%s): %w", slug, err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, errutil.DatabaseErr("Could not remove the persona.").WithErrf("assistant.personas delete commit: %w", err)
 	}
 	return current, nil
 }

@@ -13,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/vaultix-cloud/api/internal/services/assistant/spec"
 )
 
 const canaryKey = "sk-canary-0e1d5f"
@@ -152,7 +154,7 @@ func TestVertexModel_ExchangesServiceAccountForToken(t *testing.T) {
 }
 
 func TestOpenAIModel_ToolsAndTokenField(t *testing.T) {
-	for _, kind := range []Kind{KindOpenAI, KindOpenAICompatible} {
+	for _, kind := range []Kind{KindOpenAI, KindCustom} {
 		t.Run(string(kind), func(t *testing.T) {
 			var got map[string]any
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -163,7 +165,7 @@ func TestOpenAIModel_ToolsAndTokenField(t *testing.T) {
 				_, _ = io.WriteString(w, `{"choices":[{"message":{"content":null,"tool_calls":[{"id":"c9","type":"function","function":{"name":"vaultix__warp__list","arguments":"not json"}}]}}]}`)
 			}))
 			defer server.Close()
-			model, err := NewModel(&Provider{Kind: kind, Model: "gpt-x", BaseURL: server.URL + "/v1"}, &Credential{APIKey: canaryKey}, nil)
+			model, err := NewModel(&Provider{Kind: kind, APIStyle: "openai-chat", AuthType: "bearer", Model: "gpt-x", BaseURL: server.URL + "/v1"}, &Credential{APIKey: canaryKey}, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -209,7 +211,7 @@ func TestPost_RefusesRedirects(t *testing.T) {
 		http.Redirect(w, r, target.URL+"/v1/chat/completions", http.StatusTemporaryRedirect)
 	}))
 	defer server.Close()
-	model, _ := NewModel(&Provider{Kind: KindOpenAICompatible, Model: "m", BaseURL: server.URL}, &Credential{APIKey: canaryKey}, HTTPClient(5*time.Second))
+	model, _ := NewModel(&Provider{Kind: KindCustom, APIStyle: "openai-chat", AuthType: "bearer", Model: "m", BaseURL: server.URL}, &Credential{APIKey: canaryKey}, HTTPClient(5*time.Second))
 	if _, err := model.Chat(context.Background(), &ChatRequest{MaxTokens: 8, Turns: []Turn{{Role: "user", Text: "hi"}}}); err == nil {
 		t.Fatal("a redirect must not be followed")
 	}
@@ -218,37 +220,64 @@ func TestPost_RefusesRedirects(t *testing.T) {
 	}
 }
 
-func TestNormalize_ValidatesEachKind(t *testing.T) {
-	str := func(s string) *string { return &s }
-	cases := map[string]struct {
-		p    Provider
-		c    Credential
-		want string
-	}{
-		"anthropic needs a key":        {Provider{Kind: KindAnthropic, Name: "a", Model: "m"}, Credential{}, "API key"},
-		"compatible needs a base URL":  {Provider{Kind: KindOpenAICompatible, Name: "a", Model: "m"}, Credential{}, "base URL"},
-		"bad base URL":                 {Provider{Kind: KindOpenAI, Name: "a", Model: "m", BaseURL: "ftp://x"}, Credential{APIKey: "k"}, "http or https"},
-		"base URL with user":           {Provider{Kind: KindOpenAI, Name: "a", Model: "m", BaseURL: "https://u:p@x"}, Credential{APIKey: "k"}, "http or https"},
-		"bedrock region":               {Provider{Kind: KindBedrock, Name: "a", Model: "m", Region: "nowhere"}, Credential{AccessKeyID: "AKIAEXAMPLEKEY0001", SecretAccessKey: "s"}, "AWS region"},
-		"vertex needs service account": {Provider{Kind: KindVertex, Name: "a", Model: "m", Region: "us-east5", CloudProject: "my-project-1"}, Credential{ServiceAccountJSON: `{"type":"user"}`}, "service account"},
-		"unknown kind":                 {Provider{Kind: "mystery", Name: "a", Model: "m"}, Credential{}, "Unknown provider kind"},
-		"model pattern":                {Provider{Kind: KindOpenAI, Name: "a", Model: "m n"}, Credential{APIKey: "k"}, "not a valid model"},
-	}
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := normalize(&tc.p, &tc.c, true)
-			if err == nil || !strings.Contains(err.Error(), tc.want) {
-				t.Fatalf("want %q, got %v", tc.want, err)
-			}
-		})
-	}
-	p := Provider{Kind: KindOpenAI, Name: " Ops ", Model: "gpt-x", BaseURL: "https://example.test/v1/", Region: "us-east-1"}
-	c := Credential{APIKey: " k ", AccessKeyID: "dropped"}
-	if err := normalize(&p, &c, true); err != nil {
+func TestFromDocument_TrimsAndShapes(t *testing.T) {
+	endpoint, style, model := "https://llm.example.test/v1/", "openai-chat", "m"
+	doc := &spec.Connection{SchemaVersion: spec.ConnectionVersion, Name: "  Gateway ", Kind: "custom", Endpoint: &endpoint, APIStyle: &style,
+		Auth: &spec.Auth{Type: "bearer"}, Models: spec.Models{Standard: model}}
+	p, err := fromDocument(doc)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if p.Name != "Ops" || p.BaseURL != "https://example.test/v1" || p.Region != "" || c.APIKey != "k" || c.AccessKeyID != "" {
-		t.Fatalf("not normalized: %+v %+v", p, c)
+	if p.Name != "Gateway" || p.BaseURL != "https://llm.example.test/v1" || p.TimeoutSeconds != 60 || p.Headers == nil || p.AuthType != "bearer" {
+		t.Fatalf("not shaped: %+v", p)
 	}
-	_ = str
+	view := p.View()
+	if view.Endpoint == nil || *view.Endpoint != p.BaseURL || view.Auth == nil || view.Region != nil {
+		t.Fatalf("view %+v", view)
+	}
+	key := "  sk-pasted-with-spaces \n"
+	if c := credentialFrom(&spec.Credential{APIKey: &key}); c.APIKey != "sk-pasted-with-spaces" {
+		t.Fatalf("key not trimmed: %q", c.APIKey)
+	}
+	bad := &spec.Connection{SchemaVersion: spec.ConnectionVersion, Name: "B", Kind: "bedrock", Models: spec.Models{Standard: model}}
+	if _, err := fromDocument(bad); err == nil || !strings.Contains(err.Error(), "region") {
+		t.Fatalf("a bedrock connection without a region must name the field: %v", err)
+	}
+}
+
+func TestNewModel_HuggingFaceAndCustomHeaders(t *testing.T) {
+	var seen http.Header
+	var path string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seen, path = r.Header.Clone(), r.URL.Path
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"content":"ok"}}]}`)
+	}))
+	defer server.Close()
+	ask := func(p *Provider, c *Credential) {
+		t.Helper()
+		model, err := NewModel(p, c, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := model.Chat(context.Background(), &ChatRequest{MaxTokens: 8, Turns: []Turn{{Role: "user", Text: "hi"}}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ask(&Provider{Kind: KindHuggingFace, Model: "openai/gpt-oss-120b:fastest", BillTo: "my-org", BaseURL: server.URL + "/v1"}, &Credential{APIKey: canaryKey})
+	if path != "/v1/chat/completions" || seen.Get("Authorization") != "Bearer "+canaryKey || seen.Get("X-HF-Bill-To") != "my-org" {
+		t.Fatalf("hugging face: %s %v", path, seen)
+	}
+	ask(&Provider{Kind: KindHuggingFaceEndpoint, Model: "tgi", BaseURL: server.URL}, &Credential{APIKey: canaryKey})
+	if path != "/v1/chat/completions" {
+		t.Fatalf("a dedicated endpoint gets /v1 once: %s", path)
+	}
+	ask(&Provider{Kind: KindCustom, APIStyle: "openai-chat", AuthType: "header", AuthHeaderName: "x-gateway-key", BaseURL: server.URL + "/v1", Model: "m",
+		Headers: []spec.Header{{Name: "x-team", Value: "platform"}}}, &Credential{APIKey: canaryKey})
+	if seen.Get("X-Gateway-Key") != canaryKey || seen.Get("Authorization") != "" || seen.Get("X-Team") != "platform" {
+		t.Fatalf("custom header auth: %v", seen)
+	}
+	ask(&Provider{Kind: KindCustom, APIStyle: "openai-chat", AuthType: "none", BaseURL: server.URL + "/v1", Model: "m"}, &Credential{})
+	if seen.Get("Authorization") != "" {
+		t.Fatal("a keyless connection sent a key")
+	}
 }

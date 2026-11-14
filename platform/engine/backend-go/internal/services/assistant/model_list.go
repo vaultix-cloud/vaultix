@@ -44,7 +44,12 @@ func ListModels(ctx context.Context, p *Provider, c *Credential, client *http.Cl
 	switch p.Kind {
 	case KindAnthropic:
 		models, err = listAnthropic(ctx, p, c, client)
-	case KindOpenAI, KindOpenAICompatible:
+	case KindOpenAI, KindHuggingFace, KindHuggingFaceEndpoint:
+		models, err = listOpenAI(ctx, p, c, client)
+	case KindCustom:
+		if p.APIStyle != "openai-chat" {
+			return nil, &ProviderError{Message: "Anthropic-style endpoints do not list their models. Type the model ID."}
+		}
 		models, err = listOpenAI(ctx, p, c, client)
 	case KindBedrock:
 		models, err = listBedrock(ctx, p, c, client)
@@ -105,13 +110,14 @@ func listAnthropic(ctx context.Context, p *Provider, c *Credential, client *http
 }
 
 func listOpenAI(ctx context.Context, p *Provider, c *Credential, client *http.Client) ([]ModelInfo, error) {
-	base := p.BaseURL
-	if base == "" {
-		base = defaultOpenAIURL
+	model, err := NewModel(p, c, client)
+	if err != nil {
+		return nil, err
 	}
-	raw, err := send(ctx, client, http.MethodGet, base+"/models", nil, func(r *http.Request) error {
-		if c.APIKey != "" {
-			r.Header.Set("Authorization", "Bearer "+c.APIKey)
+	chat := model.(*openAIModel)
+	raw, err := send(ctx, client, http.MethodGet, strings.TrimSuffix(chat.url, "/chat/completions")+"/models", nil, func(r *http.Request) error {
+		for name, value := range chat.headers {
+			r.Header.Set(name, value)
 		}
 		return nil
 	})

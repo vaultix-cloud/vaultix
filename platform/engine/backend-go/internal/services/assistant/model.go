@@ -54,6 +54,10 @@ type ChatRequest struct {
 	Turns     []Turn
 	Tools     []ToolSpec
 	MaxTokens int
+	// The persona's model settings (docs/0126); nil or empty leaves the provider's default.
+	Temperature *float64
+	TopP        *float64
+	Stop        []string
 }
 
 type ChatResponse struct {
@@ -148,13 +152,45 @@ func NewModel(p *Provider, c *Credential, client *http.Client) (Model, error) {
 				r.Header.Set("Authorization", "Bearer "+token.AccessToken)
 				return nil
 			}}, nil
-	case KindOpenAI, KindOpenAICompatible:
+	case KindOpenAI:
 		base := p.BaseURL
 		if base == "" {
 			base = defaultOpenAIURL
 		}
-		return &openAIModel{client: client, model: p.Model, url: base + "/chat/completions", key: c.APIKey,
-			completionTokens: p.Kind == KindOpenAI}, nil
+		return &openAIModel{client: client, model: p.Model, url: base + "/chat/completions", headers: bearer(c.APIKey), completionTokens: true}, nil
+	case KindHuggingFace:
+		base := p.BaseURL
+		if base == "" {
+			base = huggingFaceRoute
+		}
+		headers := bearer(c.APIKey)
+		if p.BillTo != "" {
+			headers["X-HF-Bill-To"] = p.BillTo
+		}
+		return &openAIModel{client: client, model: p.Model, url: base + "/chat/completions", headers: headers}, nil
+	case KindHuggingFaceEndpoint:
+		return &openAIModel{client: client, model: p.Model, url: withV1(p.BaseURL) + "/chat/completions", headers: bearer(c.APIKey)}, nil
+	case KindCustom:
+		headers := map[string]string{}
+		for _, h := range p.Headers {
+			headers[h.Name] = h.Value
+		}
+		switch p.AuthType {
+		case "bearer":
+			headers["Authorization"] = "Bearer " + c.APIKey
+		case "header":
+			headers[p.AuthHeaderName] = c.APIKey
+		}
+		if p.APIStyle == "anthropic-messages" {
+			return &anthropicModel{client: client, model: p.Model, url: p.BaseURL + "/v1/messages", sign: func(_ context.Context, r *http.Request, _ []byte) error {
+				for name, value := range headers {
+					r.Header.Set(name, value)
+				}
+				r.Header.Set("anthropic-version", anthropicVersion)
+				return nil
+			}}, nil
+		}
+		return &openAIModel{client: client, model: p.Model, url: p.BaseURL + "/chat/completions", headers: headers}, nil
 	}
 	return nil, fmt.Errorf("unknown provider kind %q", p.Kind)
 }
@@ -296,6 +332,15 @@ func (m *anthropicModel) Chat(ctx context.Context, request *ChatRequest) (*ChatR
 		}
 	}
 	body := map[string]any{"max_tokens": request.MaxTokens, "system": request.System, "messages": messages}
+	if request.Temperature != nil {
+		body["temperature"] = *request.Temperature
+	}
+	if request.TopP != nil {
+		body["top_p"] = *request.TopP
+	}
+	if len(request.Stop) > 0 {
+		body["stop_sequences"] = request.Stop
+	}
 	if len(request.Tools) > 0 {
 		tools := make([]anthropicTool, 0, len(request.Tools))
 		for _, tool := range request.Tools {
@@ -340,8 +385,8 @@ type openAIModel struct {
 	client           *http.Client
 	url              string
 	model            string
-	key              string
-	completionTokens bool // OpenAI's own API takes max_completion_tokens
+	headers          map[string]string // the key's header and any extra headers
+	completionTokens bool              // OpenAI's own API takes max_completion_tokens
 }
 
 type openAIToolCall struct {
@@ -390,6 +435,15 @@ func (m *openAIModel) Chat(ctx context.Context, request *ChatRequest) (*ChatResp
 		}
 	}
 	body := map[string]any{"model": m.model, "messages": messages}
+	if request.Temperature != nil {
+		body["temperature"] = *request.Temperature
+	}
+	if request.TopP != nil {
+		body["top_p"] = *request.TopP
+	}
+	if len(request.Stop) > 0 {
+		body["stop"] = request.Stop
+	}
 	if m.completionTokens {
 		body["max_completion_tokens"] = request.MaxTokens
 	} else {
@@ -409,8 +463,8 @@ func (m *openAIModel) Chat(ctx context.Context, request *ChatRequest) (*ChatResp
 		return nil, &ProviderError{Message: "The request could not be encoded."}
 	}
 	raw, err := post(ctx, m.client, m.url, encoded, func(r *http.Request) error {
-		if m.key != "" {
-			r.Header.Set("Authorization", "Bearer "+m.key)
+		for name, value := range m.headers {
+			r.Header.Set(name, value)
 		}
 		return nil
 	})
@@ -441,6 +495,22 @@ func (m *openAIModel) Chat(ctx context.Context, request *ChatRequest) (*ChatResp
 		response.ToolCalls = append(response.ToolCalls, ToolCall{ID: call.ID, Name: call.Function.Name, Arguments: arguments})
 	}
 	return response, nil
+}
+
+func bearer(key string) map[string]string {
+	if key == "" {
+		return map[string]string{}
+	}
+	return map[string]string{"Authorization": "Bearer " + key}
+}
+
+// withV1 is a Hugging Face endpoint's OpenAI-compatible base: its URL with /v1 appended once.
+func withV1(endpoint string) string {
+	endpoint = strings.TrimRight(endpoint, "/")
+	if strings.HasSuffix(endpoint, "/v1") {
+		return endpoint
+	}
+	return endpoint + "/v1"
 }
 
 func objectOrEmpty(raw json.RawMessage) json.RawMessage {

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/vaultix-cloud/api/internal/libs/errutil"
+	"github.com/vaultix-cloud/api/internal/services/assistant/spec"
 )
 
 const (
@@ -411,6 +412,10 @@ func (a *Agent) route(ctx context.Context, personas []Persona, models ModelSourc
 	if router == nil {
 		return nil, ""
 	}
+	// The router chooses only among its handoffs when it names them (docs/0126).
+	if router.Handoffs != nil {
+		specialists = slices.DeleteFunc(specialists, func(p *Persona) bool { return !slices.Contains(router.Handoffs, p.Slug) })
+	}
 	if len(specialists) > 0 {
 		if model, _, err := models(ctx, router); err == nil {
 			choices := []string{router.Slug + ": " + router.Description}
@@ -422,8 +427,8 @@ func (a *Agent) route(ctx context.Context, personas []Persona, models ModelSourc
 				Turns:  []Turn{{Role: "user", Text: request.Messages[len(request.Messages)-1].Content}}})
 			if err == nil {
 				choice := strings.Trim(strings.ToLower(strings.TrimSpace(answer.Text)), "`'\".")
-				if p := answerable(choice); p != nil && p.Role == RoleSpecialist {
-					return p, "router"
+				if i := slices.IndexFunc(specialists, func(p *Persona) bool { return p.Slug == choice }); i >= 0 {
+					return specialists[i], "router"
 				}
 			}
 		}
@@ -477,9 +482,18 @@ func (a *Agent) Answer(ctx context.Context, personas []Persona, models ModelSour
 		return nil, err
 	}
 
+	// A persona narrows its tools: none at all, or only those it names, from its own areas.
+	settings := persona.ModelSettings
+	if settings == nil {
+		settings = &spec.ModelSettings{}
+	}
+	toolsOff := settings.ToolChoice != nil && *settings.ToolChoice == "none"
 	bound := map[string]boundTool{}
 	specs := []ToolSpec{}
 	for _, domain := range persona.Domains {
+		if toolsOff {
+			break
+		}
 		tools, err := a.tools.List(ctx, bearer, domain)
 		if err != nil {
 			if !errors.Is(err, errNoWarpPoint) {
@@ -490,7 +504,7 @@ func (a *Agent) Answer(ctx context.Context, personas []Persona, models ModelSour
 		for i := range tools {
 			tool := &tools[i]
 			safe := modelToolName(tool.Name)
-			if _, taken := bound[safe]; taken || safe == "" || !tool.readOnly() {
+			if _, taken := bound[safe]; taken || safe == "" || !tool.readOnly() || (persona.Tools != nil && !slices.Contains(persona.Tools, tool.Name)) {
 				continue
 			}
 			bound[safe] = boundTool{domain: domain, name: tool.Name}
@@ -502,14 +516,25 @@ func (a *Agent) Answer(ctx context.Context, personas []Persona, models ModelSour
 	for _, message := range request.Messages {
 		turns = append(turns, Turn{Role: message.Role, Text: message.Content})
 	}
-	specs = append(specs, proposeSpec)
+	switch persona.MemoryUse {
+	case "none":
+		memories = nil
+	case "instance":
+		memories = slices.DeleteFunc(slices.Clone(memories), func(m Memory) bool { return m.Scope != ScopeInstance })
+	}
+	if !toolsOff && persona.MemoryUse != "none" {
+		specs = append(specs, proposeSpec)
+	}
 
 	system := standingRules + "\n\n" + persona.Instructions
 	if remembered := describeMemories(memories, persona.Slug); remembered != "" {
 		system += "\n\n" + remembered
 	}
 	system += "\n\n" + describeSignals(request.Signals)
-	chat := &ChatRequest{System: system, Tools: specs, MaxTokens: answerTokens}
+	chat := &ChatRequest{System: system, Tools: specs, MaxTokens: answerTokens, Temperature: settings.Temperature, TopP: settings.TopP, Stop: settings.StopSequences}
+	if settings.MaxOutputTokens != nil {
+		chat.MaxTokens = *settings.MaxOutputTokens
+	}
 	reply := &Reply{Persona: PersonaRef{Slug: persona.Slug, Name: persona.Name, Role: persona.Role}, RoutedBy: routedBy,
 		Provider: provider, Actions: []Action{}, Proposals: []Proposal{}}
 	for round := 0; ; round++ {

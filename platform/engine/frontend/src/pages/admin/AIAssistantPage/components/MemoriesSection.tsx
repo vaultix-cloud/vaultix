@@ -1,15 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/v3";
 import { AssistantMemories } from "@app/components/vaultix/AssistantMemories";
-import { useGetAssistantPersonas } from "@app/hooks/api/assistant";
+import { useGetAiPersonas } from "@app/hooks/api/assistant";
 
 export const MemoriesSection = () => {
-  const { data } = useGetAssistantPersonas();
+  const { data } = useGetAiPersonas();
   const personas = (data?.personas ?? []).filter((p) => p.role !== "guard");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Memories for everyone</CardTitle>
+        <CardTitle>Memories for Everyone</CardTitle>
         <CardDescription>
           Notes every persona reads before answering anyone on this instance, such as naming
           conventions or change rules. Each person also keeps their own from the assistant panel;

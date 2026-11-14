@@ -55,27 +55,33 @@ export const registerAssistantRouter = async (server: FastifyZodProvider) => {
     }
   });
   const auth = verifyAuth([AuthMode.JWT]);
-  const routes: { method: "GET" | "POST" | "PATCH" | "DELETE"; url: string; timeoutMs: number; bodyLimit?: number }[] =
-    [
-      { method: "GET", url: "/assistant", timeoutMs: 15_000 },
-      { method: "GET", url: "/schema", timeoutMs: 15_000 },
-      { method: "POST", url: "/messages", timeoutMs: 120_000, bodyLimit: 256 * 1024 },
-      { method: "GET", url: "/providers", timeoutMs: 15_000 },
-      { method: "POST", url: "/providers", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "PATCH", url: "/providers/:providerId", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "DELETE", url: "/providers/:providerId", timeoutMs: 15_000 },
-      { method: "POST", url: "/providers/:providerId/test", timeoutMs: 60_000, bodyLimit: 1024 },
-      { method: "GET", url: "/providers/:providerId/models", timeoutMs: 60_000 },
-      { method: "GET", url: "/memories", timeoutMs: 15_000 },
-      { method: "POST", url: "/memories", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "PATCH", url: "/memories/:memoryId", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "DELETE", url: "/memories/:memoryId", timeoutMs: 15_000 },
-      { method: "GET", url: "/personas", timeoutMs: 15_000 },
-      { method: "POST", url: "/personas", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "PATCH", url: "/personas/:slug", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
-      { method: "DELETE", url: "/personas/:slug", timeoutMs: 15_000 },
-      { method: "POST", url: "/personas/:slug/reset", timeoutMs: 15_000, bodyLimit: 1024 }
-    ];
+  const routes: {
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    url: string;
+    timeoutMs: number;
+    bodyLimit?: number;
+  }[] = [
+    { method: "GET", url: "/assistant", timeoutMs: 15_000 },
+    { method: "GET", url: "/schema", timeoutMs: 15_000 },
+    { method: "POST", url: "/messages", timeoutMs: 120_000, bodyLimit: 256 * 1024 },
+    { method: "GET", url: "/connections", timeoutMs: 15_000 },
+    { method: "POST", url: "/connections", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "PUT", url: "/connections/:connectionId", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "DELETE", url: "/connections/:connectionId", timeoutMs: 15_000 },
+    { method: "POST", url: "/connections/:connectionId/test", timeoutMs: 60_000, bodyLimit: 1024 },
+    { method: "GET", url: "/connections/:connectionId/models", timeoutMs: 60_000 },
+    { method: "POST", url: "/huggingface/account", timeoutMs: 30_000, bodyLimit: 8 * 1024 },
+    { method: "POST", url: "/huggingface/endpoints", timeoutMs: 30_000, bodyLimit: 8 * 1024 },
+    { method: "GET", url: "/memories", timeoutMs: 15_000 },
+    { method: "POST", url: "/memories", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "PATCH", url: "/memories/:memoryId", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "DELETE", url: "/memories/:memoryId", timeoutMs: 15_000 },
+    { method: "GET", url: "/personas", timeoutMs: 15_000 },
+    { method: "POST", url: "/personas", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "PUT", url: "/personas/:slug", timeoutMs: 15_000, bodyLimit: 32 * 1024 },
+    { method: "DELETE", url: "/personas/:slug", timeoutMs: 15_000 },
+    { method: "POST", url: "/personas/:slug/reset", timeoutMs: 15_000, bodyLimit: 1024 }
+  ];
   for (const route of routes) {
     server.route({
       method: route.method,

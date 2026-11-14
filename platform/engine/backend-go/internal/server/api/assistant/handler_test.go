@@ -18,6 +18,7 @@ import (
 	"github.com/vaultix-cloud/api/internal/libs/errutil"
 	"github.com/vaultix-cloud/api/internal/server/api/shared"
 	"github.com/vaultix-cloud/api/internal/services/assistant"
+	"github.com/vaultix-cloud/api/internal/services/assistant/spec"
 	"github.com/vaultix-cloud/api/internal/services/auth"
 )
 
@@ -39,16 +40,16 @@ func (f *fakeProviders) ProviderWithCredential(_ context.Context, id uuid.UUID) 
 	}
 	return &assistant.Provider{ID: id, Kind: assistant.KindOpenAI, Model: "m"}, &assistant.Credential{APIKey: "sk-canary"}, nil
 }
-func (f *fakeProviders) Create(context.Context, *assistant.ProviderInput) (*assistant.Provider, error) {
+func (f *fakeProviders) Create(context.Context, *spec.Connection) (*assistant.Provider, error) {
 	return &assistant.Provider{}, nil
 }
-func (f *fakeProviders) Update(context.Context, uuid.UUID, *assistant.ProviderInput) (*assistant.Provider, error) {
+func (f *fakeProviders) Replace(context.Context, uuid.UUID, *spec.Connection) (*assistant.Provider, error) {
 	return &assistant.Provider{}, nil
 }
 func (f *fakeProviders) Delete(context.Context, uuid.UUID) (*assistant.Provider, error) {
 	return &assistant.Provider{}, nil
 }
-func (f *fakeProviders) RecordTest(_ context.Context, id uuid.UUID, passed bool, message string, at time.Time) (*assistant.Provider, error) {
+func (f *fakeProviders) RecordTest(_ context.Context, id uuid.UUID, passed bool, _ *bool, message string, at time.Time) (*assistant.Provider, error) {
 	f.recorded = append(f.recorded, message)
 	return &assistant.Provider{ID: id, LastTestedAt: &at}, nil
 }
@@ -58,10 +59,10 @@ type fakePersonas struct{}
 func (fakePersonas) List(context.Context) ([]assistant.Persona, error) {
 	return []assistant.Persona{{Slug: "clyffy", Name: "Clyffy", Role: assistant.RoleRouter, Domains: []string{"public"}, Instructions: "x", Enabled: true}}, nil
 }
-func (fakePersonas) Create(context.Context, *assistant.PersonaInput) (*assistant.Persona, error) {
+func (fakePersonas) Create(context.Context, *spec.Persona) (*assistant.Persona, error) {
 	return &assistant.Persona{}, nil
 }
-func (fakePersonas) Update(context.Context, string, *assistant.PersonaInput) (*assistant.Persona, error) {
+func (fakePersonas) Replace(context.Context, string, *spec.Persona) (*assistant.Persona, error) {
 	return &assistant.Persona{}, nil
 }
 func (fakePersonas) Reset(context.Context, string) (*assistant.Persona, error) {
@@ -141,7 +142,7 @@ func personIdentity(superAdmin bool) *auth.Identity {
 }
 
 func TestAdminRoutes_OnlyInstanceAdministrators(t *testing.T) {
-	for _, path := range []string{Prefix + "/providers", Prefix + "/personas"} {
+	for _, path := range []string{Prefix + "/connections", Prefix + "/personas"} {
 		if code := serve(t, &fakeProviders{}, nil, personIdentity(false), http.MethodGet, path, "").Code; code != http.StatusNotFound {
 			t.Fatalf("%s for a member: %d", path, code)
 		}
@@ -153,14 +154,14 @@ func TestAdminRoutes_OnlyInstanceAdministrators(t *testing.T) {
 		}
 	}
 	machine := &auth.Identity{Actor: auth.ActorTypeIdentity, AuthMode: auth.AuthModeIdentityAccessToken, ActorID: uuid.New(), IsSuperAdmin: true}
-	if code := serve(t, &fakeProviders{}, nil, machine, http.MethodGet, Prefix+"/providers", "").Code; code != http.StatusUnauthorized {
+	if code := serve(t, &fakeProviders{}, nil, machine, http.MethodGet, Prefix+"/connections", "").Code; code != http.StatusUnauthorized {
 		t.Fatalf("a machine identity must not manage providers: %d", code)
 	}
 }
 
 func TestTestProvider_RecordsAFailureAsTheReceipt(t *testing.T) {
 	providers := &fakeProviders{}
-	recorder := serve(t, providers, nil, personIdentity(true), http.MethodPost, Prefix+"/providers/"+uuid.NewString()+"/test", "")
+	recorder := serve(t, providers, nil, personIdentity(true), http.MethodPost, Prefix+"/connections/"+uuid.NewString()+"/test", "")
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("code %d %s", recorder.Code, recorder.Body)
 	}
@@ -247,7 +248,7 @@ func TestTestProvider_TestsEveryConfiguredModel(t *testing.T) {
 				return failingModel{}, nil
 			}
 			return answeringModel{}, nil
-		}}, personIdentity(true), http.MethodPost, Prefix+"/providers/"+uuid.NewString()+"/test", "")
+		}}, personIdentity(true), http.MethodPost, Prefix+"/connections/"+uuid.NewString()+"/test", "")
 	if recorder.Code != http.StatusOK || strings.Join(built, ",") != "std,quick" {
 		t.Fatalf("code %d models %v", recorder.Code, built)
 	}
@@ -261,7 +262,7 @@ func TestProviderModels_ListedOrExplained(t *testing.T) {
 		ListModels: func(context.Context, *assistant.Provider, *assistant.Credential) ([]assistant.ModelInfo, error) {
 			return []assistant.ModelInfo{{ID: "gpt-x", Name: "gpt-x"}}, nil
 		}}
-	path := Prefix + "/providers/" + uuid.NewString() + "/models"
+	path := Prefix + "/connections/" + uuid.NewString() + "/models"
 	recorder := serveWith(t, deps, personIdentity(true), http.MethodGet, path, "")
 	if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `"listed":true`) || !strings.Contains(recorder.Body.String(), "gpt-x") {
 		t.Fatalf("listed: %d %s", recorder.Code, recorder.Body)

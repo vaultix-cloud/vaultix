@@ -75,7 +75,7 @@ func modelsFor(model Model) (ModelSource, *[]string) {
 	asked := []string{}
 	return func(_ context.Context, persona *Persona) (Model, *Provider, error) {
 		asked = append(asked, persona.Slug)
-		return model, &Provider{Kind: KindOpenAICompatible, Model: "m", Name: "local"}, nil
+		return model, &Provider{Kind: KindCustom, APIStyle: "openai-chat", AuthType: "none", Model: "m", Name: "local"}, nil
 	}, &asked
 }
 
@@ -256,7 +256,7 @@ func TestLoadDefaultPersonas_ShippedFolder(t *testing.T) {
 	slugs := []string{}
 	for _, p := range personas {
 		slugs = append(slugs, p.Slug)
-		if p.ID != "vaultix.persona."+p.Slug || !p.BuiltIn || !p.Enabled || p.Instructions == "" {
+		if p.View().ID != "vaultix.persona."+p.Slug || !p.BuiltIn || !p.Enabled || p.Instructions == "" {
 			t.Fatalf("persona %+v", p)
 		}
 	}

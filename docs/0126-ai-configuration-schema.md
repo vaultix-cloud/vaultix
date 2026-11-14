@@ -148,14 +148,33 @@ Each step is one commit, verified before the next.
    - Both schemas and 77 shared fixtures; Go and Ajv agree on every one.
    - The `spec` package and `CheckConnection` / `CheckPersona`.
    - The default personas are converted to v1 and loaded through the same rules.
-2. **Store and runtime.** A migration that maps stored rows to v1 (`openai-compatible` becomes
-   `custom` with `openai-chat` and `bearer`), plus columns for the new fields. Clients for
-   Hugging Face, Hugging Face endpoints and Custom. The test checks every model and whether tool
-   calls work. Persona model settings, tool allowlist and handoffs take effect, and the guard runs
-   on proposed changes.
-3. **Hugging Face helpers.** One route verifies a token and returns the account and
-   organizations. Another lists dedicated endpoints for an account or organization. Both are
-   instance-admin only and keep nothing.
+2. **Store and runtime. Done 2026-11-14.**
+   - Migration `20261114100000_vx-ai-v1-documents` maps stored rows to v1 with no credential read:
+     - `openai-compatible` becomes `custom` with `openai-chat`, sending a Bearer key if one is stored.
+     - An Anthropic or OpenAI connection with its own address becomes `custom` of the matching style.
+     - Bedrock and Vertex lose the address field.
+     - Persona domains gain a database check on their values.
+   - Routes: `GET/POST /ai/connections` and `PUT/DELETE /ai/connections/{id}`, plus `/test` and
+     `/models`. `PUT /ai/personas/{slug}` replaces the old `PATCH`. Every body is a whole v1
+     document, and refusals carry `details.fields` with each path and its message.
+   - The connection test calls every model, then asks the standard model to call one probe tool, and
+     records whether tool calls work.
+   - Clients: Hugging Face (router, `X-HF-Bill-To`), Hugging Face endpoints (`/v1` appended once), and
+     Custom (OpenAI or Anthropic style, with the key as Bearer, in a named header, or not sent, plus
+     extra headers).
+   - Personas apply their settings:
+     - temperature, top-p, output limit and stop sequences go into the request;
+     - tool use `none` offers no tools, and a tool list narrows the read-only tools of the persona's
+       areas;
+     - memory use `instance` or `none` limits which memories reach the prompt;
+     - the router chooses only among its handoffs.
+   - Deleting a custom persona removes the memories that applied only to it. Pasted keys are trimmed.
+   - Not done: the guard still does not act. The assistant runs read-only tools only, so there is no
+     proposed change for it to review yet.
+3. **Hugging Face helpers. Done 2026-11-14.** `POST /ai/huggingface/account` takes a token, or an
+   existing connection's stored token. It returns the account, its organizations, and whether a
+   fine-grained token may call Inference Providers. `POST /ai/huggingface/endpoints` lists the
+   dedicated endpoints of an account or organization. Both are instance-admin only and keep nothing.
 4. **UI.** The hooks move to `queries.tsx`, `mutations.tsx` and `types.tsx`. The five tabs, the
    guided connection forms and the schema-driven persona form are built.
 5. **Proof.** `scripts/test-assistant-image.mjs` gains an OpenAI-compatible and an

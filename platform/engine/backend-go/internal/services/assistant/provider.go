@@ -1,7 +1,6 @@
-// Package assistant runs the in-app Vaultix assistant: the AI providers an
-// instance administrator manages, the model adapters, and the agent loop that
-// acts only through the instance's own MCP tools with the signed-in person's
-// session (docs/0123).
+// Package assistant runs the in-app Vaultix assistant: the AI connections an instance
+// administrator manages, the model adapters, and the agent loop that acts only through the
+// instance's own MCP tools with the signed-in person's session (docs/0123, docs/0126).
 package assistant
 
 import (
@@ -10,75 +9,130 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/url"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/vaultix-cloud/api/internal/database/pg"
 	"github.com/vaultix-cloud/api/internal/libs/errutil"
+	"github.com/vaultix-cloud/api/internal/services/assistant/spec"
 )
 
-// Kind names a way to reach a model. Anthropic, Bedrock and Vertex speak the
-// Anthropic Messages format; OpenAI and OpenAI-compatible servers (vLLM,
-// Ollama) speak chat completions.
+// Kind names how a model is reached. Anthropic, Bedrock, Vertex and Anthropic-style custom
+// connections speak the Anthropic Messages format; OpenAI, Hugging Face and OpenAI-style custom
+// connections speak chat completions.
 type Kind string
 
 const (
-	KindAnthropic        Kind = "anthropic"
-	KindBedrock          Kind = "bedrock"
-	KindVertex           Kind = "vertex"
-	KindOpenAI           Kind = "openai"
-	KindOpenAICompatible Kind = "openai-compatible"
+	KindAnthropic           Kind = "anthropic"
+	KindOpenAI              Kind = "openai"
+	KindBedrock             Kind = "bedrock"
+	KindVertex              Kind = "vertex"
+	KindHuggingFace         Kind = "huggingface"
+	KindHuggingFaceEndpoint Kind = "huggingface-endpoint"
+	KindCustom              Kind = "custom"
 )
 
-// Kinds lists every supported provider kind, in the order the admin page shows them.
-var Kinds = []Kind{KindAnthropic, KindBedrock, KindVertex, KindOpenAI, KindOpenAICompatible}
+var Kinds = []Kind{KindAnthropic, KindOpenAI, KindBedrock, KindVertex, KindHuggingFace, KindHuggingFaceEndpoint, KindCustom}
 
 const (
 	maxProviders     = 20
-	maxNameLength    = 64
-	maxModelLength   = 128
-	maxBaseURLLength = 512
-	maxKeyLength     = 4096
-	maxAccountLength = 16 * 1024
 	maxTestMessage   = 300
+	defaultTimeout   = 60
+	huggingFaceRoute = "https://router.huggingface.co/v1"
 )
 
-var (
-	modelPattern   = regexp.MustCompile(`^[A-Za-z0-9._:/@-]+$`)
-	awsRegion      = regexp.MustCompile(`^[a-z]{2}(-[a-z]+)+-[0-9]$`)
-	gcpRegion      = regexp.MustCompile(`^(global|[a-z]+-[a-z]+[0-9])$`)
-	gcpProject     = regexp.MustCompile(`^[a-z][a-z0-9-]{4,28}[a-z0-9]$`)
-	awsAccessKeyID = regexp.MustCompile(`^[A-Z0-9]{16,128}$`)
-)
-
-// Provider is the metadata of a configured provider. It never holds the credential.
+// Provider is one stored AI connection. Its credential is never part of it.
 type Provider struct {
-	ID              uuid.UUID  `json:"id"`
-	Kind            Kind       `json:"kind"`
-	Name            string     `json:"name"`
-	Model           string     `json:"model"`
-	FastModel       string     `json:"fastModel"`
-	DeepModel       string     `json:"deepModel"`
-	BaseURL         string     `json:"baseUrl"`
-	Region          string     `json:"region"`
-	CloudProject    string     `json:"cloudProject"`
-	HasCredential   bool       `json:"hasCredential"`
-	Active          bool       `json:"active"`
-	LastTestedAt    *time.Time `json:"lastTestedAt"`
-	LastTestOutcome string     `json:"lastTestOutcome"`
-	LastTestMessage string     `json:"lastTestMessage"`
-	CreatedAt       time.Time  `json:"createdAt"`
-	UpdatedAt       time.Time  `json:"updatedAt"`
+	ID        uuid.UUID
+	Kind      Kind
+	Name      string
+	Model     string
+	FastModel string
+	DeepModel string
+	// BaseURL is the endpoint of a huggingface-endpoint or custom connection. Vendor kinds have
+	// fixed addresses; tests point them at local servers through this field.
+	BaseURL         string
+	APIStyle        string
+	AuthType        string
+	AuthHeaderName  string
+	Headers         []spec.Header
+	Region          string
+	CloudProject    string
+	BillTo          string
+	TimeoutSeconds  int
+	HasCredential   bool
+	Active          bool
+	LastTestedAt    *time.Time
+	LastTestOutcome string
+	LastTestMessage string
+	LastTestTools   *bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
-// Credential is what a provider needs to authenticate. It is decrypted only to
-// call that provider and never returned by the API.
+// Connection is how a stored connection is shown: the v1 document without its credential, plus
+// what the server knows about it.
+type Connection struct {
+	ID             uuid.UUID     `json:"id"`
+	SchemaVersion  string        `json:"schemaVersion"`
+	Name           string        `json:"name"`
+	Kind           Kind          `json:"kind"`
+	Endpoint       *string       `json:"endpoint,omitempty"`
+	APIStyle       *string       `json:"apiStyle,omitempty"`
+	Auth           *spec.Auth    `json:"auth,omitempty"`
+	Headers        []spec.Header `json:"headers,omitempty"`
+	Region         *string       `json:"region,omitempty"`
+	CloudProject   *string       `json:"cloudProject,omitempty"`
+	BillTo         *string       `json:"billTo,omitempty"`
+	Models         spec.Models   `json:"models"`
+	TimeoutSeconds int           `json:"timeoutSeconds"`
+	Active         bool          `json:"active"`
+	HasCredential  bool          `json:"hasCredential"`
+	LastTest       *TestRecord   `json:"lastTest"`
+	CreatedAt      time.Time     `json:"createdAt"`
+	UpdatedAt      time.Time     `json:"updatedAt"`
+}
+
+type TestRecord struct {
+	Outcome   string    `json:"outcome"`
+	Message   string    `json:"message"`
+	TestedAt  time.Time `json:"testedAt"`
+	ToolCalls *bool     `json:"toolCalls"`
+}
+
+func optional(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func (p *Provider) View() Connection {
+	c := Connection{ID: p.ID, SchemaVersion: spec.ConnectionVersion, Name: p.Name, Kind: p.Kind, Region: optional(p.Region),
+		CloudProject: optional(p.CloudProject), BillTo: optional(p.BillTo), TimeoutSeconds: p.TimeoutSeconds, Active: p.Active,
+		HasCredential: p.HasCredential, Models: spec.Models{Standard: p.Model, Fast: optional(p.FastModel), Deep: optional(p.DeepModel)},
+		CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt}
+	if p.Kind == KindHuggingFaceEndpoint || p.Kind == KindCustom {
+		c.Endpoint = optional(p.BaseURL)
+	}
+	if p.Kind == KindCustom {
+		c.APIStyle = optional(p.APIStyle)
+		c.Auth = &spec.Auth{Type: p.AuthType, HeaderName: optional(p.AuthHeaderName)}
+		if len(p.Headers) > 0 {
+			c.Headers = p.Headers
+		}
+	}
+	if p.LastTestedAt != nil {
+		c.LastTest = &TestRecord{Outcome: p.LastTestOutcome, Message: p.LastTestMessage, TestedAt: *p.LastTestedAt, ToolCalls: p.LastTestTools}
+	}
+	return c
+}
+
 type Credential struct {
 	APIKey             string `json:"apiKey,omitempty"`
 	AccessKeyID        string `json:"accessKeyId,omitempty"`
@@ -91,22 +145,31 @@ func (c *Credential) empty() bool {
 	return c.APIKey == "" && c.AccessKeyID == "" && c.SecretAccessKey == "" && c.SessionToken == "" && c.ServiceAccountJSON == ""
 }
 
-// ProviderInput creates or changes a provider. Nil fields stay as they are on
-// update. A non-nil Credential replaces the stored one entirely.
-type ProviderInput struct {
-	Kind         *Kind       `json:"kind"`
-	Name         *string     `json:"name"`
-	Model        *string     `json:"model"`
-	FastModel    *string     `json:"fastModel"`
-	DeepModel    *string     `json:"deepModel"`
-	BaseURL      *string     `json:"baseUrl"`
-	Region       *string     `json:"region"`
-	CloudProject *string     `json:"cloudProject"`
-	Credential   *Credential `json:"credential"`
-	Active       *bool       `json:"active"`
+func credentialFrom(c *spec.Credential) *Credential {
+	if c == nil {
+		return nil
+	}
+	// Keys are pasted; surrounding spaces and line breaks are never part of one.
+	trim := func(p *string) string { return strings.TrimSpace(deref(p)) }
+	return &Credential{APIKey: trim(c.APIKey), AccessKeyID: trim(c.AccessKeyID), SecretAccessKey: trim(c.SecretAccessKey),
+		SessionToken: trim(c.SessionToken), ServiceAccountJSON: trim(c.ServiceAccountJSON)}
 }
 
-// Cipher encrypts provider credentials under the instance root key.
+// keyless is a connection that sends no key at all.
+func (p *Provider) keyless() bool { return p.Kind == KindCustom && p.AuthType == "none" }
+
+// complete says whether a credential is enough for the connection's kind.
+func complete(kind Kind, c *Credential) bool {
+	switch kind {
+	case KindBedrock:
+		return c.AccessKeyID != "" && c.SecretAccessKey != ""
+	case KindVertex:
+		return c.ServiceAccountJSON != ""
+	}
+	return c.APIKey != ""
+}
+
+// Cipher encrypts connection credentials under the instance root key.
 type Cipher interface {
 	Encrypt([]byte) ([]byte, error)
 	Decrypt([]byte) ([]byte, error)
@@ -115,7 +178,7 @@ type Cipher interface {
 // CipherSource returns the root-key cipher once the KMS has started.
 type CipherSource func() (Cipher, error)
 
-// Store keeps providers in vx_ai_providers.
+// Store keeps connections in vx_ai_providers.
 type Store struct {
 	logger *slog.Logger
 	db     pg.DB
@@ -128,21 +191,25 @@ type StoreDeps struct {
 }
 
 func NewStore(_ context.Context, logger *slog.Logger, deps *StoreDeps) *Store {
-	return &Store{logger: logger.With(slog.String("service", "assistant-providers")), db: deps.DB, cipher: deps.Cipher}
+	return &Store{logger: logger.With(slog.String("service", "assistant-connections")), db: deps.DB, cipher: deps.Cipher}
 }
 
-const providerColumns = `id, kind, name, model, "fastModel", "deepModel", "baseUrl", region, "cloudProject", "encryptedCredential" IS NOT NULL,
-	active, "lastTestedAt", "lastTestOutcome", "lastTestMessage", "createdAt", "updatedAt"`
+const providerColumns = `id, kind, name, model, "fastModel", "deepModel", "baseUrl", "apiStyle", "authType", "authHeaderName", headers,
+	region, "cloudProject", "billTo", "timeoutSeconds", "encryptedCredential" IS NOT NULL,
+	active, "lastTestedAt", "lastTestOutcome", "lastTestMessage", "lastTestTools", "createdAt", "updatedAt"`
 
 func scanProvider(row pgx.Row) (*Provider, error) {
 	var p Provider
-	var lastTestedAt *time.Time
 	var outcome, message *string
-	if err := row.Scan(&p.ID, &p.Kind, &p.Name, &p.Model, &p.FastModel, &p.DeepModel, &p.BaseURL, &p.Region, &p.CloudProject, &p.HasCredential,
-		&p.Active, &lastTestedAt, &outcome, &message, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	var headers []byte
+	if err := row.Scan(&p.ID, &p.Kind, &p.Name, &p.Model, &p.FastModel, &p.DeepModel, &p.BaseURL, &p.APIStyle, &p.AuthType, &p.AuthHeaderName,
+		&headers, &p.Region, &p.CloudProject, &p.BillTo, &p.TimeoutSeconds, &p.HasCredential,
+		&p.Active, &p.LastTestedAt, &outcome, &message, &p.LastTestTools, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, err
 	}
-	p.LastTestedAt = lastTestedAt
+	if err := json.Unmarshal(headers, &p.Headers); err != nil {
+		return nil, fmt.Errorf("headers: %w", err)
+	}
 	if outcome != nil {
 		p.LastTestOutcome = *outcome
 	}
@@ -152,23 +219,57 @@ func scanProvider(row pgx.Row) (*Provider, error) {
 	return &p, nil
 }
 
-// List returns every provider, the active one first.
+// fieldErrors turns the v1 rule failures into a 400 whose details name each field.
+func fieldErrors(err error) error {
+	var errs spec.Errors
+	if errors.As(err, &errs) && len(errs) > 0 {
+		message := errs[0].Message
+		if errs[0].Path != "" {
+			message = errs[0].Path + ": " + message
+		}
+		return errutil.BadRequest("%s", message).WithDetails(map[string]any{"fields": errs})
+	}
+	return err
+}
+
+// fromDocument checks a v1 document and turns it into the stored form. Names are trimmed first,
+// so stray spaces are never a reason to refuse.
+func fromDocument(doc *spec.Connection) (*Provider, error) {
+	doc.Name = strings.TrimSpace(doc.Name)
+	if err := CheckConnection(doc); err != nil {
+		return nil, fieldErrors(err)
+	}
+	p := &Provider{Kind: Kind(doc.Kind), Name: doc.Name, Model: doc.Models.Standard, FastModel: deref(doc.Models.Fast), DeepModel: deref(doc.Models.Deep),
+		BaseURL: strings.TrimRight(deref(doc.Endpoint), "/"), APIStyle: deref(doc.APIStyle), Region: deref(doc.Region),
+		CloudProject: deref(doc.CloudProject), BillTo: deref(doc.BillTo), TimeoutSeconds: defaultTimeout, Headers: doc.Headers}
+	if doc.Auth != nil {
+		p.AuthType, p.AuthHeaderName = doc.Auth.Type, deref(doc.Auth.HeaderName)
+	}
+	if doc.TimeoutSeconds != nil {
+		p.TimeoutSeconds = *doc.TimeoutSeconds
+	}
+	if p.Headers == nil {
+		p.Headers = []spec.Header{}
+	}
+	return p, nil
+}
+
 func (s *Store) List(ctx context.Context) ([]Provider, error) {
 	rows, err := s.db.Replica().Query(ctx, `SELECT `+providerColumns+` FROM vx_ai_providers WHERE "orgId" IS NULL ORDER BY active DESC, "createdAt" ASC`)
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not load AI providers.").WithErrf("assistant.List: %w", err)
+		return nil, errutil.DatabaseErr("Could not load AI connections.").WithErrf("assistant.List: %w", err)
 	}
 	defer rows.Close()
 	providers := []Provider{}
 	for rows.Next() {
 		p, err := scanProvider(rows)
 		if err != nil {
-			return nil, errutil.DatabaseErr("Could not load AI providers.").WithErrf("assistant.List scan: %w", err)
+			return nil, errutil.DatabaseErr("Could not load AI connections.").WithErrf("assistant.List scan: %w", err)
 		}
 		providers = append(providers, *p)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, errutil.DatabaseErr("Could not load AI providers.").WithErrf("assistant.List rows: %w", err)
+		return nil, errutil.DatabaseErr("Could not load AI connections.").WithErrf("assistant.List rows: %w", err)
 	}
 	return providers, nil
 }
@@ -176,22 +277,22 @@ func (s *Store) List(ctx context.Context) ([]Provider, error) {
 func (s *Store) Get(ctx context.Context, id uuid.UUID) (*Provider, error) {
 	p, err := scanProvider(s.db.Primary().QueryRow(ctx, `SELECT `+providerColumns+` FROM vx_ai_providers WHERE id = @id AND "orgId" IS NULL`, pgx.NamedArgs{"id": id}))
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, errutil.NotFound("AI provider '%s' was not found.", id)
+		return nil, errutil.NotFound("AI connection '%s' was not found.", id)
 	}
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not load the AI provider.").WithErrf("assistant.Get(id=%s): %w", id, err)
+		return nil, errutil.DatabaseErr("Could not load the AI connection.").WithErrf("assistant.Get(id=%s): %w", id, err)
 	}
 	return p, nil
 }
 
-// Active returns the active provider and its credential, or nil when none is active.
+// Active returns the connection in use and its credential, or nil when none is.
 func (s *Store) Active(ctx context.Context) (*Provider, *Credential, error) {
 	p, err := scanProvider(s.db.Primary().QueryRow(ctx, `SELECT `+providerColumns+` FROM vx_ai_providers WHERE active AND "orgId" IS NULL`))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil, nil
 	}
 	if err != nil {
-		return nil, nil, errutil.DatabaseErr("Could not load the active AI provider.").WithErrf("assistant.Active: %w", err)
+		return nil, nil, errutil.DatabaseErr("Could not load the AI connection in use.").WithErrf("assistant.Active: %w", err)
 	}
 	credential, err := s.credential(ctx, p.ID)
 	if err != nil {
@@ -204,7 +305,7 @@ func (s *Store) credential(ctx context.Context, id uuid.UUID) (*Credential, erro
 	var blob []byte
 	err := s.db.Primary().QueryRow(ctx, `SELECT "encryptedCredential" FROM vx_ai_providers WHERE id = @id AND "orgId" IS NULL`, pgx.NamedArgs{"id": id}).Scan(&blob)
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not load the AI provider.").WithErrf("assistant.credential(id=%s): %w", id, err)
+		return nil, errutil.DatabaseErr("Could not load the AI connection.").WithErrf("assistant.credential(id=%s): %w", id, err)
 	}
 	if len(blob) == 0 {
 		return &Credential{}, nil
@@ -215,16 +316,16 @@ func (s *Store) credential(ctx context.Context, id uuid.UUID) (*Credential, erro
 	}
 	plain, err := c.Decrypt(blob)
 	if err != nil {
-		return nil, errutil.InternalServer("The stored AI provider credential could not be read.").WithErrf("assistant.credential decrypt(id=%s): %w", id, err)
+		return nil, errutil.InternalServer("The stored key could not be read.").WithErrf("assistant.credential decrypt(id=%s): %w", id, err)
 	}
 	var credential Credential
 	if err := json.Unmarshal(plain, &credential); err != nil {
-		return nil, errutil.InternalServer("The stored AI provider credential could not be read.").WithErrf("assistant.credential parse(id=%s): %w", id, err)
+		return nil, errutil.InternalServer("The stored key could not be read.").WithErrf("assistant.credential parse(id=%s): %w", id, err)
 	}
 	return &credential, nil
 }
 
-// ProviderWithCredential loads a provider for a connection test.
+// ProviderWithCredential loads a connection for a test or a model list.
 func (s *Store) ProviderWithCredential(ctx context.Context, id uuid.UUID) (*Provider, *Credential, error) {
 	p, err := s.Get(ctx, id)
 	if err != nil {
@@ -243,7 +344,7 @@ func (s *Store) seal(credential *Credential) ([]byte, error) {
 	}
 	plain, err := json.Marshal(credential)
 	if err != nil {
-		return nil, errutil.InternalServer("Could not store the credential.").WithErrf("assistant.seal: %w", err)
+		return nil, errutil.InternalServer("Could not store the key.").WithErrf("assistant.seal: %w", err)
 	}
 	c, err := s.cipher()
 	if err != nil {
@@ -251,148 +352,151 @@ func (s *Store) seal(credential *Credential) ([]byte, error) {
 	}
 	blob, err := c.Encrypt(plain)
 	if err != nil {
-		return nil, errutil.InternalServer("Could not store the credential.").WithErrf("assistant.seal encrypt: %w", err)
+		return nil, errutil.InternalServer("Could not store the key.").WithErrf("assistant.seal encrypt: %w", err)
 	}
 	return blob, nil
 }
 
-// Create validates and stores a new provider. A provider created active
-// replaces the previously active one.
-func (s *Store) Create(ctx context.Context, input *ProviderInput) (*Provider, error) {
-	if input.Kind == nil || input.Name == nil || input.Model == nil {
-		return nil, errutil.BadRequest("Choose a provider kind and give it a name and a model.")
+func missingKey(kind Kind) error {
+	message := "Enter the key."
+	switch kind {
+	case KindBedrock:
+		message = "Enter the AWS access key ID and secret access key."
+	case KindVertex:
+		message = "Paste the service account JSON key."
 	}
-	p := &Provider{Kind: *input.Kind, Name: *input.Name, Model: *input.Model,
-		FastModel: deref(input.FastModel), DeepModel: deref(input.DeepModel), BaseURL: deref(input.BaseURL), Region: deref(input.Region), CloudProject: deref(input.CloudProject)}
-	credential := input.Credential
-	if credential == nil {
-		credential = &Credential{}
-	}
-	if err := normalize(p, credential, true); err != nil {
+	return errutil.BadRequest("credential: %s", message).WithDetails(map[string]any{"fields": spec.Errors{{Path: "credential", Message: message}}})
+}
+
+// Create stores a new connection. One created active replaces the connection in use.
+func (s *Store) Create(ctx context.Context, doc *spec.Connection) (*Provider, error) {
+	p, err := fromDocument(doc)
+	if err != nil {
 		return nil, err
+	}
+	credential := credentialFrom(doc.Credential)
+	if !p.keyless() && (credential == nil || !complete(p.Kind, credential)) {
+		return nil, missingKey(p.Kind)
 	}
 	blob, err := s.seal(credential)
 	if err != nil {
 		return nil, err
 	}
-	active := input.Active != nil && *input.Active
+	active := doc.Active != nil && *doc.Active
+	headers, _ := json.Marshal(p.Headers)
 
 	tx, err := s.db.Primary().Begin(ctx)
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not save the AI provider.").WithErrf("assistant.Create begin: %w", err)
+		return nil, errutil.DatabaseErr("Could not save the AI connection.").WithErrf("assistant.Create begin: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	var count int
 	if err := tx.QueryRow(ctx, `SELECT count(*) FROM vx_ai_providers WHERE "orgId" IS NULL`).Scan(&count); err != nil {
-		return nil, errutil.DatabaseErr("Could not save the AI provider.").WithErrf("assistant.Create count: %w", err)
+		return nil, errutil.DatabaseErr("Could not save the AI connection.").WithErrf("assistant.Create count: %w", err)
 	}
 	if count >= maxProviders {
-		return nil, errutil.BadRequest("An instance can keep at most %d AI providers. Remove one first.", maxProviders)
+		return nil, errutil.BadRequest("An instance can keep at most %d AI connections. Remove one first.", maxProviders)
 	}
 	if active {
 		if _, err := tx.Exec(ctx, `UPDATE vx_ai_providers SET active = false WHERE active AND "orgId" IS NULL`); err != nil {
-			return nil, errutil.DatabaseErr("Could not save the AI provider.").WithErrf("assistant.Create deactivate: %w", err)
+			return nil, errutil.DatabaseErr("Could not save the AI connection.").WithErrf("assistant.Create deactivate: %w", err)
 		}
 	}
 	created, err := scanProvider(tx.QueryRow(ctx, `INSERT INTO vx_ai_providers
-		(kind, name, model, "fastModel", "deepModel", "baseUrl", region, "cloudProject", "encryptedCredential", active)
-		VALUES (@kind, @name, @model, @fastModel, @deepModel, @baseUrl, @region, @cloudProject, @credential, @active)
+		(kind, name, model, "fastModel", "deepModel", "baseUrl", "apiStyle", "authType", "authHeaderName", headers, region, "cloudProject",
+		 "billTo", "timeoutSeconds", "encryptedCredential", active)
+		VALUES (@kind, @name, @model, @fastModel, @deepModel, @baseUrl, @apiStyle, @authType, @authHeaderName, @headers, @region, @cloudProject,
+		 @billTo, @timeoutSeconds, @credential, @active)
 		RETURNING `+providerColumns, pgx.NamedArgs{
-		"kind": p.Kind, "name": p.Name, "model": p.Model, "fastModel": p.FastModel, "deepModel": p.DeepModel,
-		"baseUrl": p.BaseURL, "region": p.Region, "cloudProject": p.CloudProject, "credential": blob, "active": active,
+		"kind": p.Kind, "name": p.Name, "model": p.Model, "fastModel": p.FastModel, "deepModel": p.DeepModel, "baseUrl": p.BaseURL,
+		"apiStyle": p.APIStyle, "authType": p.AuthType, "authHeaderName": p.AuthHeaderName, "headers": headers, "region": p.Region,
+		"cloudProject": p.CloudProject, "billTo": p.BillTo, "timeoutSeconds": p.TimeoutSeconds, "credential": blob, "active": active,
 	}))
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not save the AI provider.").WithErrf("assistant.Create insert: %w", err)
+		return nil, errutil.DatabaseErr("Could not save the AI connection.").WithErrf("assistant.Create insert: %w", err)
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return nil, errutil.DatabaseErr("Could not save the AI provider.").WithErrf("assistant.Create commit: %w", err)
+		return nil, errutil.DatabaseErr("Could not save the AI connection.").WithErrf("assistant.Create commit: %w", err)
 	}
 	return created, nil
 }
 
-// Update changes the named fields. Changing how the provider is reached clears
-// its last test, since that result no longer describes it.
-func (s *Store) Update(ctx context.Context, id uuid.UUID, input *ProviderInput) (*Provider, error) {
+// Replace stores a whole v1 document over a connection. Without a credential the stored key is
+// kept, unless the connection now sends no key. Changing how it is reached clears its last test.
+func (s *Store) Replace(ctx context.Context, id uuid.UUID, doc *spec.Connection) (*Provider, error) {
 	current, stored, err := s.ProviderWithCredential(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if input.Kind != nil && *input.Kind != current.Kind {
-		return nil, errutil.BadRequest("A provider's kind cannot change. Add a new provider instead.")
-	}
-	next := *current
-	if input.Name != nil {
-		next.Name = *input.Name
-	}
-	if input.Model != nil {
-		next.Model = *input.Model
-	}
-	if input.FastModel != nil {
-		next.FastModel = *input.FastModel
-	}
-	if input.DeepModel != nil {
-		next.DeepModel = *input.DeepModel
-	}
-	if input.BaseURL != nil {
-		next.BaseURL = *input.BaseURL
-	}
-	if input.Region != nil {
-		next.Region = *input.Region
-	}
-	if input.CloudProject != nil {
-		next.CloudProject = *input.CloudProject
-	}
-	credential := stored
-	replaced := input.Credential != nil
-	if replaced {
-		credential = input.Credential
-	}
-	if err := normalize(&next, credential, replaced); err != nil {
+	next, err := fromDocument(doc)
+	if err != nil {
 		return nil, err
 	}
-	reach := next.Model != current.Model || next.FastModel != current.FastModel || next.DeepModel != current.DeepModel || next.BaseURL != current.BaseURL || next.Region != current.Region ||
-		next.CloudProject != current.CloudProject || replaced
-
+	if next.Kind != current.Kind {
+		return nil, errutil.BadRequest("kind: A connection's provider cannot change. Add a new connection instead.").
+			WithDetails(map[string]any{"fields": spec.Errors{{Path: "kind", Message: "Cannot change."}}})
+	}
+	credential := credentialFrom(doc.Credential)
+	replaced := credential != nil || (next.keyless() && !stored.empty())
+	switch {
+	case next.keyless():
+		credential = &Credential{}
+	case credential == nil:
+		credential = stored
+	}
+	if !next.keyless() && !complete(next.Kind, credential) {
+		return nil, missingKey(next.Kind)
+	}
 	var blob []byte
 	if replaced {
 		if blob, err = s.seal(credential); err != nil {
 			return nil, err
 		}
 	}
+	reach := replaced || next.Model != current.Model || next.FastModel != current.FastModel || next.DeepModel != current.DeepModel ||
+		next.BaseURL != current.BaseURL || next.APIStyle != current.APIStyle || next.AuthType != current.AuthType ||
+		next.AuthHeaderName != current.AuthHeaderName || !slices.Equal(next.Headers, current.Headers) || next.Region != current.Region ||
+		next.CloudProject != current.CloudProject || next.BillTo != current.BillTo
+	active := current.Active
+	if doc.Active != nil {
+		active = *doc.Active
+	}
+	headers, _ := json.Marshal(next.Headers)
 
 	tx, err := s.db.Primary().Begin(ctx)
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not update the AI provider.").WithErrf("assistant.Update begin: %w", err)
+		return nil, errutil.DatabaseErr("Could not update the AI connection.").WithErrf("assistant.Replace begin: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	if input.Active != nil && *input.Active {
+	if active && !current.Active {
 		if _, err := tx.Exec(ctx, `UPDATE vx_ai_providers SET active = false WHERE active AND "orgId" IS NULL AND id <> @id`, pgx.NamedArgs{"id": id}); err != nil {
-			return nil, errutil.DatabaseErr("Could not update the AI provider.").WithErrf("assistant.Update deactivate: %w", err)
+			return nil, errutil.DatabaseErr("Could not update the AI connection.").WithErrf("assistant.Replace deactivate: %w", err)
 		}
 	}
-	active := current.Active
-	if input.Active != nil {
-		active = *input.Active
-	}
 	updated, err := scanProvider(tx.QueryRow(ctx, `UPDATE vx_ai_providers SET
-		name = @name, model = @model, "fastModel" = @fastModel, "deepModel" = @deepModel, "baseUrl" = @baseUrl, region = @region, "cloudProject" = @cloudProject,
+		name = @name, model = @model, "fastModel" = @fastModel, "deepModel" = @deepModel, "baseUrl" = @baseUrl, "apiStyle" = @apiStyle,
+		"authType" = @authType, "authHeaderName" = @authHeaderName, headers = @headers, region = @region, "cloudProject" = @cloudProject,
+		"billTo" = @billTo, "timeoutSeconds" = @timeoutSeconds,
 		"encryptedCredential" = CASE WHEN @replaced THEN @credential ELSE "encryptedCredential" END,
 		active = @active,
 		"lastTestedAt" = CASE WHEN @reach THEN NULL ELSE "lastTestedAt" END,
 		"lastTestOutcome" = CASE WHEN @reach THEN NULL ELSE "lastTestOutcome" END,
-		"lastTestMessage" = CASE WHEN @reach THEN NULL ELSE "lastTestMessage" END
+		"lastTestMessage" = CASE WHEN @reach THEN NULL ELSE "lastTestMessage" END,
+		"lastTestTools" = CASE WHEN @reach THEN NULL ELSE "lastTestTools" END
 		WHERE id = @id AND "orgId" IS NULL RETURNING `+providerColumns, pgx.NamedArgs{
-		"id": id, "name": next.Name, "model": next.Model, "fastModel": next.FastModel, "deepModel": next.DeepModel, "baseUrl": next.BaseURL, "region": next.Region,
-		"cloudProject": next.CloudProject, "replaced": replaced, "credential": blob, "active": active, "reach": reach,
+		"id": id, "name": next.Name, "model": next.Model, "fastModel": next.FastModel, "deepModel": next.DeepModel, "baseUrl": next.BaseURL,
+		"apiStyle": next.APIStyle, "authType": next.AuthType, "authHeaderName": next.AuthHeaderName, "headers": headers, "region": next.Region,
+		"cloudProject": next.CloudProject, "billTo": next.BillTo, "timeoutSeconds": next.TimeoutSeconds, "replaced": replaced, "credential": blob,
+		"active": active, "reach": reach,
 	}))
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, errutil.NotFound("AI provider '%s' was not found.", id)
+		return nil, errutil.NotFound("AI connection '%s' was not found.", id)
 	}
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not update the AI provider.").WithErrf("assistant.Update(id=%s): %w", id, err)
+		return nil, errutil.DatabaseErr("Could not update the AI connection.").WithErrf("assistant.Replace(id=%s): %w", id, err)
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return nil, errutil.DatabaseErr("Could not update the AI provider.").WithErrf("assistant.Update commit: %w", err)
+		return nil, errutil.DatabaseErr("Could not update the AI connection.").WithErrf("assistant.Replace commit: %w", err)
 	}
 	return updated, nil
 }
@@ -400,28 +504,28 @@ func (s *Store) Update(ctx context.Context, id uuid.UUID, input *ProviderInput) 
 func (s *Store) Delete(ctx context.Context, id uuid.UUID) (*Provider, error) {
 	deleted, err := scanProvider(s.db.Primary().QueryRow(ctx, `DELETE FROM vx_ai_providers WHERE id = @id AND "orgId" IS NULL RETURNING `+providerColumns, pgx.NamedArgs{"id": id}))
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, errutil.NotFound("AI provider '%s' was not found.", id)
+		return nil, errutil.NotFound("AI connection '%s' was not found.", id)
 	}
 	if err != nil {
-		return nil, errutil.DatabaseErr("Could not remove the AI provider.").WithErrf("assistant.Delete(id=%s): %w", id, err)
+		return nil, errutil.DatabaseErr("Could not remove the AI connection.").WithErrf("assistant.Delete(id=%s): %w", id, err)
 	}
 	return deleted, nil
 }
 
-// RecordTest stores the outcome of a real connection test.
-func (s *Store) RecordTest(ctx context.Context, id uuid.UUID, passed bool, message string, at time.Time) (*Provider, error) {
+// RecordTest stores the outcome of a real connection test, cut at a character boundary.
+func (s *Store) RecordTest(ctx context.Context, id uuid.UUID, passed bool, toolCalls *bool, message string, at time.Time) (*Provider, error) {
 	outcome := "failed"
 	if passed {
 		outcome = "passed"
 	}
-	if len(message) > maxTestMessage {
-		message = message[:maxTestMessage]
+	if utf8.RuneCountInString(message) > maxTestMessage {
+		message = string([]rune(message)[:maxTestMessage])
 	}
 	p, err := scanProvider(s.db.Primary().QueryRow(ctx, `UPDATE vx_ai_providers
-		SET "lastTestedAt" = @at, "lastTestOutcome" = @outcome, "lastTestMessage" = @message
-		WHERE id = @id AND "orgId" IS NULL RETURNING `+providerColumns, pgx.NamedArgs{"id": id, "at": at, "outcome": outcome, "message": message}))
+		SET "lastTestedAt" = @at, "lastTestOutcome" = @outcome, "lastTestMessage" = @message, "lastTestTools" = @tools
+		WHERE id = @id AND "orgId" IS NULL RETURNING `+providerColumns, pgx.NamedArgs{"id": id, "at": at, "outcome": outcome, "message": message, "tools": toolCalls}))
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, errutil.NotFound("AI provider '%s' was not found.", id)
+		return nil, errutil.NotFound("AI connection '%s' was not found.", id)
 	}
 	if err != nil {
 		return nil, errutil.DatabaseErr("Could not record the test.").WithErrf("assistant.RecordTest(id=%s): %w", id, err)
@@ -436,100 +540,8 @@ func deref(s *string) string {
 	return *s
 }
 
-// normalize trims and validates a provider and, when it is being set, its credential.
-func normalize(p *Provider, c *Credential, credentialChanged bool) error {
-	p.Name = strings.TrimSpace(p.Name)
-	p.Model = strings.TrimSpace(p.Model)
-	p.FastModel = strings.TrimSpace(p.FastModel)
-	p.DeepModel = strings.TrimSpace(p.DeepModel)
-	p.BaseURL = strings.TrimRight(strings.TrimSpace(p.BaseURL), "/")
-	p.Region = strings.TrimSpace(p.Region)
-	p.CloudProject = strings.TrimSpace(p.CloudProject)
-	c.APIKey = strings.TrimSpace(c.APIKey)
-	c.AccessKeyID = strings.TrimSpace(c.AccessKeyID)
-	c.SecretAccessKey = strings.TrimSpace(c.SecretAccessKey)
-	c.SessionToken = strings.TrimSpace(c.SessionToken)
-	c.ServiceAccountJSON = strings.TrimSpace(c.ServiceAccountJSON)
-
-	known := false
-	for _, k := range Kinds {
-		known = known || k == p.Kind
-	}
-	if !known {
-		return errutil.BadRequest("Unknown provider kind '%s'.", p.Kind)
-	}
-	if p.Name == "" || len(p.Name) > maxNameLength {
-		return errutil.BadRequest("Give the provider a name of 1 to %d characters.", maxNameLength)
-	}
-	if !validModel(p.Model) {
-		return errutil.BadRequest("Model '%s' is not a valid model ID.", p.Model)
-	}
-	for _, optional := range []string{p.FastModel, p.DeepModel} {
-		if optional != "" && !validModel(optional) {
-			return errutil.BadRequest("Model '%s' is not a valid model ID.", optional)
-		}
-	}
-	if p.BaseURL != "" {
-		if err := checkBaseURL(p.BaseURL); err != nil {
-			return err
-		}
-	}
-	if len(c.APIKey) > maxKeyLength || len(c.AccessKeyID) > maxKeyLength || len(c.SecretAccessKey) > maxKeyLength ||
-		len(c.SessionToken) > maxKeyLength || len(c.ServiceAccountJSON) > maxAccountLength {
-		return errutil.BadRequest("The credential is too long.")
-	}
-
-	switch p.Kind {
-	case KindAnthropic, KindOpenAI:
-		p.Region, p.CloudProject = "", ""
-		if credentialChanged && c.APIKey == "" {
-			return errutil.BadRequest("Enter the API key for %s.", p.Kind)
-		}
-		*c = Credential{APIKey: c.APIKey}
-	case KindOpenAICompatible:
-		p.Region, p.CloudProject = "", ""
-		if p.BaseURL == "" {
-			return errutil.BadRequest("Enter the server's base URL, for example http://gpu-host:8000/v1.")
-		}
-		*c = Credential{APIKey: c.APIKey}
-	case KindBedrock:
-		p.CloudProject = ""
-		if !awsRegion.MatchString(p.Region) {
-			return errutil.BadRequest("Region '%s' is not an AWS region, such as us-east-1.", p.Region)
-		}
-		if credentialChanged && (!awsAccessKeyID.MatchString(c.AccessKeyID) || c.SecretAccessKey == "") {
-			return errutil.BadRequest("Enter the AWS access key ID and secret access key.")
-		}
-		*c = Credential{AccessKeyID: c.AccessKeyID, SecretAccessKey: c.SecretAccessKey, SessionToken: c.SessionToken}
-	case KindVertex:
-		if !gcpRegion.MatchString(p.Region) {
-			return errutil.BadRequest("Region '%s' is not a Google Cloud region, such as us-east5 or global.", p.Region)
-		}
-		if !gcpProject.MatchString(p.CloudProject) {
-			return errutil.BadRequest("Project '%s' is not a Google Cloud project ID.", p.CloudProject)
-		}
-		if credentialChanged {
-			var account struct {
-				Type        string `json:"type"`
-				ClientEmail string `json:"client_email"`
-				PrivateKey  string `json:"private_key"`
-			}
-			if json.Unmarshal([]byte(c.ServiceAccountJSON), &account) != nil || account.Type != "service_account" ||
-				account.ClientEmail == "" || account.PrivateKey == "" {
-				return errutil.BadRequest("Paste a Google Cloud service account key file (JSON) with access to Vertex AI.")
-			}
-		}
-		*c = Credential{ServiceAccountJSON: c.ServiceAccountJSON}
-	}
-	return nil
-}
-
-func validModel(id string) bool {
-	return id != "" && len(id) <= maxModelLength && modelPattern.MatchString(id)
-}
-
-// ModelFor is the model a persona of this tier runs on: the tier's own model
-// when the administrator set one, otherwise the provider's standard model.
+// ModelFor is the model a persona of this tier runs on: the tier's own model when the
+// administrator set one, otherwise the standard model.
 func (p *Provider) ModelFor(tier string) string {
 	switch {
 	case tier == "fast" && p.FastModel != "":
@@ -540,7 +552,7 @@ func (p *Provider) ModelFor(tier string) string {
 	return p.Model
 }
 
-// Models lists the distinct models the provider is configured to run.
+// Models lists the distinct models the connection is set to run.
 func (p *Provider) Models() []string {
 	out := []string{p.Model}
 	for _, m := range []string{p.FastModel, p.DeepModel} {
@@ -551,18 +563,7 @@ func (p *Provider) Models() []string {
 	return out
 }
 
-func checkBaseURL(raw string) error {
-	if len(raw) > maxBaseURLLength {
-		return errutil.BadRequest("The base URL is too long.")
-	}
-	u, err := url.Parse(raw)
-	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
-		return errutil.BadRequest("The base URL must be an http or https address without a username, query or fragment.")
-	}
-	return nil
-}
-
-// describe names a provider in messages without exposing anything secret.
+// describe names a connection in messages without exposing anything secret.
 func describe(p *Provider) string {
 	return fmt.Sprintf("%s (%s, %s)", p.Name, p.Kind, p.Model)
 }

@@ -48,7 +48,7 @@ func TestListModels_OpenAIDropsModelsThatCannotChat(t *testing.T) {
 	if len(models) != 2 || models[0].ID != "gpt-a" || models[1].ID != "gpt-z" {
 		t.Fatalf("models %+v", models)
 	}
-	compatible, err := ListModels(context.Background(), &Provider{Kind: KindOpenAICompatible, BaseURL: server.URL + "/v1"}, &Credential{APIKey: canaryKey}, nil)
+	compatible, err := ListModels(context.Background(), &Provider{Kind: KindCustom, APIStyle: "openai-chat", AuthType: "bearer", BaseURL: server.URL + "/v1"}, &Credential{APIKey: canaryKey}, nil)
 	if err != nil || len(compatible) != 4 {
 		t.Fatalf("a compatible server's list is kept whole: %+v %v", compatible, err)
 	}

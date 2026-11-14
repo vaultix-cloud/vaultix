@@ -1,9 +1,11 @@
-// The in-app assistant on one packaged image (docs/0123, docs/0124): an administrator adds and
-// tests a provider with per-tier models, lists the provider's models, personas route a question to
-// the secrets specialist on the right model, the specialist runs the person's own reference tool,
-// memories reach the prompt and suggestions save nothing, and no secret value ever reaches the model. The model is a
-// stand-in OpenAI-compatible server on the private network; a real provider needs the owner's
-// key and is out of scope here. Values stay in process memory and never print.
+// The in-app assistant on one packaged image (docs/0123, docs/0124, docs/0126): connections and
+// personas are v1 documents; an administrator adds custom (OpenAI- and Anthropic-style), keyless and
+// Hugging Face connections and tests them, lists models, and personas route a question to the
+// secrets specialist on the right model and settings; the specialist runs the person's own
+// reference tool, memories reach the prompt and suggestions save nothing, and no secret value ever
+// reaches the model. The models are stand-in servers: one on loopback inside the application
+// container for keyed connections, one on the private network without a key. A real provider or
+// Hugging Face needs the owner's key and is out of scope. Values stay in process memory.
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -20,8 +22,8 @@ mkdirSync(resolve(root, ".cache"), { recursive: true });
 const evidence = mkdtempSync(resolve(root, ".cache/assistant-image-"));
 const run = `vaultix-assistant-${randomBytes(8).toString("hex")}`;
 const report = { passed: false, artifact, checks: [],
-  scope: "One packaged instance with a stand-in OpenAI-compatible model on a private network",
-  exclusions: ["a real model provider (Anthropic, Bedrock, Vertex, OpenAI)", "browser UI", "organization-scoped providers",
+  scope: "One packaged instance with stand-in OpenAI- and Anthropic-compatible models",
+  exclusions: ["a real model provider (Anthropic, Bedrock, Vertex, OpenAI, Hugging Face)", "browser UI", "organization-scoped connections",
     "a second person's view of another's personal memories (enforced in the store's query, not exercised here)"] };
 const check = name => { report.checks.push(name); console.log(`Vaultix assistant: ${name}`); };
 const password = `Vx9!${[...randomBytes(24)].map(byte => byte.toString(16).padStart(2, "0")).join("-")}`;
@@ -36,13 +38,18 @@ const modelScript = `const http=require("http");const seen=[];
 http.createServer((q,s)=>{let b="";q.on("data",c=>b+=c).on("end",()=>{
  const json=o=>{s.setHeader("content-type","application/json");s.end(JSON.stringify(o));};
  if(q.url==="/record")return json(seen);
- seen.push({auth:q.headers.authorization||"",url:q.url,body:b});
+ seen.push({auth:q.headers.authorization||"",apiKey:q.headers["x-api-key"]||"",team:q.headers["x-team"]||"",url:q.url,body:b});
  if(q.url==="/v1/models")return json({data:[{id:"stand-in-1"},{id:"stand-in-fast"},{id:"stand-in-pinned"}]});
+ if(q.url==="/v1/messages"){const r=JSON.parse(b);
+  if((r.tools||[]).some(t=>t.name==="vaultix_probe"))return json({content:[{type:"tool_use",id:"p1",name:"vaultix_probe",input:{}}],stop_reason:"tool_use"});
+  return json({content:[{type:"text",text:"OK"}],stop_reason:"end_turn"});}
  if(q.url!=="/v1/chat/completions"){s.statusCode=404;return json({error:{message:"no such route"}});}
  const r=JSON.parse(b);const msgs=r.messages||[];const sys=(msgs[0]&&msgs[0].content)||"";
  const reply=m=>json({choices:[{message:m}]});
  if(sys.startsWith("Choose who should answer"))return reply({content:"secrets"});
- if(sys.startsWith("You are a connection test"))return reply({content:"OK"});
+ if(sys.startsWith("You are a connection test")){
+  if((r.tools||[]).some(t=>t.function.name==="vaultix_probe"))return reply({content:null,tool_calls:[{id:"p1",type:"function",function:{name:"vaultix_probe",arguments:"{}"}}]});
+  return reply({content:"OK"});}
  const tool=msgs.filter(m=>m.role==="tool").pop();
  if(tool)return reply({content:"Here is what I found: "+tool.content});
  const user=msgs.filter(m=>m.role==="user").pop().content;
@@ -120,56 +127,107 @@ try {
   assert.ok(schemas.connection.properties.kind.enum.includes("huggingface") && schemas.connection.properties.kind.enum.includes("custom"));
   check("the v1 connection and persona schemas the UI builds its forms from are served to a signed-in person");
 
+  phase = "loopback stand-in";
+  // Keys go only over https or loopback (docs/0126), so the keyed connections reach a stand-in inside
+  // the application container; the separate stand-in on the private network takes no key.
+  docker(["exec", "-d", app, "node", "-e", modelScript]);
+  await waitFor(() => docker(["exec", app, "node", "-e", `fetch("http://127.0.0.1:9000/record").then(r=>process.exit(r.ok?0:1),()=>process.exit(1))`],
+    { allowFailure: true }).status === 0, "loopback stand-in readiness");
+  const local = "http://127.0.0.1:9000";
+
   phase = "personas";
+  const document = view => {
+    const { id, builtIn, customized, updatedAt, ...doc } = view;
+    return doc;
+  };
   const personas = (await api("/api/vx/v1/ai/personas", { token })).personas;
   assert.deepEqual(personas.map(p => `${p.slug}:${p.role}`),
     ["clyffy:router", "access:specialist", "operate:specialist", "secrets:specialist", "security:guard"]);
-  assert.ok(personas.every(p => p.builtIn && !p.customized && p.id === `vaultix.persona.${p.slug}`));
-  const changed = (await api("/api/vx/v1/ai/personas/secrets", { method: "PATCH", token,
-    body: { instructions: "Answer as the secrets specialist. Name the variables you find." } })).persona;
+  assert.ok(personas.every(p => p.builtIn && !p.customized && p.id === `vaultix.persona.${p.slug}` && p.schemaVersion === "vaultix.ai-persona.v1"));
+  const secrets = personas.find(p => p.slug === "secrets");
+  const changed = (await api("/api/vx/v1/ai/personas/secrets", { method: "PUT", token,
+    body: { ...document(secrets), instructions: "Answer as the secrets specialist. Name the variables you find." } })).persona;
   assert.equal(changed.customized, true);
   assert.equal((await api("/api/vx/v1/ai/personas/secrets", { method: "DELETE", token, status: 400 })).message.includes("default persona"), true);
-  assert.equal((await api("/api/vx/v1/ai/personas/clyffy", { method: "PATCH", token, body: { enabled: false }, status: 400 })).statusCode, 400);
-  const custom = (await api("/api/vx/v1/ai/personas", { method: "POST", token, status: 201,
-    body: { slug: "billing", name: "Billing helper", domains: ["workspace"], instructions: "Explain plans and usage." } })).persona;
+  const clyffy = personas.find(p => p.slug === "clyffy");
+  assert.equal((await api("/api/vx/v1/ai/personas/clyffy", { method: "PUT", token, body: { ...document(clyffy), enabled: false }, status: 400 })).statusCode, 400);
+  const invalid = await api("/api/vx/v1/ai/personas", { method: "POST", token, status: 400, body: { schemaVersion: "vaultix.ai-persona.v1",
+    slug: "Billing", name: "Billing", description: "Plans.", role: "specialist", domains: ["workspace"], instructions: "x", model: { tier: "standard" } } });
+  assert.ok(invalid.details?.fields?.some(f => f.path === "slug"), "a refused persona names the field");
+  const custom = (await api("/api/vx/v1/ai/personas", { method: "POST", token, status: 201, body: { schemaVersion: "vaultix.ai-persona.v1",
+    slug: "billing", name: "Billing helper", description: "Plans and usage.", role: "specialist", domains: ["workspace"],
+    instructions: "Explain plans and usage.", model: { tier: "fast" }, modelSettings: { temperature: 0.3 }, tools: [], memory: { use: "instance" } } })).persona;
   assert.equal(custom.role, "specialist");
+  assert.equal(custom.modelSettings.temperature, 0.3);
+  assert.deepEqual(custom.tools, []);
   await api("/api/vx/v1/ai/personas/billing", { method: "DELETE", token });
   assert.equal((await api("/api/vx/v1/ai/personas/secrets/reset", { method: "POST", token })).persona.customized, false);
-  check("default personas load from platform/engine/ai/personas; administrators change, reset, add and remove them; defaults and Clyffy are protected");
+  check("personas are v1 documents: administrators replace, reset, add and remove them, refusals name the field, and defaults and Clyffy are protected");
 
-  phase = "providers";
-  const created = (await api("/api/vx/v1/ai/providers", { method: "POST", token, status: 201, body: {
-    kind: "openai-compatible", name: "Stand-in model", model: "stand-in-1", fastModel: "stand-in-fast",
-    baseUrl: `http://${modelName}:9000/v1`, credential: { apiKey: providerKey }, active: true } })).provider;
+  phase = "connections";
+  const connection = body => api("/api/vx/v1/ai/connections", { method: "POST", token, status: 201,
+    body: { schemaVersion: "vaultix.ai-connection.v1", ...body } }).then(r => r.connection);
+  const created = await connection({ kind: "custom", name: "Stand-in model", endpoint: `${local}/v1`, apiStyle: "openai-chat",
+    auth: { type: "bearer" }, headers: [{ name: "x-team", value: "platform" }], models: { standard: "stand-in-1", fast: "stand-in-fast" },
+    credential: { apiKey: providerKey }, active: true });
   assert.equal(created.hasCredential, true);
-  assert.equal(created.fastModel, "stand-in-fast");
-  assert.equal(created.deepModel, "");
+  assert.equal(created.models.fast, "stand-in-fast");
+  assert.equal(created.models.deep, undefined);
   assert.equal(created.active, true);
-  const unreachable = (await api("/api/vx/v1/ai/providers", { method: "POST", token, status: 201, body: {
-    kind: "openai-compatible", name: "Unreachable", model: "nothing", baseUrl: `http://${run}-absent:9000/v1` } })).provider;
-  const passed = await api(`/api/vx/v1/ai/providers/${created.id}/test`, { method: "POST", token });
+  const plainHttp = await api("/api/vx/v1/ai/connections", { method: "POST", token, status: 400, body: { schemaVersion: "vaultix.ai-connection.v1",
+    kind: "custom", name: "Leaky", endpoint: `http://${modelName}:9000/v1`, apiStyle: "openai-chat", auth: { type: "bearer" },
+    models: { standard: "m" }, credential: { apiKey: providerKey } } });
+  assert.ok(plainHttp.details?.fields?.some(f => f.path === "endpoint"), "a key over plain http to another host must be refused at the endpoint field");
+  const keyless = await connection({ kind: "custom", name: "Private network", endpoint: `http://${modelName}:9000/v1`, apiStyle: "openai-chat",
+    auth: { type: "none" }, models: { standard: "stand-in-1" } });
+  const anthropicStyle = await connection({ kind: "custom", name: "Anthropic-style gateway", endpoint: local, apiStyle: "anthropic-messages",
+    auth: { type: "header", headerName: "x-api-key" }, models: { standard: "stand-in-1" }, credential: { apiKey: providerKey } });
+  const unreachable = await connection({ kind: "custom", name: "Unreachable", endpoint: `http://${run}-absent:9000/v1`, apiStyle: "openai-chat",
+    auth: { type: "none" }, models: { standard: "nothing" } });
+  const huggingFace = await connection({ kind: "huggingface", name: "Hugging Face", billTo: "my-org",
+    models: { standard: "openai/gpt-oss-120b:fastest" }, credential: { apiKey: `hf_${randomBytes(12).toString("hex")}` } });
+  assert.equal(huggingFace.billTo, "my-org");
+  const passed = await api(`/api/vx/v1/ai/connections/${created.id}/test`, { method: "POST", token });
   assert.equal(passed.test.outcome, "passed");
   assert.equal(passed.test.message, "All 2 models answered.");
-  assert.equal(passed.provider.lastTestOutcome, "passed");
-  const failed = await api(`/api/vx/v1/ai/providers/${unreachable.id}/test`, { method: "POST", token });
+  assert.equal(passed.test.toolCalls, true);
+  assert.equal(passed.connection.lastTest.outcome, "passed");
+  assert.equal((await api(`/api/vx/v1/ai/connections/${keyless.id}/test`, { method: "POST", token })).test.outcome, "passed");
+  const anthropicTest = await api(`/api/vx/v1/ai/connections/${anthropicStyle.id}/test`, { method: "POST", token });
+  assert.equal(anthropicTest.test.outcome, "passed");
+  assert.equal(anthropicTest.test.toolCalls, true);
+  const failed = await api(`/api/vx/v1/ai/connections/${unreachable.id}/test`, { method: "POST", token });
   assert.equal(failed.test.outcome, "failed");
   assert.match(failed.test.message, /could not be reached/);
-  const listing = raw(app, "/api/vx/v1/ai/providers", { token });
+  assert.equal((await api(`/api/vx/v1/ai/connections/${huggingFace.id}/test`, { method: "POST", token })).test.outcome, "failed",
+    "this proof's network has no internet, so a Hugging Face test records a failure, not a pass");
+  const renamed = (await api(`/api/vx/v1/ai/connections/${created.id}`, { method: "PUT", token,
+    body: { schemaVersion: "vaultix.ai-connection.v1", kind: "custom", name: "Stand-in model (renamed)", endpoint: `${local}/v1`,
+      apiStyle: "openai-chat", auth: { type: "bearer" }, headers: [{ name: "x-team", value: "platform" }],
+      models: { standard: "stand-in-1", fast: "stand-in-fast" } } })).connection;
+  assert.equal(renamed.hasCredential, true, "replacing a connection without a key keeps the stored one");
+  assert.equal(renamed.lastTest?.outcome, "passed", "a rename does not change how the connection is reached, so its test stands");
+  const sent = modelRecord(app).filter(entry => entry.url === "/v1/chat/completions" || entry.url === "/v1/messages");
+  assert.ok(sent.some(entry => entry.team === "platform"), "the extra header was not sent");
+  assert.ok(sent.some(entry => entry.url === "/v1/messages" && entry.apiKey === providerKey && entry.auth === ""),
+    "the Anthropic-style connection did not send its key in the named header only");
+  const listing = raw(app, "/api/vx/v1/ai/connections", { token });
   assert.equal(listing.status, 200);
-  assert.ok(!listing.body.includes(providerKey), "the provider key was returned by the API");
+  assert.ok(!listing.body.includes(providerKey), "the key was returned by the API");
   assert.equal(sql(db, `SELECT count(*) FROM vx_ai_providers WHERE position(convert_to('${providerKey}', 'UTF8') in "encryptedCredential") > 0`), "0",
-    "the provider key is stored in the clear");
+    "the key is stored in the clear");
   assert.equal(sql(db, `SELECT count(*) FROM vx_ai_providers WHERE active`), "1");
-  check("an administrator adds providers; the connection test records pass and the provider's real failure; the key is encrypted and never returned");
+  check("connections are v1 documents: custom OpenAI-style and Anthropic-style, keyless, and Hugging Face are added; tests record passes, " +
+    "tool calls and real failures; a key over plain http is refused; keys are encrypted and never returned");
 
   phase = "model lists";
-  const listed = await api(`/api/vx/v1/ai/providers/${created.id}/models`, { token });
+  const listed = await api(`/api/vx/v1/ai/connections/${created.id}/models`, { token });
   assert.equal(listed.listed, true);
   assert.deepEqual(listed.models.map(m => m.id), ["stand-in-1", "stand-in-fast", "stand-in-pinned"]);
-  const unlisted = await api(`/api/vx/v1/ai/providers/${unreachable.id}/models`, { token });
+  const unlisted = await api(`/api/vx/v1/ai/connections/${unreachable.id}/models`, { token });
   assert.equal(unlisted.listed, false);
   assert.match(unlisted.message, /could not be reached/);
-  check("the provider's own model list loads with the saved key, and a provider that cannot list says why");
+  check("the connection's own model list loads with the saved key, and a connection that cannot list says why");
 
   phase = "chat routed by page";
   const ask = (body, status = 200) => api("/api/vx/v1/ai/messages", { method: "POST", token, body, status });
@@ -190,18 +248,23 @@ try {
   check("without a page hint Clyffy routes to the specialist");
 
   phase = "tier models";
-  const routed = modelRecord(model).filter(entry => entry.url === "/v1/chat/completions").map(entry => JSON.parse(entry.body));
+  const routed = modelRecord(app).filter(entry => entry.url === "/v1/chat/completions").map(entry => JSON.parse(entry.body));
   const routerCalls = routed.filter(body => body.messages[0].content.startsWith("Choose who should answer"));
   const answerCalls = routed.filter(body => body.messages[0].content.startsWith("Standing rules"));
   assert.ok(routerCalls.length >= 1 && routerCalls.every(body => body.model === "stand-in-fast"), "Clyffy (fast) did not route on the fast model");
   assert.ok(answerCalls.length >= 1 && answerCalls.every(body => body.model === "stand-in-1"), "the secrets specialist (standard) did not run on the standard model");
   assert.equal(byPage.provider.model, "stand-in-1");
-  await api("/api/vx/v1/ai/personas/secrets", { method: "PATCH", token, body: { model: "stand-in-pinned" } });
+  const current = (await api("/api/vx/v1/ai/personas", { token })).personas.find(p => p.slug === "secrets");
+  await api("/api/vx/v1/ai/personas/secrets", { method: "PUT", token,
+    body: { ...document(current), model: { tier: "standard", id: "stand-in-pinned" }, modelSettings: { temperature: 0.1, maxOutputTokens: 321 } } });
   const pinned = await ask({ messages: [{ role: "user", content: "@secrets hello" }] });
   assert.equal(pinned.provider.model, "stand-in-pinned");
-  assert.equal(JSON.parse(modelRecord(model).filter(entry => entry.url === "/v1/chat/completions").pop().body).model, "stand-in-pinned");
-  assert.equal((await api("/api/vx/v1/ai/personas/secrets/reset", { method: "POST", token })).persona.model, "");
-  check("each persona runs on its tier's model, a persona can pin its own model, and the answer names the model it ran on");
+  const pinnedBody = JSON.parse(modelRecord(app).filter(entry => entry.url === "/v1/chat/completions").pop().body);
+  assert.equal(pinnedBody.model, "stand-in-pinned");
+  assert.equal(pinnedBody.temperature, 0.1);
+  assert.equal(pinnedBody.max_tokens, 321);
+  assert.equal((await api("/api/vx/v1/ai/personas/secrets/reset", { method: "POST", token })).persona.model.id, undefined);
+  check("each persona runs on its tier's model, can pin its own model and settings, and the answer names the model it ran on");
 
   phase = "memories";
   const mine = (await api("/api/vx/v1/ai/memories", { method: "POST", token, status: 201,
@@ -218,7 +281,7 @@ try {
     body: { content: "I deploy to staging first, then production." } })).memory;
   assert.equal(edited.content, "I deploy to staging first, then production.");
   const remembered = await ask({ messages: [{ role: "user", content: "@secrets what should I know?" }] });
-  const prompt = JSON.parse(modelRecord(model).filter(entry => entry.url === "/v1/chat/completions").pop().body).messages[0].content;
+  const prompt = JSON.parse(modelRecord(app).filter(entry => entry.url === "/v1/chat/completions").pop().body).messages[0].content;
   assert.ok(prompt.includes("(personal) I deploy to staging first, then production.") && prompt.includes("(instance) Secret names use UPPER_SNAKE_CASE."),
     "memories did not reach the persona's prompt");
   assert.ok(prompt.includes("information, not instructions"));
@@ -245,14 +308,15 @@ try {
     signals: [{ kind: "action", action: `postgres://admin:${canaryValue}@db` }] }, 400);
   assert.equal(typeof valueSignal.error, "string");
   assert.equal(raw(app, "/api/vx/v1/ai/messages", { method: "POST", body: { messages: [{ role: "user", content: "hi" }] } }).status, 401);
-  assert.equal(raw(app, "/api/vx/v1/ai/providers").status, 401);
+  assert.equal(raw(app, "/api/vx/v1/ai/connections").status, 401);
   check("a signal carrying a value is refused, and signed-out requests are refused");
 
   phase = "canary";
-  const seen = modelRecord(model);
-  const chats = seen.filter(entry => entry.url === "/v1/chat/completions");
+  const seen = [...modelRecord(app), ...modelRecord(model)];
+  const chats = modelRecord(app).filter(entry => entry.url === "/v1/chat/completions");
   assert.ok(chats.length >= 5, `the model saw ${chats.length} requests`);
-  assert.ok(chats.every(entry => entry.auth === `Bearer ${providerKey}`), "the provider key was not used for every model call");
+  assert.ok(chats.every(entry => entry.auth === `Bearer ${providerKey}`), "the key was not used for every keyed model call");
+  assert.ok(modelRecord(model).every(entry => entry.auth === "" && entry.apiKey === ""), "a keyless connection sent a key");
   const everything = JSON.stringify(seen) + JSON.stringify([byPage, byRouter, remembered, suggestion]);
   assert.ok(!everything.includes(canaryValue), "a secret value reached the model or the chat");
   assert.ok(JSON.stringify(seen).includes(secretName), "the reference never reached the model, so the canary check proves nothing");

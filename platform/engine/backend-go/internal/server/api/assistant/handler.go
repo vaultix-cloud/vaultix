@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -37,22 +38,22 @@ const (
 	unavailableModel = "No AI provider is active. An instance administrator can set one under Admin > AI assistant."
 )
 
-// Providers is the provider store.
+// Providers is the AI connection store (docs/0126).
 type Providers interface {
 	List(context.Context) ([]assistant.Provider, error)
 	Active(context.Context) (*assistant.Provider, *assistant.Credential, error)
 	ProviderWithCredential(context.Context, uuid.UUID) (*assistant.Provider, *assistant.Credential, error)
-	Create(context.Context, *assistant.ProviderInput) (*assistant.Provider, error)
-	Update(context.Context, uuid.UUID, *assistant.ProviderInput) (*assistant.Provider, error)
+	Create(context.Context, *spec.Connection) (*assistant.Provider, error)
+	Replace(context.Context, uuid.UUID, *spec.Connection) (*assistant.Provider, error)
 	Delete(context.Context, uuid.UUID) (*assistant.Provider, error)
-	RecordTest(ctx context.Context, id uuid.UUID, passed bool, message string, at time.Time) (*assistant.Provider, error)
+	RecordTest(ctx context.Context, id uuid.UUID, passed bool, toolCalls *bool, message string, at time.Time) (*assistant.Provider, error)
 }
 
 // Personas is the persona registry.
 type Personas interface {
 	List(context.Context) ([]assistant.Persona, error)
-	Create(context.Context, *assistant.PersonaInput) (*assistant.Persona, error)
-	Update(context.Context, string, *assistant.PersonaInput) (*assistant.Persona, error)
+	Create(context.Context, *spec.Persona) (*assistant.Persona, error)
+	Replace(context.Context, string, *spec.Persona) (*assistant.Persona, error)
 	Reset(context.Context, string) (*assistant.Persona, error)
 	Delete(context.Context, string) (*assistant.Persona, error)
 }
@@ -84,6 +85,8 @@ type Deps struct {
 	NewModel   func(*assistant.Provider, *assistant.Credential) (assistant.Model, error)
 	ListModels func(context.Context, *assistant.Provider, *assistant.Credential) ([]assistant.ModelInfo, error)
 	Now        func() time.Time
+	// Hugging Face addresses; tests point them at local servers.
+	HuggingFaceHub, HuggingFaceAPI string
 }
 
 type Handler struct {
@@ -96,6 +99,8 @@ type Handler struct {
 	listModels func(context.Context, *assistant.Provider, *assistant.Credential) ([]assistant.ModelInfo, error)
 	now        func() time.Time
 	limiter    *limiter
+	hfHub      string
+	hfAPI      string
 }
 
 func NewHandler(deps *Deps) *Handler {
@@ -115,8 +120,16 @@ func NewHandler(deps *Deps) *Handler {
 	if now == nil {
 		now = time.Now
 	}
+	hub, api := deps.HuggingFaceHub, deps.HuggingFaceAPI
+	if hub == "" {
+		hub = assistant.HuggingFaceHub
+	}
+	if api == "" {
+		api = assistant.HuggingFaceEndpoints
+	}
 	return &Handler{providers: deps.Providers, personas: deps.Personas, memories: deps.Memories, agent: deps.Agent, errors: deps.Errors,
-		newModel: newModel, listModels: listModels, now: now, limiter: &limiter{window: messageWindow, max: messagesPerUser, seen: map[uuid.UUID][]time.Time{}}}
+		newModel: newModel, listModels: listModels, now: now, limiter: &limiter{window: messageWindow, max: messagesPerUser, seen: map[uuid.UUID][]time.Time{}},
+		hfHub: hub, hfAPI: api}
 }
 
 // Register mounts the routes. authenticate must accept a person's sign-in only.
@@ -130,15 +143,17 @@ func (h *Handler) Register(router chi.Router, authenticate func(http.Handler) ht
 		r.Post(Prefix+"/memories", h.signedIn(h.createMemory))
 		r.Patch(Prefix+"/memories/{memoryId}", h.signedIn(h.updateMemory))
 		r.Delete(Prefix+"/memories/{memoryId}", h.signedIn(h.removeMemory))
-		r.Get(Prefix+"/providers", h.admin(h.listProviders))
-		r.Post(Prefix+"/providers", h.admin(h.createProvider))
-		r.Patch(Prefix+"/providers/{providerId}", h.admin(h.updateProvider))
-		r.Delete(Prefix+"/providers/{providerId}", h.admin(h.removeProvider))
-		r.Post(Prefix+"/providers/{providerId}/test", h.admin(h.testProvider))
-		r.Get(Prefix+"/providers/{providerId}/models", h.admin(h.providerModels))
+		r.Get(Prefix+"/connections", h.admin(h.listProviders))
+		r.Post(Prefix+"/connections", h.admin(h.createProvider))
+		r.Put(Prefix+"/connections/{connectionId}", h.admin(h.updateProvider))
+		r.Delete(Prefix+"/connections/{connectionId}", h.admin(h.removeProvider))
+		r.Post(Prefix+"/connections/{connectionId}/test", h.admin(h.testProvider))
+		r.Get(Prefix+"/connections/{connectionId}/models", h.admin(h.providerModels))
+		r.Post(Prefix+"/huggingface/account", h.admin(h.huggingFaceAccount))
+		r.Post(Prefix+"/huggingface/endpoints", h.admin(h.huggingFaceEndpoints))
 		r.Get(Prefix+"/personas", h.admin(h.listPersonas))
 		r.Post(Prefix+"/personas", h.admin(h.createPersona))
-		r.Patch(Prefix+"/personas/{slug}", h.admin(h.updatePersona))
+		r.Put(Prefix+"/personas/{slug}", h.admin(h.updatePersona))
 		r.Delete(Prefix+"/personas/{slug}", h.admin(h.removePersona))
 		r.Post(Prefix+"/personas/{slug}/reset", h.admin(h.resetPersona))
 	})
@@ -186,9 +201,9 @@ func (h *Handler) signedIn(next func(http.ResponseWriter, *http.Request, *auth.I
 }
 
 func providerID(r *http.Request) (uuid.UUID, error) {
-	id, err := uuid.Parse(chi.URLParam(r, "providerId"))
+	id, err := uuid.Parse(chi.URLParam(r, "connectionId"))
 	if err != nil {
-		return uuid.Nil, errutil.BadRequest("Provider ID '%s' is not a valid ID.", chi.URLParam(r, "providerId"))
+		return uuid.Nil, errutil.BadRequest("Connection ID '%s' is not a valid ID.", chi.URLParam(r, "connectionId"))
 	}
 	return id, nil
 }
@@ -222,21 +237,25 @@ func (h *Handler) listProviders(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"providers": providers, "kinds": assistant.Kinds})
+	views := make([]assistant.Connection, len(providers))
+	for i := range providers {
+		views[i] = providers[i].View()
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"connections": views, "kinds": assistant.Kinds})
 }
 
 func (h *Handler) createProvider(w http.ResponseWriter, r *http.Request) {
-	var input assistant.ProviderInput
-	if err := decode(r, maxAdminBody, &input); err != nil {
+	var doc spec.Connection
+	if err := decode(r, maxAdminBody, &doc); err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	provider, err := h.providers.Create(r.Context(), &input)
+	provider, err := h.providers.Create(r.Context(), &doc)
 	if err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"provider": provider})
+	writeJSON(w, http.StatusCreated, map[string]any{"connection": provider.View()})
 }
 
 func (h *Handler) updateProvider(w http.ResponseWriter, r *http.Request) {
@@ -245,17 +264,17 @@ func (h *Handler) updateProvider(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	var input assistant.ProviderInput
-	if err := decode(r, maxAdminBody, &input); err != nil {
+	var doc spec.Connection
+	if err := decode(r, maxAdminBody, &doc); err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	provider, err := h.providers.Update(r.Context(), id, &input)
+	provider, err := h.providers.Replace(r.Context(), id, &doc)
 	if err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"provider": provider})
+	writeJSON(w, http.StatusOK, map[string]any{"connection": provider.View()})
 }
 
 func (h *Handler) removeProvider(w http.ResponseWriter, r *http.Request) {
@@ -269,7 +288,7 @@ func (h *Handler) removeProvider(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusNotFound, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"provider": provider})
+	writeJSON(w, http.StatusOK, map[string]any{"connection": provider.View()})
 }
 
 // testProvider makes one real call and records the outcome, which is the receipt
@@ -290,7 +309,11 @@ func (h *Handler) testProvider(w http.ResponseWriter, r *http.Request) {
 	started := h.now()
 	passed, message := h.testModels(ctx, provider, credential)
 	latency := h.now().Sub(started)
-	recorded, err := h.providers.RecordTest(ctx, id, passed, message, h.now().UTC())
+	var toolCalls *bool
+	if passed {
+		toolCalls = h.probeTools(ctx, provider, credential)
+	}
+	recorded, err := h.providers.RecordTest(ctx, id, passed, toolCalls, message, h.now().UTC())
 	if err != nil {
 		h.errors.HandleError(w, r, http.StatusInternalServerError, err)
 		return
@@ -300,9 +323,23 @@ func (h *Handler) testProvider(w http.ResponseWriter, r *http.Request) {
 		outcome = "passed"
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"test":     map[string]any{"outcome": outcome, "message": message, "latencyMs": latency.Milliseconds(), "testedAt": recorded.LastTestedAt},
-		"provider": recorded,
+		"test":       map[string]any{"outcome": outcome, "message": message, "latencyMs": latency.Milliseconds(), "testedAt": recorded.LastTestedAt, "toolCalls": toolCalls},
+		"connection": recorded.View(),
 	})
+}
+
+// probeTools asks the standard model to call one harmless tool. Some models answer but cannot
+// call tools; they can still talk, but cannot run Vaultix actions, and the page says so.
+func (h *Handler) probeTools(ctx context.Context, provider *assistant.Provider, credential *assistant.Credential) *bool {
+	model, err := h.newModel(provider, credential)
+	if err != nil {
+		return nil
+	}
+	answer, err := model.Chat(ctx, &assistant.ChatRequest{System: "You are a connection test. Call the tool you are given.", MaxTokens: 64,
+		Turns: []assistant.Turn{{Role: "user", Text: "Call the vaultix_probe tool now."}},
+		Tools: []assistant.ToolSpec{{Name: "vaultix_probe", Description: "Confirms that tool calls work.", InputSchema: json.RawMessage(`{"type":"object","properties":{}}`)}}})
+	works := err == nil && slices.ContainsFunc(answer.ToolCalls, func(c assistant.ToolCall) bool { return c.Name == "vaultix_probe" })
+	return &works
 }
 
 // testModels asks every model the provider is configured with for one word.
@@ -363,6 +400,77 @@ func (h *Handler) providerModels(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"models": models, "listed": true, "message": ""})
 }
 
+type huggingFaceRequest struct {
+	Token        *string    `json:"token"`
+	ConnectionID *uuid.UUID `json:"connectionId"`
+	Namespace    string     `json:"namespace"`
+}
+
+// huggingFaceToken is the pasted token, or the stored one of an existing Hugging Face connection
+// when the administrator is editing it. Neither is kept or returned.
+func (h *Handler) huggingFaceToken(r *http.Request, in *huggingFaceRequest) (string, error) {
+	if in.Token != nil {
+		token := strings.TrimSpace(*in.Token)
+		if token == "" || len(token) > 4096 {
+			return "", errutil.BadRequest("token: Paste the Hugging Face token.")
+		}
+		return token, nil
+	}
+	if in.ConnectionID == nil {
+		return "", errutil.BadRequest("token: Paste the Hugging Face token.")
+	}
+	provider, credential, err := h.providers.ProviderWithCredential(r.Context(), *in.ConnectionID)
+	if err != nil {
+		return "", err
+	}
+	if (provider.Kind != assistant.KindHuggingFace && provider.Kind != assistant.KindHuggingFaceEndpoint) || credential.APIKey == "" {
+		return "", errutil.BadRequest("connectionId: That connection has no Hugging Face token.")
+	}
+	return credential.APIKey, nil
+}
+
+func (h *Handler) huggingFaceAccount(w http.ResponseWriter, r *http.Request) {
+	var in huggingFaceRequest
+	if err := decode(r, maxAdminBody, &in); err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, err)
+		return
+	}
+	token, err := h.huggingFaceToken(r, &in)
+	if err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, err)
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	account, err := assistant.LookupHuggingFaceAccount(ctx, assistant.HTTPClient(20*time.Second), h.hfHub, token)
+	if err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, errutil.BadRequest("token: %s", failureMessage(err)))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"account": account})
+}
+
+func (h *Handler) huggingFaceEndpoints(w http.ResponseWriter, r *http.Request) {
+	var in huggingFaceRequest
+	if err := decode(r, maxAdminBody, &in); err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, err)
+		return
+	}
+	token, err := h.huggingFaceToken(r, &in)
+	if err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, err)
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	endpoints, err := assistant.ListHuggingFaceEndpoints(ctx, assistant.HTTPClient(20*time.Second), h.hfAPI, token, in.Namespace)
+	if err != nil {
+		h.errors.HandleError(w, r, http.StatusBadRequest, errutil.BadRequest("namespace: %s", failureMessage(err)))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"endpoints": endpoints})
+}
+
 // schema returns the v1 connection and persona schemas the UI builds its forms from (docs/0126).
 func (h *Handler) schema(w http.ResponseWriter, _ *http.Request, _ *auth.Identity) {
 	body := map[string]json.RawMessage{}
@@ -383,35 +491,39 @@ func (h *Handler) listPersonas(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"personas": personas, "domains": assistant.Domains, "roles": assistant.Roles, "tiers": assistant.Tiers})
+	views := make([]assistant.PersonaView, len(personas))
+	for i := range personas {
+		views[i] = personas[i].View()
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"personas": views, "domains": assistant.Domains, "roles": assistant.Roles, "tiers": assistant.Tiers})
 }
 
 func (h *Handler) createPersona(w http.ResponseWriter, r *http.Request) {
-	var input assistant.PersonaInput
-	if err := decode(r, maxAdminBody, &input); err != nil {
+	var doc spec.Persona
+	if err := decode(r, maxAdminBody, &doc); err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	persona, err := h.personas.Create(r.Context(), &input)
+	persona, err := h.personas.Create(r.Context(), &doc)
 	if err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"persona": persona})
+	writeJSON(w, http.StatusCreated, map[string]any{"persona": persona.View()})
 }
 
 func (h *Handler) updatePersona(w http.ResponseWriter, r *http.Request) {
-	var input assistant.PersonaInput
-	if err := decode(r, maxAdminBody, &input); err != nil {
+	var doc spec.Persona
+	if err := decode(r, maxAdminBody, &doc); err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	persona, err := h.personas.Update(r.Context(), chi.URLParam(r, "slug"), &input)
+	persona, err := h.personas.Replace(r.Context(), chi.URLParam(r, "slug"), &doc)
 	if err != nil {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"persona": persona})
+	writeJSON(w, http.StatusOK, map[string]any{"persona": persona.View()})
 }
 
 func (h *Handler) removePersona(w http.ResponseWriter, r *http.Request) {
@@ -420,7 +532,7 @@ func (h *Handler) removePersona(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"persona": persona})
+	writeJSON(w, http.StatusOK, map[string]any{"persona": persona.View()})
 }
 
 func (h *Handler) resetPersona(w http.ResponseWriter, r *http.Request) {
@@ -429,7 +541,7 @@ func (h *Handler) resetPersona(w http.ResponseWriter, r *http.Request) {
 		h.errors.HandleError(w, r, http.StatusBadRequest, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"persona": persona})
+	writeJSON(w, http.StatusOK, map[string]any{"persona": persona.View()})
 }
 
 func failureMessage(err error) string {
