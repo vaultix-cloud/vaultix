@@ -25,6 +25,7 @@ import { testDashboardCreateWorkflow } from "./test-dashboard-create-workflow.mj
 import { testProviderImportUi } from "./test-provider-import-ui.mjs";
 import { testUpdatesClyffyWorkflow } from "./test-updates-clyffy-workflow.mjs";
 import { testProductGuidance } from "./test-product-guidance.mjs";
+import { testAiAdminUi } from "./test-ai-admin-ui.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const origin = process.argv[2];
@@ -216,6 +217,8 @@ try {
       return { status: response.status, body: await response.json() };
     }
   });
+  phase = "ai-admin";
+  await testAiAdminUi({ page, expect, origin, evidence, expectedFailures });
   const unauthenticatedProject = await fetch(`${origin}/api/v1/projects/${project.id}`);
   assert.equal(unauthenticatedProject.status, 401, "Project API must deny unauthenticated reads.");
   await page.goto(origin);

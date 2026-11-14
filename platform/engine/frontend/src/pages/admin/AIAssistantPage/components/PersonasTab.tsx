@@ -64,7 +64,7 @@ const PersonaRow = ({
           <span className="font-medium">
             {persona.name} <span className="font-mono text-xs text-muted">@{persona.slug}</span>
           </span>
-          <span className="max-w-md text-xs text-muted">{persona.description}</span>
+          <span className="max-w-sm text-xs text-muted">{persona.description}</span>
         </div>
       </TableCell>
       <TableCell>
@@ -182,33 +182,35 @@ export const PersonasTab = () => {
       </CardHeader>
       <CardContent>
         {!isPending && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Persona</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Areas</TableHead>
-                <TableHead>Runs On</TableHead>
-                <TableHead>Enabled</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {personas.map((persona) => (
-                <PersonaRow
-                  key={persona.slug}
-                  persona={persona}
-                  connections={connections}
-                  onEdit={() => {
-                    setEditing(persona);
-                    setIsOpen(true);
-                  }}
-                  onReset={() => setConfirm({ type: "reset", persona })}
-                  onRemove={() => setConfirm({ type: "remove", persona })}
-                />
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Persona</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Areas</TableHead>
+                  <TableHead>Runs On</TableHead>
+                  <TableHead>Enabled</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {personas.map((persona) => (
+                  <PersonaRow
+                    key={persona.slug}
+                    persona={persona}
+                    connections={connections}
+                    onEdit={() => {
+                      setEditing(persona);
+                      setIsOpen(true);
+                    }}
+                    onReset={() => setConfirm({ type: "reset", persona })}
+                    onRemove={() => setConfirm({ type: "remove", persona })}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
       {isOpen && (
