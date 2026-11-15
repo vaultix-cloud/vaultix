@@ -12067,7 +12067,7 @@ platform/engine/frontend/tsconfig.json	1ffef600d959ec9e396d5a260bd3f5b927b2cef8	
 platform/engine/frontend/tsconfig.node.json	db0becc8b033a4a78144f4a3bb852082fe91cd62	product-code	unread
 platform/engine/frontend/tsr.config.json	0d6a78fc9c0344297a0b88e0fce2d6bee21dcc1e	product-code	unread
 platform/engine/frontend/vite.config.ts	912feb6b20b1c0c907a1ef39bf5af118a6d32910	product-code	reviewed
-platform/engine/frontend/vitest.config.ts	299551c085e89e54dc66e0ed76c1522bcb198b46	product-code	unread
+platform/engine/frontend/vitest.config.ts	ce3921d02e3ee3ed322aa23d1c56f0d7c63ae132	product-code	unread
 platform/engine/helm-charts/README.md	d8d5da9de8c27850cfa67b57dfc488e217e0acd1	documentation	unread
 platform/engine/helm-charts/infisical-gateway/.helmignore	0e8a0eb36f4ca2c939201c0d54b5d82a1ea34778	product-code	unread
 platform/engine/helm-charts/infisical-gateway/CHANGELOG.md	4c2f0d2703e059e059faa7e3a2d799b58a5581ed	documentation	unread

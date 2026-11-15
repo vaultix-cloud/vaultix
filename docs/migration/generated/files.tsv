@@ -9565,7 +9565,7 @@ platform/engine/frontend/tsconfig.json	platform/engine/frontend	ui	React-TypeScr
 platform/engine/frontend/tsconfig.node.json	platform/engine/frontend	ui	React-TypeScript	json	db0becc8b033a4a78144f4a3bb852082fe91cd62	unread
 platform/engine/frontend/tsr.config.json	platform/engine/frontend	ui	React-TypeScript	json	0d6a78fc9c0344297a0b88e0fce2d6bee21dcc1e	unread
 platform/engine/frontend/vite.config.ts	platform/engine/frontend	ui	React-TypeScript	ts	912feb6b20b1c0c907a1ef39bf5af118a6d32910	reviewed
-platform/engine/frontend/vitest.config.ts	platform/engine/frontend	ui	React-TypeScript	ts	299551c085e89e54dc66e0ed76c1522bcb198b46	unread
+platform/engine/frontend/vitest.config.ts	platform/engine/frontend	ui	React-TypeScript	ts	ce3921d02e3ee3ed322aa23d1c56f0d7c63ae132	unread
 platform/engine/helm-charts/infisical-gateway/.helmignore	platform/engine/helm-charts/infisical-gateway	delivery	supporting-tooling-or-contract	build-config	0e8a0eb36f4ca2c939201c0d54b5d82a1ea34778	unread
 platform/engine/helm-charts/infisical-gateway/Chart.yaml	platform/engine/helm-charts/infisical-gateway	delivery	supporting-tooling-or-contract	yaml	86ce1622731d6ddecd57bcc42632918e3090bfbc	unread
 platform/engine/helm-charts/infisical-gateway/ci/default-values.yaml	platform/engine/helm-charts/infisical-gateway/ci	delivery	supporting-tooling-or-contract	yaml	8c1817b4cef8d710cb1cf490907c8c975cd50636	unread
