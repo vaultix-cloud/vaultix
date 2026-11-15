@@ -29,6 +29,7 @@ pub enum StoreError {
 const MIGRATIONS: &[(i32, &str, &str)] = &[
     (1, "0001_operate", include_str!("../migrations/0001_operate.sql")),
     (2, "0002_secrets", include_str!("../migrations/0002_secrets.sql")),
+    (3, "0003_connectors", include_str!("../migrations/0003_connectors.sql")),
 ];
 
 /// Connect with a pool sized for a small instance.

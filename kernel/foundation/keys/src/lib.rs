@@ -163,6 +163,24 @@ pub async fn load_version<'e, E: PgExecutor<'e>>(db: E, scope: &str, version: i3
         .await?)
 }
 
+/// The current data key for a scope, created the first time the scope needs one. The advisory lock makes two writers
+/// that arrive together agree on one key instead of creating two.
+pub async fn current_or_create(conn: &mut sqlx::PgConnection, ring: &Keyring, scope: &str) -> Result<(i32, Secret), KeyError> {
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtext($1))").bind(scope).execute(&mut *conn).await?;
+    if let Some((version, wrapped)) = load_current(&mut *conn, scope).await? {
+        return Ok((version, ring.unwrap_data_key(scope, version, &wrapped)?));
+    }
+    let (key, wrapped) = ring.new_data_key(scope, 1)?;
+    save_data_key(&mut *conn, scope, 1, &wrapped).await?;
+    Ok((1, key))
+}
+
+/// A stored data key, opened. The key that sealed a value is found by the version recorded beside it.
+pub async fn unwrap_stored(conn: &mut sqlx::PgConnection, ring: &Keyring, scope: &str, version: i32) -> Result<Secret, KeyError> {
+    let wrapped = load_version(&mut *conn, scope, version).await?.ok_or(KeyError::Open)?;
+    ring.unwrap_data_key(scope, version, &wrapped)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

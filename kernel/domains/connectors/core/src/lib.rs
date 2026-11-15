@@ -8,8 +8,10 @@ mod connector;
 mod engine;
 mod plan;
 mod schema;
+mod store;
 
 pub use connector::{Connector, ConnectorError, ErrorKind, Fingerprinter};
 pub use engine::{sync, AuditSink, Failure, Report, RetryPolicy, SyncError, SyncRequest};
 pub use plan::{plan, Entry, Plan, PlanOptions};
 pub use schema::{KeySchema, SchemaError};
+pub use store::{create_connection, create_sync, delete_connection, get_connection, list_connections, list_syncs, open_credentials, record_run, Connection, NewSync, PgAudit, StoreError, SyncRow};

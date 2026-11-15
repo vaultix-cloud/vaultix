@@ -79,9 +79,35 @@ is not written yet; the first provider must include it.
 Mutation checks: making `Environment` render as empty produced 670 unexplained differences, and allowing empty names made
 a class stop occurring and fail the test (a class that never occurs would be explaining nothing).
 
-Not done: the production audit sink (the plan record and outcome record are separate transactions, because the destination
-cannot join one; the hash-chain append is `vx_audit::append`); a real provider; the migration check above; the database
-tables; the routes; the screens. Nothing in the old backend has been deleted and `scripts/lineage-ceiling.json` is unchanged.
+### Storage and the production audit sink (`src/store.rs`, migration `0003_connectors.sql`, `tests/store.rs`)
+
+Tables `vx_connectors_connections` (credentials as one sealed document) and `vx_connectors_syncs` (which secrets go to which
+destination, under which key schema), and `PgAudit`, the sink that appends each event to the hash chain. Proven against a real
+Postgres (`node scripts/test-vx.mjs`; a plain `cargo test` skips these 11 tests and proves nothing about them):
+
+- **Never in the clear, anywhere.** After storing a credential holding a canary, every row of every table in the database is
+  rendered as text and searched; the canary is not there, and the scan is shown to have read the audit rows. Listings and
+  `get` return metadata only.
+- **Opening is one function and is recorded.** `open_credentials` returns exactly what was stored and appends
+  `connector.credentials.opened` with a keyed fingerprint (so "this was read" is provable) in the same transaction. With the
+  audit table taken away, opening, creating and deleting all fail and leave the data as it was; making the read ignore a
+  failed audit write made that test fail.
+- **Isolation.** Another project cannot see or open a connection, and gets the same error as for a missing one. A sealed
+  document copied onto another connection's row will not open (it is bound to project and id). A different root key opens
+  nothing.
+- **Refused when saved, not when run:** a bad kind or name, a duplicate name, empty credentials, a key schema the grammar
+  refuses (`plain`, `{{{secretKey}}}`, helpers, a doubled `{{secretKey}}`), and a sync that names another project's connection.
+- **A real sync through `PgAudit`** records `planned` then `finished` in a chain that verifies, with no value anywhere in the
+  database; with the audit database down, the sync changes nothing in the destination.
+
+`vx_keys::current_or_create` and `unwrap_stored` were added so connections and secrets share one key path. The secrets crate
+still has its own private copy of the same logic; moving it onto the shared one is a small follow-up, left alone so a
+working, tested crate is not changed in the same step.
+
+Not done: a real provider (GitHub, then Fly.io); the migration check for stored schemas and escaped names; `run_sync` (it needs
+values from the secrets domain, so it belongs in the server, because domains meet only through foundation or the server);
+the `/api/vx/v1/connectors` routes in the contract; the screens. Nothing in the old backend has been deleted and
+`scripts/lineage-ceiling.json` is unchanged.
 
 ## 4. Order
 
@@ -89,6 +115,6 @@ tables; the routes; the screens. Nothing in the old backend has been deleted and
 2. **Done:** differential test of the key schema against the inherited code (section 3). Still to do: the import check for stored schemas and escaped names.
 3. First real provider: GitHub (the largest connection, 968 lines, so it tests the trait hardest), then Fly.io (the hook),
    then one pure key-value provider to prove the declarative tier.
-4. The connection record (credentials stored as `Secret`, encrypted, never returned), the `/api/vx/v1/connectors` routes
+4. **Connection record, tables and `PgAudit` done (section 3).** Still to do: the `/api/vx/v1/connectors` routes
    in the contract, and the screen from Vaultix primitives.
 5. Port the rest; delete each inherited provider as its replacement passes, lowering the lineage ceiling each time.

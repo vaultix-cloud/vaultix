@@ -7,16 +7,22 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+chrono = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
+sqlx = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+uuid = { workspace = true }
 vx-audit = { path = "../../../foundation/audit" }
+vx-keys = { path = "../../../foundation/keys" }
 vx-secret = { path = "../../../foundation/secret" }
 
 [dev-dependencies]
 tokio = { workspace = true }
 tracing-subscriber = { workspace = true }
+vx-store = { path = "../../../foundation/store", features = ["testing"] }
 
 [lints]
 workspace = true
