@@ -18,7 +18,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const workspace = resolve(root, "platform/engine/vx");
+const workspace = resolve(root, "kernel");
 const exe = process.platform === "win32" ? ".exe" : "";
 const bin = name => resolve(workspace, "target/release", name + exe);
 const argv = new Set(process.argv.slice(2));

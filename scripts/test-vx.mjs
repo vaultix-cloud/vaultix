@@ -1,4 +1,4 @@
-// Runs the new core's tests (platform/engine/vx) against a disposable Postgres: starts one on a
+// Runs the new core's tests (kernel) against a disposable Postgres: starts one on a
 // random loopback port, runs `cargo test`, and removes it. Nothing here touches another database.
 //
 // Usage: node scripts/test-vx.mjs [cargo test arguments]
@@ -8,7 +8,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const workspace = resolve(root, "platform/engine/vx");
+const workspace = resolve(root, "kernel");
 const name = `vx-test-pg-${randomBytes(4).toString("hex")}`;
 const password = randomBytes(16).toString("hex");
 const docker = (args, options = {}) => spawnSync("docker", args, { encoding: "utf8", windowsHide: true, ...options });

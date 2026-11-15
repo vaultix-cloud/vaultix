@@ -41,7 +41,7 @@ registered whether or not a sink exists.
 
 ## 4. The new core, first sample (not yet the same harness)
 
-Release binary of `platform/engine/vx` (`vaultixd`), run on the Windows host against a disposable Postgres,
+Release binary of `kernel` (`vaultixd`), run on the Windows host against a disposable Postgres,
 sealed, no tenants, one minute idle after settling:
 
 | What | Measured |

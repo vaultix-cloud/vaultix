@@ -1,0 +1,37 @@
+[package]
+name = "vaultixd"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "vaultixd"
+path = "src/main.rs"
+
+[dependencies]
+axum = { workspace = true }
+hex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+subtle = "2"
+tokio = { workspace = true }
+tokio-util = "0.7"
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+vx-audit = { path = "../foundation/audit" }
+vx-gate = { path = "../foundation/gate" }
+vx-jobs = { path = "../foundation/jobs" }
+vx-keys = { path = "../foundation/keys" }
+vx-secret = { path = "../foundation/secret" }
+vx-secrets = { path = "../domains/secrets/core" }
+vx-store = { path = "../foundation/store" }
+
+[dev-dependencies]
+vx-store = { path = "../foundation/store", features = ["testing"] }
+
+[lints]
+workspace = true

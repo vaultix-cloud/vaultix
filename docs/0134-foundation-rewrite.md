@@ -46,7 +46,7 @@ self-hosting (database plus app).
 **Language, decided 2026-11-15 (owner):** the core is Rust, not Go. Pre-release removes the main cost of
 Rust (migrating later), and Rust gives the AI-safe space a guarantee Go cannot: a secret lives in a type that
 cannot be cloned, formatted or serialised, and reading it is a lint error outside the value path
-(`platform/engine/vx/crates/vx-secret`, proven by compile-fail tests). The inherited Node backend and the
+(`kernel/crates/vx-secret`, proven by compile-fail tests). The inherited Node backend and the
 partial Go port are retired domain by domain; this supersedes the Go and Rust split in 0027 and in the
 earlier sections of this document and of 0133.
 
@@ -58,7 +58,7 @@ earlier sections of this document and of 0133.
 - **Domains are crates**, one per canonical domain (0120), each with service, store, routes, events and
   tests. They call each other through traits, never through each other's tables. Built so far, with tests
   against a real Postgres: `vx-secret`, `vx-store`, `vx-jobs`, `vx-audit`, `vx-keys`, `vx-gate` and the
-  `vaultixd` server (`platform/engine/vx/README.md`).
+  `vaultixd` server (`kernel/README.md`).
 - **Seams are interfaces** for storage, seal and key custody, identity issuer, event bus and audit sink.
   The first implementation of each is in process. Splitting the identity service or workers into separate
   deployments later is a wiring change behind the same API and issuer URL, not a rewrite. That is how it
