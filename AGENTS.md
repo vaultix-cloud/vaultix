@@ -197,6 +197,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | Task | Read |
 | --- | --- |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
+| The app frame, switcher, palette, Clyffy overlay (phase 2) | `docs/0131-phase-2-frame-plan.md` + `platform/engine/DESIGN.md` |
 | Deploy, install, upgrade an instance (any AI) | `INSTALL-FOR-AI.md` + `docs/0109-native-install-and-upgrade.md` |
 | Pre-release rules, credentials in chat | `docs/0118-pre-release.md` |
 | Table names, new API routes (`vx_` tables, `/api/vx/v1/<domain>`) | `docs/0119-schema-and-api-namespaces.md` + `scripts/lib/table-namespaces.mjs` |
