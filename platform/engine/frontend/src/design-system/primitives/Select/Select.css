@@ -1,0 +1,38 @@
+/* Vaultix Select: a native select in the TextInput box (TextInput.css), with its own chevron. */
+.vx-select {
+  position: relative;
+  padding: 0;
+  cursor: pointer;
+}
+
+.vx-select__control {
+  padding: 0 calc(var(--vx-control-padding-x) + 20px) 0 var(--vx-control-padding-x);
+  cursor: inherit;
+  appearance: none;
+}
+
+.vx-input--sm .vx-select__control {
+  padding-left: var(--vx-space-2);
+}
+
+/* Option lists are drawn by the platform; give them the theme's colours where it allows. */
+.vx-select__control option,
+.vx-select__control optgroup {
+  background: var(--vx-popover-bg);
+  color: var(--vx-popover-fg);
+}
+
+.vx-select__chevron {
+  position: absolute;
+  right: var(--vx-control-padding-x);
+  color: var(--vx-input-help);
+  pointer-events: none;
+}
+
+.vx-select[data-disabled] {
+  cursor: not-allowed;
+}
+
+.vx-select[data-disabled] .vx-select__chevron {
+  color: var(--vx-input-disabled-fg);
+}

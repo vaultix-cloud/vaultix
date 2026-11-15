@@ -22,6 +22,8 @@ export type { TMenuButtonProps, TMenuEntry, TMenuItem } from "./primitives/Menu/
 export { MenuButton } from "./primitives/Menu/MenuButton";
 export type { TPopoverProps } from "./primitives/Popover/Popover";
 export { Popover } from "./primitives/Popover/Popover";
+export type { TSelectOption, TSelectProps } from "./primitives/Select/Select";
+export { Select } from "./primitives/Select/Select";
 export type { TSheetProps } from "./primitives/Sheet/Sheet";
 export { Sheet } from "./primitives/Sheet/Sheet";
 export type { TSwitchProps } from "./primitives/Switch/Switch";
