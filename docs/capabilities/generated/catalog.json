@@ -2610,13 +2610,13 @@
       "capabilities": 6,
       "ui": 1,
       "api": 2,
-      "sourceFiles": 957
+      "sourceFiles": 986
     }
   },
   "coverage": {
     "uiRoutes": 275,
     "apiOperations": 2327,
-    "sourceFiles": 9917,
+    "sourceFiles": 9946,
     "providerEntries": 187,
     "capabilityRequirements": 86,
     "unclassified": 0

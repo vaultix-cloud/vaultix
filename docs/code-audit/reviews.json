@@ -2265,10 +2265,10 @@
     },
     {
       "path": "platform/engine/CLAUDE.md",
-      "blob": "95047a0118b6f517aeb929a8abad94b2358d2211",
+      "blob": "ccee2b22d5a655ec9033b78f4198b045aa29a397",
       "status": "authored",
       "decision": "modify",
-      "scope": "Complete file read. Corrected stale architecture references that claimed a nonexistent standalone FIPS Dockerfile and compliance. Existing runtime/development guidance retained; separate FIPS toolchain files are explicitly not proof of a published or validated regulated image.",
+      "scope": "Complete file read. Corrected stale architecture references that claimed a nonexistent standalone FIPS Dockerfile and compliance. Existing runtime/development guidance retained; separate FIPS toolchain files are explicitly not proof of a published or validated regulated image. 2026-11-15: re-read the diff; only the Design System & Voice paragraph changed, pointing new UI at the Vaultix design system instead of the inherited v3 library.",
       "evidence": [
         "docs/0041-publication-history.md",
         ".cache/publication-proof-FoKjYh/result.json",
@@ -8939,15 +8939,18 @@
     },
     {
       "path": "platform/engine/DESIGN.md",
-      "blob": "53684ac6368801c0c46d6ee1c3e7a209c4bd6c36",
-      "status": "reviewed",
+      "blob": "11e9a5f93c97f094a03ed676dfb59afb18b7d4cc",
+      "status": "authored",
       "decision": "modify",
-      "scope": "WEB-ASSIST-01: reviewed the public-entry, shared reference controls, scripted teaching, media provenance or delivery changes in this file. Existing authorization and capability behavior is retained; this scoped review is not whole-product authorship or parity evidence. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note).",
+      "scope": "WEB-ASSIST-01: reviewed the public-entry, shared reference controls, scripted teaching, media provenance or delivery changes in this file. Existing authorization and capability behavior is retained; this scoped review is not whole-product authorship or parity evidence. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-15: rewritten in full for docs/0130 phase 1. It now documents the Vaultix design system (rules, three token layers and the contrast gate, type, space, interaction and accessibility, voice in sentence case, adding a component); the component reference is generated from the stories by frontend/scripts/design-reference.mjs and checked by scripts/check-design-system.mjs.",
       "evidence": [
         "docs/0107-public-experience-and-recorded-workflow.md",
         "scripts/test-public-experience.mjs",
         "scripts/record-vaultix-workflow.mjs",
-        "scripts/test-image-app.mjs"
+        "scripts/test-image-app.mjs",
+        "docs/0130-vaultix-program-plan.md",
+        "platform/engine/frontend/scripts/design-reference.mjs",
+        "scripts/check-design-system.mjs"
       ]
     },
     {
