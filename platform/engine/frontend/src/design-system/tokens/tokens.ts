@@ -72,6 +72,7 @@ export const vx = {
       "raised": "var(--vx-color-surface-raised)",
       "overlay": "var(--vx-color-surface-overlay)",
       "sunken": "var(--vx-color-surface-sunken)",
+      "field": "var(--vx-color-surface-field)",
       "inverse": "var(--vx-color-surface-inverse)"
     },
     "text": {
@@ -243,6 +244,19 @@ export const vx = {
   "menu": {
     "width": "var(--vx-menu-width)",
     "bg": "var(--vx-menu-bg)"
+  },
+  "input": {
+    "bg": "var(--vx-input-bg)",
+    "fg": "var(--vx-input-fg)",
+    "placeholder": "var(--vx-input-placeholder)",
+    "border": "var(--vx-input-border)",
+    "border-hover": "var(--vx-input-border-hover)",
+    "border-invalid": "var(--vx-input-border-invalid)",
+    "disabled-bg": "var(--vx-input-disabled-bg)",
+    "disabled-fg": "var(--vx-input-disabled-fg)",
+    "label": "var(--vx-input-label)",
+    "help": "var(--vx-input-help)",
+    "error": "var(--vx-input-error)"
   }
 } as const;
 
@@ -1121,6 +1135,14 @@ export const tokenList: TTokenEntry[] = [
     "light": "oklch(0.93 0.008 255)"
   },
   {
+    "name": "color.surface.field",
+    "cssVar": "--vx-color-surface-field",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
     "name": "color.surface.inverse",
     "cssVar": "--vx-color-surface-inverse",
     "type": "color",
@@ -1727,6 +1749,94 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "oklch(0.215 0.022 255)",
     "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "input.bg",
+    "cssVar": "--vx-input-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "input.fg",
+    "cssVar": "--vx-input-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "input.placeholder",
+    "cssVar": "--vx-input-placeholder",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.69 0.02 255)",
+    "light": "oklch(0.46 0.022 255)"
+  },
+  {
+    "name": "input.border",
+    "cssVar": "--vx-input-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.57 0.022 255)"
+  },
+  {
+    "name": "input.border-hover",
+    "cssVar": "--vx-input-border-hover",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.69 0.02 255)"
+  },
+  {
+    "name": "input.border-invalid",
+    "cssVar": "--vx-input-border-invalid",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.74 0.14 25)",
+    "light": "oklch(0.46 0.16 27)"
+  },
+  {
+    "name": "input.disabled-bg",
+    "cssVar": "--vx-input-disabled-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.25 0.022 255)",
+    "light": "oklch(0.93 0.008 255)"
+  },
+  {
+    "name": "input.disabled-fg",
+    "cssVar": "--vx-input-disabled-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.46 0.022 255)",
+    "light": "oklch(0.69 0.02 255)"
+  },
+  {
+    "name": "input.label",
+    "cssVar": "--vx-input-label",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "input.help",
+    "cssVar": "--vx-input-help",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "input.error",
+    "cssVar": "--vx-input-error",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.74 0.14 25)",
+    "light": "oklch(0.46 0.16 27)"
   }
 ];
 
@@ -1935,6 +2045,62 @@ export const contrastReport = [
     "ratio": 9.76
   },
   {
+    "theme": "dark",
+    "fg": "input.fg",
+    "bg": "input.bg",
+    "min": 4.5,
+    "ratio": 18.04
+  },
+  {
+    "theme": "dark",
+    "fg": "input.placeholder",
+    "bg": "input.bg",
+    "min": 4.5,
+    "ratio": 7.1
+  },
+  {
+    "theme": "dark",
+    "fg": "input.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 3.93
+  },
+  {
+    "theme": "dark",
+    "fg": "input.border",
+    "bg": "input.bg",
+    "min": 3,
+    "ratio": 4.41
+  },
+  {
+    "theme": "dark",
+    "fg": "input.border-invalid",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 7.16
+  },
+  {
+    "theme": "dark",
+    "fg": "input.help",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 9.07
+  },
+  {
+    "theme": "dark",
+    "fg": "input.error",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 7.16
+  },
+  {
+    "theme": "dark",
+    "fg": "input.label",
+    "bg": "color.surface.canvas",
+    "min": 4.5,
+    "ratio": 17.09
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -2136,5 +2302,61 @@ export const contrastReport = [
     "bg": "rail.bg",
     "min": 3,
     "ratio": 4.03
+  },
+  {
+    "theme": "light",
+    "fg": "input.fg",
+    "bg": "input.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "input.placeholder",
+    "bg": "input.bg",
+    "min": 4.5,
+    "ratio": 7.12
+  },
+  {
+    "theme": "light",
+    "fg": "input.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "input.border",
+    "bg": "input.bg",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "input.border-invalid",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 7.74
+  },
+  {
+    "theme": "light",
+    "fg": "input.help",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "input.error",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 7.74
+  },
+  {
+    "theme": "light",
+    "fg": "input.label",
+    "bg": "color.surface.canvas",
+    "min": 4.5,
+    "ratio": 17.09
   }
 ] as const;

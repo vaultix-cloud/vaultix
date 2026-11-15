@@ -1,0 +1,64 @@
+/* Vaultix Field: label, hint and error around one control. Values come from tokens. */
+.vx-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-1-5);
+  min-width: 0;
+  font-family: var(--vx-font-family-sans);
+}
+
+.vx-field__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vx-space-2);
+  color: var(--vx-input-label);
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-medium);
+  line-height: var(--vx-font-line-height-snug);
+}
+
+.vx-field[data-disabled] .vx-field__label {
+  color: var(--vx-input-disabled-fg);
+}
+
+.vx-field__required {
+  color: var(--vx-input-help);
+  font-size: var(--vx-font-size-xs);
+  font-weight: var(--vx-font-weight-regular);
+}
+
+.vx-field__help {
+  margin: 0;
+  color: var(--vx-input-help);
+  font-size: var(--vx-font-size-sm);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+.vx-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vx-space-1-5);
+  margin: 0;
+  color: var(--vx-input-error);
+  font-size: var(--vx-font-size-sm);
+  font-weight: var(--vx-font-weight-medium);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+.vx-field__error svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Read by screen readers so the message is not conveyed by colour and icon alone. */
+.vx-field__error-prefix {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

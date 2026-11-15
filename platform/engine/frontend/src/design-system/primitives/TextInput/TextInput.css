@@ -1,0 +1,134 @@
+/* Vaultix text controls (TextInput and TextArea share this box). Values come from tokens. */
+.vx-input,
+.vx-textarea {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-2);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--vx-input-border);
+  border-radius: var(--vx-control-radius);
+  background: var(--vx-input-bg);
+  color: var(--vx-input-fg);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-snug);
+  transition: border-color var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-input {
+  height: var(--vx-control-height-md);
+  padding: 0 var(--vx-control-padding-x);
+  cursor: text;
+}
+
+.vx-input--sm {
+  height: var(--vx-control-height-sm);
+  padding: 0 var(--vx-space-2);
+  font-size: var(--vx-font-size-sm);
+}
+
+.vx-input--lg {
+  height: var(--vx-control-height-lg);
+  font-size: var(--vx-font-size-lg);
+}
+
+.vx-input:hover,
+.vx-textarea:hover {
+  border-color: var(--vx-input-border-hover);
+}
+
+/* The ring follows the text's own focus; a button in an adornment shows its own ring instead. */
+.vx-input:has(> .vx-input__control:focus),
+.vx-textarea:focus-visible {
+  border-color: var(--vx-input-border-hover);
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-input[data-invalid],
+.vx-textarea[aria-invalid="true"] {
+  border-color: var(--vx-input-border-invalid);
+}
+
+.vx-input[data-disabled],
+.vx-textarea:disabled {
+  border-color: var(--vx-input-disabled-bg);
+  background: var(--vx-input-disabled-bg);
+  color: var(--vx-input-disabled-fg);
+  cursor: not-allowed;
+}
+
+/* Read-only text can be selected and copied but not changed: no fill, so it reads as a value. */
+.vx-input[data-readonly],
+.vx-textarea:read-only:not(:disabled) {
+  border-style: dashed;
+  background: transparent;
+}
+
+.vx-input__control {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.vx-input__control::placeholder,
+.vx-textarea::placeholder {
+  color: var(--vx-input-placeholder);
+  opacity: 1;
+}
+
+.vx-input__control:disabled {
+  cursor: not-allowed;
+}
+
+.vx-input--mono,
+.vx-textarea--mono {
+  font-family: var(--vx-font-family-mono);
+}
+
+.vx-input__adornment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--vx-input-help);
+}
+
+.vx-textarea {
+  display: block;
+  min-height: calc(var(--vx-control-height-md) * 2);
+  padding: var(--vx-space-2) var(--vx-control-padding-x);
+  resize: vertical;
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+/* Grows with its text where the browser supports it; elsewhere it keeps its rows and resizes. */
+.vx-textarea--grow {
+  field-sizing: content;
+  max-height: 24lh;
+}
+
+/* Text under 16px makes touch browsers zoom the page when the field takes focus. */
+@media (pointer: coarse) {
+  .vx-input,
+  .vx-input--sm,
+  .vx-textarea {
+    font-size: var(--vx-font-size-lg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vx-input,
+  .vx-textarea {
+    transition: none;
+  }
+}

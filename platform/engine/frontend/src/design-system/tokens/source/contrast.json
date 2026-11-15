@@ -1,34 +1,190 @@
 {
   "$description": "WCAG 2.2 contrast the token build enforces in every theme: 4.5 for text, 3 for large text, icons, control borders and focus indicators. A palette that fails cannot build.",
   "pairs": [
-    { "fg": "color.text.primary", "bg": "color.surface.canvas", "min": 4.5 },
-    { "fg": "color.text.primary", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.text.primary", "bg": "color.surface.raised", "min": 4.5 },
-    { "fg": "color.text.primary", "bg": "color.surface.overlay", "min": 4.5 },
-    { "fg": "color.text.secondary", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.text.secondary", "bg": "color.surface.raised", "min": 4.5 },
-    { "fg": "color.text.muted", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.text.link", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.text.primary", "bg": "color.interactive.hover", "min": 4.5 },
-    { "fg": "color.text.primary", "bg": "color.interactive.active", "min": 4.5 },
-    { "fg": "color.interactive.selected-text", "bg": "color.interactive.selected", "min": 4.5 },
-    { "fg": "color.accent.subtle-text", "bg": "color.accent.subtle", "min": 4.5 },
-    { "fg": "button.primary-fg", "bg": "button.primary-bg", "min": 4.5 },
-    { "fg": "button.primary-fg", "bg": "button.primary-bg-hover", "min": 4.5 },
-    { "fg": "button.primary-fg", "bg": "button.primary-bg-active", "min": 4.5 },
-    { "fg": "button.secondary-fg", "bg": "button.secondary-bg", "min": 4.5 },
-    { "fg": "button.danger-fg", "bg": "button.danger-bg", "min": 4.5 },
-    { "fg": "button.danger-fg", "bg": "button.danger-bg-hover", "min": 4.5 },
-    { "fg": "tooltip.fg", "bg": "tooltip.bg", "min": 4.5 },
-    { "fg": "rail.item-fg", "bg": "rail.bg", "min": 4.5 },
-    { "fg": "rail.item-fg-current", "bg": "rail.item-bg-current", "min": 4.5 },
-    { "fg": "color.status.success", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.status.warning", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.status.danger", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.status.info", "bg": "color.surface.base", "min": 4.5 },
-    { "fg": "color.border.control", "bg": "color.surface.base", "min": 3 },
-    { "fg": "color.focus.ring", "bg": "color.surface.base", "min": 3 },
-    { "fg": "color.focus.ring", "bg": "color.surface.canvas", "min": 3 },
-    { "fg": "rail.indicator", "bg": "rail.bg", "min": 3 }
+    {
+      "fg": "color.text.primary",
+      "bg": "color.surface.canvas",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.primary",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.primary",
+      "bg": "color.surface.raised",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.primary",
+      "bg": "color.surface.overlay",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.secondary",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.secondary",
+      "bg": "color.surface.raised",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.muted",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.link",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.primary",
+      "bg": "color.interactive.hover",
+      "min": 4.5
+    },
+    {
+      "fg": "color.text.primary",
+      "bg": "color.interactive.active",
+      "min": 4.5
+    },
+    {
+      "fg": "color.interactive.selected-text",
+      "bg": "color.interactive.selected",
+      "min": 4.5
+    },
+    {
+      "fg": "color.accent.subtle-text",
+      "bg": "color.accent.subtle",
+      "min": 4.5
+    },
+    {
+      "fg": "button.primary-fg",
+      "bg": "button.primary-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "button.primary-fg",
+      "bg": "button.primary-bg-hover",
+      "min": 4.5
+    },
+    {
+      "fg": "button.primary-fg",
+      "bg": "button.primary-bg-active",
+      "min": 4.5
+    },
+    {
+      "fg": "button.secondary-fg",
+      "bg": "button.secondary-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "button.danger-fg",
+      "bg": "button.danger-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "button.danger-fg",
+      "bg": "button.danger-bg-hover",
+      "min": 4.5
+    },
+    {
+      "fg": "tooltip.fg",
+      "bg": "tooltip.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "rail.item-fg",
+      "bg": "rail.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "rail.item-fg-current",
+      "bg": "rail.item-bg-current",
+      "min": 4.5
+    },
+    {
+      "fg": "color.status.success",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.status.warning",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.status.danger",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.status.info",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "color.border.control",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "color.surface.canvas",
+      "min": 3
+    },
+    {
+      "fg": "rail.indicator",
+      "bg": "rail.bg",
+      "min": 3
+    },
+    {
+      "fg": "input.fg",
+      "bg": "input.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "input.placeholder",
+      "bg": "input.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "input.border",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "input.border",
+      "bg": "input.bg",
+      "min": 3
+    },
+    {
+      "fg": "input.border-invalid",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "input.help",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "input.error",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "input.label",
+      "bg": "color.surface.canvas",
+      "min": 4.5
+    }
   ]
 }

@@ -109,6 +109,7 @@
   --vx-color-surface-raised: var(--vx-color-neutral-850);
   --vx-color-surface-overlay: var(--vx-color-neutral-800);
   --vx-color-surface-sunken: var(--vx-color-neutral-1000);
+  --vx-color-surface-field: var(--vx-color-neutral-1000);
   --vx-color-surface-inverse: var(--vx-color-neutral-50);
   --vx-color-text-primary: var(--vx-color-neutral-50);
   --vx-color-text-secondary: var(--vx-color-neutral-300);
@@ -185,6 +186,17 @@
   --vx-rail-indicator: var(--vx-color-accent-indicator);
   --vx-menu-width: 256px;
   --vx-menu-bg: var(--vx-color-surface-base);
+  --vx-input-bg: var(--vx-color-surface-field);
+  --vx-input-fg: var(--vx-color-text-primary);
+  --vx-input-placeholder: var(--vx-color-text-muted);
+  --vx-input-border: var(--vx-color-border-control);
+  --vx-input-border-hover: var(--vx-color-border-strong);
+  --vx-input-border-invalid: var(--vx-color-status-danger);
+  --vx-input-disabled-bg: var(--vx-color-interactive-disabled);
+  --vx-input-disabled-fg: var(--vx-color-text-disabled);
+  --vx-input-label: var(--vx-color-text-primary);
+  --vx-input-help: var(--vx-color-text-secondary);
+  --vx-input-error: var(--vx-color-status-danger);
 }
 
 [data-theme="light"] {
@@ -194,6 +206,7 @@
   --vx-color-surface-raised: var(--vx-color-neutral-0);
   --vx-color-surface-overlay: var(--vx-color-neutral-0);
   --vx-color-surface-sunken: var(--vx-color-neutral-100);
+  --vx-color-surface-field: var(--vx-color-neutral-0);
   --vx-color-surface-inverse: var(--vx-color-neutral-900);
   --vx-color-text-primary: var(--vx-color-neutral-950);
   --vx-color-text-secondary: var(--vx-color-neutral-700);
@@ -270,6 +283,17 @@
   --vx-rail-indicator: var(--vx-color-accent-indicator);
   --vx-menu-width: 256px;
   --vx-menu-bg: var(--vx-color-surface-base);
+  --vx-input-bg: var(--vx-color-surface-field);
+  --vx-input-fg: var(--vx-color-text-primary);
+  --vx-input-placeholder: var(--vx-color-text-muted);
+  --vx-input-border: var(--vx-color-border-control);
+  --vx-input-border-hover: var(--vx-color-border-strong);
+  --vx-input-border-invalid: var(--vx-color-status-danger);
+  --vx-input-disabled-bg: var(--vx-color-interactive-disabled);
+  --vx-input-disabled-fg: var(--vx-color-text-disabled);
+  --vx-input-label: var(--vx-color-text-primary);
+  --vx-input-help: var(--vx-color-text-secondary);
+  --vx-input-error: var(--vx-color-status-danger);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -18,6 +18,10 @@
       "sunken": {
         "$value": "{color.neutral.1000}"
       },
+      "field": {
+        "$value": "{color.neutral.1000}",
+        "$description": "Fill behind text the person types: recessed in dark, paper-white in light."
+      },
       "inverse": {
         "$value": "{color.neutral.50}"
       }
