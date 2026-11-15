@@ -36,16 +36,31 @@ the rest back into one-off code. So there are two tiers.
 
 ## 3. What is proven and what is not
 
-Proven: the schema and the planner, by 12 unit tests (round trips on awkward names, ownership, determinism, unknown
-remote values). Not done: a differential test of the key schema against the inherited TypeScript on a shared corpus (the
-inherited `matchesSchema` has edge cases, such as a schema with no `{{secretKey}}`, that the new grammar rejects on
-purpose, so each difference must be listed, as 0137 does for Zod); the trait; the engine; any provider; the database
-tables; the screens. Nothing in the old backend has been deleted, and `scripts/lineage-ceiling.json` is unchanged.
+Proven (`cargo test -p vx-connectors`, 24 tests): the schema and the planner (12 unit tests), and the engine against an
+in-memory destination (12 tests in `tests/`):
+
+- **No value in any report, error, log line or audit row.** A canary value is pushed through success, retry, permanent
+  failure, delete, a failing hook and each audit failure; the rendered reports, errors, audit rows (Debug and JSON) and captured
+  log output are searched for it, and the test asserts the audit rows and log lines were actually present. Planting a leak into
+  an audit row and into a log line each made it fail. The test runs in its own binary because tracing caches log-site
+  enablement per process and made it flaky beside other tests (found, not assumed).
+- **A failed audit write blocks the sync.** If the plan cannot be recorded, no put, delete or hook runs and the destination
+  is exactly as it was; ignoring that failure in the engine made the test fail. If only the outcome cannot be recorded, the
+  caller gets `Unrecorded` with the report, never a success.
+- Order: list, then record the plan, then apply, then the hook, then record the outcome.
+- Retries only for transient errors, within a budget; one failing name does not stop the others; unchanged secrets are not
+  rewritten; a destination that cannot return values is always written; the hook runs only when something changed.
+- **A connector error is a kind and a fixed code, with no text field**, so an upstream error that echoes a request body has
+  no path into a log or audit row. The type makes this a compile-time fact, not a test.
+
+Not done: a differential test of the key schema against the inherited TypeScript (list each difference, as 0137 does for
+Zod); the production audit sink (the plan record and outcome record are separate transactions, because the destination
+cannot join one; the hash-chain append is `vx_audit::append`); a real provider; the database tables; the routes; the
+screens. Nothing in the old backend has been deleted and `scripts/lineage-ceiling.json` is unchanged.
 
 ## 4. Order
 
-1. The trait and the engine against an in-memory destination, with a test that no value appears in any log, error or audit
-   row, and that a failed audit write blocks the sync.
+1. **Done:** the trait and the engine against an in-memory destination (section 3).
 2. Differential test of the key schema against the inherited code; list the differences.
 3. First real provider: GitHub (the largest connection, 968 lines, so it tests the trait hardest), then Fly.io (the hook),
    then one pure key-value provider to prove the declarative tier.
