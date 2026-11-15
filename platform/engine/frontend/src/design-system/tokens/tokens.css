@@ -128,6 +128,9 @@
   --vx-color-accent-subtle: var(--vx-color-gold-950);
   --vx-color-accent-subtle-text: var(--vx-color-gold-300);
   --vx-color-accent-indicator: var(--vx-color-gold-500);
+  --vx-color-accent-solid: var(--vx-color-gold-500);
+  --vx-color-accent-solid-hover: var(--vx-color-gold-400);
+  --vx-color-accent-solid-fg: var(--vx-color-neutral-1000);
   --vx-color-focus-ring: var(--vx-color-gold-400);
   --vx-color-interactive-hover: var(--vx-color-neutral-800);
   --vx-color-interactive-active: var(--vx-color-neutral-700);
@@ -243,6 +246,28 @@
   --vx-tabs-gap: var(--vx-space-1);
   --vx-tabs-padding-x: var(--vx-space-3);
   --vx-tabs-indicator-width: 2px;
+  --vx-choice-size: 18px;
+  --vx-choice-radius: var(--vx-radius-sm);
+  --vx-choice-gap: var(--vx-space-2-5);
+  --vx-choice-bg: var(--vx-color-surface-field);
+  --vx-choice-border: var(--vx-color-border-control);
+  --vx-choice-border-hover: var(--vx-color-border-strong);
+  --vx-choice-border-invalid: var(--vx-color-status-danger);
+  --vx-choice-checked-bg: var(--vx-color-accent-solid);
+  --vx-choice-checked-bg-hover: var(--vx-color-accent-solid-hover);
+  --vx-choice-mark: var(--vx-color-accent-solid-fg);
+  --vx-choice-disabled-bg: var(--vx-color-interactive-disabled);
+  --vx-choice-disabled-border: var(--vx-color-text-disabled);
+  --vx-choice-label: var(--vx-color-text-primary);
+  --vx-choice-description: var(--vx-color-text-secondary);
+  --vx-switch-width: 36px;
+  --vx-switch-height: 20px;
+  --vx-switch-thumb-size: 14px;
+  --vx-switch-track-off: var(--vx-color-surface-field);
+  --vx-switch-track-border-off: var(--vx-color-border-control);
+  --vx-switch-thumb-off: var(--vx-color-text-secondary);
+  --vx-switch-track-on: var(--vx-color-accent-solid);
+  --vx-switch-thumb-on: var(--vx-color-accent-solid-fg);
 }
 
 [data-theme="light"] {
@@ -271,6 +296,9 @@
   --vx-color-accent-subtle: var(--vx-color-gold-50);
   --vx-color-accent-subtle-text: var(--vx-color-gold-800);
   --vx-color-accent-indicator: var(--vx-color-gold-700);
+  --vx-color-accent-solid: var(--vx-color-gold-700);
+  --vx-color-accent-solid-hover: var(--vx-color-gold-800);
+  --vx-color-accent-solid-fg: var(--vx-color-neutral-0);
   --vx-color-focus-ring: var(--vx-color-gold-700);
   --vx-color-interactive-hover: var(--vx-color-neutral-100);
   --vx-color-interactive-active: var(--vx-color-neutral-200);
@@ -386,6 +414,28 @@
   --vx-tabs-gap: var(--vx-space-1);
   --vx-tabs-padding-x: var(--vx-space-3);
   --vx-tabs-indicator-width: 2px;
+  --vx-choice-size: 18px;
+  --vx-choice-radius: var(--vx-radius-sm);
+  --vx-choice-gap: var(--vx-space-2-5);
+  --vx-choice-bg: var(--vx-color-surface-field);
+  --vx-choice-border: var(--vx-color-border-control);
+  --vx-choice-border-hover: var(--vx-color-border-strong);
+  --vx-choice-border-invalid: var(--vx-color-status-danger);
+  --vx-choice-checked-bg: var(--vx-color-accent-solid);
+  --vx-choice-checked-bg-hover: var(--vx-color-accent-solid-hover);
+  --vx-choice-mark: var(--vx-color-accent-solid-fg);
+  --vx-choice-disabled-bg: var(--vx-color-interactive-disabled);
+  --vx-choice-disabled-border: var(--vx-color-text-disabled);
+  --vx-choice-label: var(--vx-color-text-primary);
+  --vx-choice-description: var(--vx-color-text-secondary);
+  --vx-switch-width: 36px;
+  --vx-switch-height: 20px;
+  --vx-switch-thumb-size: 14px;
+  --vx-switch-track-off: var(--vx-color-surface-field);
+  --vx-switch-track-border-off: var(--vx-color-border-control);
+  --vx-switch-thumb-off: var(--vx-color-text-secondary);
+  --vx-switch-track-on: var(--vx-color-accent-solid);
+  --vx-switch-thumb-on: var(--vx-color-accent-solid-fg);
 }
 
 @media (prefers-reduced-motion: reduce) {

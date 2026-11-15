@@ -295,6 +295,71 @@
       "fg": "tabs.count-fg",
       "bg": "tabs.count-bg",
       "min": 4.5
+    },
+    {
+      "fg": "choice.border",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "choice.border",
+      "bg": "color.surface.canvas",
+      "min": 3
+    },
+    {
+      "fg": "choice.border",
+      "bg": "dialog.bg",
+      "min": 3
+    },
+    {
+      "fg": "choice.checked-bg",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "choice.checked-bg",
+      "bg": "dialog.bg",
+      "min": 3
+    },
+    {
+      "fg": "choice.mark",
+      "bg": "choice.checked-bg",
+      "min": 3
+    },
+    {
+      "fg": "choice.mark",
+      "bg": "choice.checked-bg-hover",
+      "min": 3
+    },
+    {
+      "fg": "choice.label",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "choice.description",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "switch.track-border-off",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "switch.thumb-off",
+      "bg": "switch.track-off",
+      "min": 3
+    },
+    {
+      "fg": "switch.thumb-on",
+      "bg": "switch.track-on",
+      "min": 3
+    },
+    {
+      "fg": "switch.track-on",
+      "bg": "color.surface.base",
+      "min": 3
     }
   ]
 }

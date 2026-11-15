@@ -1,0 +1,149 @@
+/* Vaultix checkboxes and radios: native inputs drawn with tokens. */
+.vx-choice {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--vx-choice-gap);
+  /* At least 24px tall so the press target meets WCAG 2.5.8. */
+  min-height: 24px;
+  color: var(--vx-choice-label);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-snug);
+  cursor: pointer;
+}
+
+.vx-choice:has(input:disabled) {
+  color: var(--vx-input-disabled-fg);
+  cursor: not-allowed;
+}
+
+.vx-choice__control {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  /* Centres the box on the first line of the label. */
+  margin-top: calc((1lh - var(--vx-choice-size)) / 2);
+}
+
+.vx-checkbox,
+.vx-radio {
+  width: var(--vx-choice-size);
+  height: var(--vx-choice-size);
+  margin: 0;
+  border: 1.5px solid var(--vx-choice-border);
+  background: var(--vx-choice-bg);
+  cursor: inherit;
+  appearance: none;
+  transition:
+    background-color var(--vx-duration-fast) var(--vx-easing-standard),
+    border-color var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-checkbox {
+  border-radius: var(--vx-choice-radius);
+}
+
+.vx-radio {
+  border-radius: 50%;
+}
+
+.vx-choice:hover .vx-checkbox:not(:disabled),
+.vx-choice:hover .vx-radio:not(:disabled) {
+  border-color: var(--vx-choice-border-hover);
+}
+
+.vx-checkbox:focus-visible,
+.vx-radio:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-checkbox[aria-invalid="true"],
+.vx-radio[aria-invalid="true"] {
+  border-color: var(--vx-choice-border-invalid);
+}
+
+.vx-checkbox:checked,
+.vx-checkbox:indeterminate,
+.vx-radio:checked {
+  border-color: var(--vx-choice-checked-bg);
+  background: var(--vx-choice-checked-bg);
+}
+
+.vx-choice:hover .vx-checkbox:checked:not(:disabled),
+.vx-choice:hover .vx-checkbox:indeterminate:not(:disabled),
+.vx-choice:hover .vx-radio:checked:not(:disabled) {
+  border-color: var(--vx-choice-checked-bg-hover);
+  background: var(--vx-choice-checked-bg-hover);
+}
+
+/* The radio's dot: an inset ring of the box colour inside the filled circle. */
+.vx-radio:checked {
+  box-shadow: inset 0 0 0 3px var(--vx-choice-bg);
+}
+
+.vx-checkbox:disabled,
+.vx-radio:disabled {
+  border-color: var(--vx-choice-disabled-border);
+  background: var(--vx-choice-disabled-bg);
+}
+
+.vx-checkbox:disabled:checked,
+.vx-checkbox:disabled:indeterminate,
+.vx-radio:disabled:checked {
+  background: var(--vx-choice-disabled-border);
+}
+
+.vx-choice__mark {
+  position: absolute;
+  inset: 0;
+  width: var(--vx-choice-size);
+  height: var(--vx-choice-size);
+  fill: none;
+  stroke: var(--vx-choice-mark);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.vx-choice__check,
+.vx-choice__dash {
+  display: none;
+}
+
+.vx-checkbox:checked:not(:indeterminate) + .vx-choice__mark .vx-choice__check,
+.vx-checkbox:indeterminate + .vx-choice__mark .vx-choice__dash {
+  display: inline;
+}
+
+.vx-choice__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-0-5);
+  min-width: 0;
+}
+
+.vx-choice__description {
+  color: var(--vx-choice-description);
+  font-size: var(--vx-font-size-sm);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+.vx-choice:has(input:disabled) .vx-choice__description {
+  color: var(--vx-input-disabled-fg);
+}
+
+/* Windows high contrast replaces colours; keep the checked state and the mark visible. */
+@media (forced-colors: active) {
+  .vx-checkbox:checked,
+  .vx-checkbox:indeterminate,
+  .vx-radio:checked {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  .vx-choice__mark {
+    stroke: HighlightText;
+  }
+}

@@ -401,5 +401,97 @@
       "$type": "dimension",
       "$value": "2px"
     }
+  },
+  "choice": {
+    "size": {
+      "$type": "dimension",
+      "$value": "18px"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.sm}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2-5}"
+    },
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.field}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.control}"
+    },
+    "border-hover": {
+      "$type": "color",
+      "$value": "{color.border.strong}"
+    },
+    "border-invalid": {
+      "$type": "color",
+      "$value": "{color.status.danger}"
+    },
+    "checked-bg": {
+      "$type": "color",
+      "$value": "{color.accent.solid}"
+    },
+    "checked-bg-hover": {
+      "$type": "color",
+      "$value": "{color.accent.solid-hover}"
+    },
+    "mark": {
+      "$type": "color",
+      "$value": "{color.accent.solid-fg}"
+    },
+    "disabled-bg": {
+      "$type": "color",
+      "$value": "{color.interactive.disabled}"
+    },
+    "disabled-border": {
+      "$type": "color",
+      "$value": "{color.text.disabled}"
+    },
+    "label": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "description": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    }
+  },
+  "switch": {
+    "width": {
+      "$type": "dimension",
+      "$value": "36px"
+    },
+    "height": {
+      "$type": "dimension",
+      "$value": "20px"
+    },
+    "thumb-size": {
+      "$type": "dimension",
+      "$value": "14px"
+    },
+    "track-off": {
+      "$type": "color",
+      "$value": "{color.surface.field}"
+    },
+    "track-border-off": {
+      "$type": "color",
+      "$value": "{color.border.control}"
+    },
+    "thumb-off": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "track-on": {
+      "$type": "color",
+      "$value": "{color.accent.solid}"
+    },
+    "thumb-on": {
+      "$type": "color",
+      "$value": "{color.accent.solid-fg}"
+    }
   }
 }

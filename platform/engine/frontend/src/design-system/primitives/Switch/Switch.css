@@ -1,0 +1,95 @@
+/* Vaultix Switch. The input is the track; the thumb is drawn over it. Values come from tokens. */
+.vx-switch-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--vx-space-4);
+  min-height: 24px;
+  color: var(--vx-choice-label);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-snug);
+  cursor: pointer;
+}
+
+.vx-switch-row:has(input:disabled),
+.vx-switch-row:has(input:disabled) .vx-choice__description {
+  color: var(--vx-input-disabled-fg);
+  cursor: not-allowed;
+}
+
+.vx-switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  margin-top: calc((1lh - var(--vx-switch-height)) / 2);
+}
+
+.vx-switch__input {
+  width: var(--vx-switch-width);
+  height: var(--vx-switch-height);
+  margin: 0;
+  border: 1.5px solid var(--vx-switch-track-border-off);
+  border-radius: var(--vx-radius-full);
+  background: var(--vx-switch-track-off);
+  cursor: inherit;
+  appearance: none;
+  transition:
+    background-color var(--vx-duration-fast) var(--vx-easing-standard),
+    border-color var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-switch__input:checked {
+  border-color: var(--vx-switch-track-on);
+  background: var(--vx-switch-track-on);
+}
+
+.vx-switch__input:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-switch__input:disabled {
+  border-color: var(--vx-choice-disabled-border);
+  background: var(--vx-choice-disabled-bg);
+}
+
+/* Position, not colour alone, shows the state: the thumb sits at the end when on. */
+.vx-switch__thumb {
+  position: absolute;
+  top: 50%;
+  left: calc((var(--vx-switch-height) - var(--vx-switch-thumb-size)) / 2);
+  width: var(--vx-switch-thumb-size);
+  height: var(--vx-switch-thumb-size);
+  border-radius: 50%;
+  background: var(--vx-switch-thumb-off);
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    transform var(--vx-duration-fast) var(--vx-easing-emphasized),
+    background-color var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-switch__input:checked + .vx-switch__thumb {
+  background: var(--vx-switch-thumb-on);
+  transform: translate(calc(var(--vx-switch-width) - var(--vx-switch-height)), -50%);
+}
+
+.vx-switch__input:disabled + .vx-switch__thumb {
+  background: var(--vx-choice-disabled-border);
+}
+
+@media (forced-colors: active) {
+  .vx-switch__input:checked {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  .vx-switch__thumb {
+    background: ButtonText;
+  }
+
+  .vx-switch__input:checked + .vx-switch__thumb {
+    background: HighlightText;
+  }
+}

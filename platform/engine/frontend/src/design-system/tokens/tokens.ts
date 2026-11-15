@@ -96,7 +96,10 @@ export const vx = {
       "active": "var(--vx-color-accent-active)",
       "subtle": "var(--vx-color-accent-subtle)",
       "subtle-text": "var(--vx-color-accent-subtle-text)",
-      "indicator": "var(--vx-color-accent-indicator)"
+      "indicator": "var(--vx-color-accent-indicator)",
+      "solid": "var(--vx-color-accent-solid)",
+      "solid-hover": "var(--vx-color-accent-solid-hover)",
+      "solid-fg": "var(--vx-color-accent-solid-fg)"
     },
     "focus": {
       "ring": "var(--vx-color-focus-ring)"
@@ -313,6 +316,32 @@ export const vx = {
     "gap": "var(--vx-tabs-gap)",
     "padding-x": "var(--vx-tabs-padding-x)",
     "indicator-width": "var(--vx-tabs-indicator-width)"
+  },
+  "choice": {
+    "size": "var(--vx-choice-size)",
+    "radius": "var(--vx-choice-radius)",
+    "gap": "var(--vx-choice-gap)",
+    "bg": "var(--vx-choice-bg)",
+    "border": "var(--vx-choice-border)",
+    "border-hover": "var(--vx-choice-border-hover)",
+    "border-invalid": "var(--vx-choice-border-invalid)",
+    "checked-bg": "var(--vx-choice-checked-bg)",
+    "checked-bg-hover": "var(--vx-choice-checked-bg-hover)",
+    "mark": "var(--vx-choice-mark)",
+    "disabled-bg": "var(--vx-choice-disabled-bg)",
+    "disabled-border": "var(--vx-choice-disabled-border)",
+    "label": "var(--vx-choice-label)",
+    "description": "var(--vx-choice-description)"
+  },
+  "switch": {
+    "width": "var(--vx-switch-width)",
+    "height": "var(--vx-switch-height)",
+    "thumb-size": "var(--vx-switch-thumb-size)",
+    "track-off": "var(--vx-switch-track-off)",
+    "track-border-off": "var(--vx-switch-track-border-off)",
+    "thumb-off": "var(--vx-switch-thumb-off)",
+    "track-on": "var(--vx-switch-track-on)",
+    "thumb-on": "var(--vx-switch-thumb-on)"
   }
 } as const;
 
@@ -1343,6 +1372,30 @@ export const tokenList: TTokenEntry[] = [
     "light": "oklch(0.55 0.11 75)"
   },
   {
+    "name": "color.accent.solid",
+    "cssVar": "--vx-color-accent-solid",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.78 0.12 85)",
+    "light": "oklch(0.55 0.11 75)"
+  },
+  {
+    "name": "color.accent.solid-hover",
+    "cssVar": "--vx-color-accent-solid-hover",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.81 0.115 85)",
+    "light": "oklch(0.42 0.085 72)"
+  },
+  {
+    "name": "color.accent.solid-fg",
+    "cssVar": "--vx-color-accent-solid-fg",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
     "name": "color.focus.ring",
     "cssVar": "--vx-color-focus-ring",
     "type": "color",
@@ -2261,6 +2314,182 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "2px",
     "light": "2px"
+  },
+  {
+    "name": "choice.size",
+    "cssVar": "--vx-choice-size",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "18px",
+    "light": "18px"
+  },
+  {
+    "name": "choice.radius",
+    "cssVar": "--vx-choice-radius",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "4px",
+    "light": "4px"
+  },
+  {
+    "name": "choice.gap",
+    "cssVar": "--vx-choice-gap",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "10px",
+    "light": "10px"
+  },
+  {
+    "name": "choice.bg",
+    "cssVar": "--vx-choice-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "choice.border",
+    "cssVar": "--vx-choice-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.57 0.022 255)"
+  },
+  {
+    "name": "choice.border-hover",
+    "cssVar": "--vx-choice-border-hover",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.69 0.02 255)"
+  },
+  {
+    "name": "choice.border-invalid",
+    "cssVar": "--vx-choice-border-invalid",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.74 0.14 25)",
+    "light": "oklch(0.46 0.16 27)"
+  },
+  {
+    "name": "choice.checked-bg",
+    "cssVar": "--vx-choice-checked-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.78 0.12 85)",
+    "light": "oklch(0.55 0.11 75)"
+  },
+  {
+    "name": "choice.checked-bg-hover",
+    "cssVar": "--vx-choice-checked-bg-hover",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.81 0.115 85)",
+    "light": "oklch(0.42 0.085 72)"
+  },
+  {
+    "name": "choice.mark",
+    "cssVar": "--vx-choice-mark",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "choice.disabled-bg",
+    "cssVar": "--vx-choice-disabled-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.25 0.022 255)",
+    "light": "oklch(0.93 0.008 255)"
+  },
+  {
+    "name": "choice.disabled-border",
+    "cssVar": "--vx-choice-disabled-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.46 0.022 255)",
+    "light": "oklch(0.69 0.02 255)"
+  },
+  {
+    "name": "choice.label",
+    "cssVar": "--vx-choice-label",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "choice.description",
+    "cssVar": "--vx-choice-description",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "switch.width",
+    "cssVar": "--vx-switch-width",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "36px",
+    "light": "36px"
+  },
+  {
+    "name": "switch.height",
+    "cssVar": "--vx-switch-height",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "20px",
+    "light": "20px"
+  },
+  {
+    "name": "switch.thumb-size",
+    "cssVar": "--vx-switch-thumb-size",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "14px",
+    "light": "14px"
+  },
+  {
+    "name": "switch.track-off",
+    "cssVar": "--vx-switch-track-off",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "switch.track-border-off",
+    "cssVar": "--vx-switch-track-border-off",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.57 0.022 255)"
+  },
+  {
+    "name": "switch.thumb-off",
+    "cssVar": "--vx-switch-thumb-off",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "switch.track-on",
+    "cssVar": "--vx-switch-track-on",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.78 0.12 85)",
+    "light": "oklch(0.55 0.11 75)"
+  },
+  {
+    "name": "switch.thumb-on",
+    "cssVar": "--vx-switch-thumb-on",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
   }
 ];
 
@@ -2679,6 +2908,97 @@ export const contrastReport = [
     "ratio": 9.56
   },
   {
+    "theme": "dark",
+    "fg": "choice.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 3.93
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.border",
+    "bg": "color.surface.canvas",
+    "min": 3,
+    "ratio": 4.18
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.border",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 3.16
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.checked-bg",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 8.69
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.checked-bg",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 7
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.mark",
+    "bg": "choice.checked-bg",
+    "min": 3,
+    "ratio": 9.76
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.mark",
+    "bg": "choice.checked-bg-hover",
+    "min": 3,
+    "ratio": 10.83
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.label",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 16.06
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.description",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 9.07
+  },
+  {
+    "theme": "dark",
+    "fg": "switch.track-border-off",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 3.93
+  },
+  {
+    "theme": "dark",
+    "fg": "switch.thumb-off",
+    "bg": "switch.track-off",
+    "min": 3,
+    "ratio": 10.18
+  },
+  {
+    "theme": "dark",
+    "fg": "switch.thumb-on",
+    "bg": "switch.track-on",
+    "min": 3,
+    "ratio": 9.76
+  },
+  {
+    "theme": "dark",
+    "fg": "switch.track-on",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 8.69
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -3090,5 +3410,96 @@ export const contrastReport = [
     "bg": "tabs.count-bg",
     "min": 4.5,
     "ratio": 12.58
+  },
+  {
+    "theme": "light",
+    "fg": "choice.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "choice.border",
+    "bg": "color.surface.canvas",
+    "min": 3,
+    "ratio": 4.09
+  },
+  {
+    "theme": "light",
+    "fg": "choice.border",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "choice.checked-bg",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "choice.checked-bg",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "choice.mark",
+    "bg": "choice.checked-bg",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "choice.mark",
+    "bg": "choice.checked-bg-hover",
+    "min": 3,
+    "ratio": 8.61
+  },
+  {
+    "theme": "light",
+    "fg": "choice.label",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "choice.description",
+    "bg": "color.surface.base",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "switch.track-border-off",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "switch.thumb-off",
+    "bg": "switch.track-off",
+    "min": 3,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "switch.thumb-on",
+    "bg": "switch.track-on",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "switch.track-on",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.95
   }
 ] as const;

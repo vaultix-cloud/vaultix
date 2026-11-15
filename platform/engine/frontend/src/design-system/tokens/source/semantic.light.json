@@ -81,6 +81,17 @@
       },
       "indicator": {
         "$value": "{color.gold.700}"
+      },
+      "solid": {
+        "$value": "{color.gold.700}",
+        "$description": "Accent for graphics that carry state (a checked box, an on switch): at least 3:1 against surfaces in both themes."
+      },
+      "solid-hover": {
+        "$value": "{color.gold.800}"
+      },
+      "solid-fg": {
+        "$value": "{color.neutral.0}",
+        "$description": "Marks drawn on accent.solid."
       }
     },
     "focus": {

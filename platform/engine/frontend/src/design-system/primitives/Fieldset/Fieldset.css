@@ -1,0 +1,46 @@
+/* Vaultix Fieldset: a labelled group of choices. Values come from tokens. */
+.vx-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-1-5);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--vx-font-family-sans);
+}
+
+.vx-fieldset__legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--vx-space-0-5);
+  padding: 0;
+  color: var(--vx-input-label);
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-medium);
+  line-height: var(--vx-font-line-height-snug);
+}
+
+/* The float above keeps the legend in the flex flow; this clears it for what follows. */
+.vx-fieldset__legend + * {
+  clear: both;
+}
+
+.vx-fieldset:disabled .vx-fieldset__legend {
+  color: var(--vx-input-disabled-fg);
+}
+
+.vx-fieldset__items {
+  display: flex;
+  gap: var(--vx-space-2-5);
+  margin-top: var(--vx-space-1);
+}
+
+.vx-fieldset__items--vertical {
+  flex-direction: column;
+}
+
+.vx-fieldset__items--horizontal {
+  flex-wrap: wrap;
+  column-gap: var(--vx-space-6);
+}
