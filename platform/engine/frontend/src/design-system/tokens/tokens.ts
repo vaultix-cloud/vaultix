@@ -106,7 +106,8 @@ export const vx = {
       "active": "var(--vx-color-interactive-active)",
       "selected": "var(--vx-color-interactive-selected)",
       "selected-text": "var(--vx-color-interactive-selected-text)",
-      "disabled": "var(--vx-color-interactive-disabled)"
+      "disabled": "var(--vx-color-interactive-disabled)",
+      "highlight": "var(--vx-color-interactive-highlight)"
     },
     "status": {
       "success": "var(--vx-color-status-success)",
@@ -114,6 +115,7 @@ export const vx = {
       "warning": "var(--vx-color-status-warning)",
       "warning-subtle": "var(--vx-color-status-warning-subtle)",
       "danger": "var(--vx-color-status-danger)",
+      "danger-strong": "var(--vx-color-status-danger-strong)",
       "danger-subtle": "var(--vx-color-status-danger-subtle)",
       "danger-solid": "var(--vx-color-status-danger-solid)",
       "danger-solid-hover": "var(--vx-color-status-danger-solid-hover)",
@@ -276,6 +278,27 @@ export const vx = {
     "width-md": "var(--vx-dialog-width-md)",
     "width-lg": "var(--vx-dialog-width-lg)",
     "sheet-width": "var(--vx-dialog-sheet-width)"
+  },
+  "popover": {
+    "bg": "var(--vx-popover-bg)",
+    "fg": "var(--vx-popover-fg)",
+    "border": "var(--vx-popover-border)",
+    "shadow": "var(--vx-popover-shadow)",
+    "radius": "var(--vx-popover-radius)",
+    "padding": "var(--vx-popover-padding)",
+    "offset": "var(--vx-popover-offset)",
+    "max-width": "var(--vx-popover-max-width)"
+  },
+  "menu-item": {
+    "fg": "var(--vx-menu-item-fg)",
+    "fg-muted": "var(--vx-menu-item-fg-muted)",
+    "fg-danger": "var(--vx-menu-item-fg-danger)",
+    "fg-disabled": "var(--vx-menu-item-fg-disabled)",
+    "bg-highlight": "var(--vx-menu-item-bg-highlight)",
+    "height": "var(--vx-menu-item-height)",
+    "padding-x": "var(--vx-menu-item-padding-x)",
+    "radius": "var(--vx-menu-item-radius)",
+    "min-width": "var(--vx-menu-item-min-width)"
   }
 } as const;
 
@@ -1354,6 +1377,14 @@ export const tokenList: TTokenEntry[] = [
     "light": "oklch(0.93 0.008 255)"
   },
   {
+    "name": "color.interactive.highlight",
+    "cssVar": "--vx-color-interactive-highlight",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.37 0.022 255)",
+    "light": "oklch(0.93 0.008 255)"
+  },
+  {
     "name": "color.status.success",
     "cssVar": "--vx-color-status-success",
     "type": "color",
@@ -1391,6 +1422,14 @@ export const tokenList: TTokenEntry[] = [
     "type": "color",
     "layer": "semantic",
     "dark": "oklch(0.74 0.14 25)",
+    "light": "oklch(0.46 0.16 27)"
+  },
+  {
+    "name": "color.status.danger-strong",
+    "cssVar": "--vx-color-status-danger-strong",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.83 0.09 25)",
     "light": "oklch(0.46 0.16 27)"
   },
   {
@@ -1976,6 +2015,142 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "480px",
     "light": "480px"
+  },
+  {
+    "name": "popover.bg",
+    "cssVar": "--vx-popover-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.29 0.022 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "popover.fg",
+    "cssVar": "--vx-popover-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "popover.border",
+    "cssVar": "--vx-popover-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.37 0.022 255)",
+    "light": "oklch(0.87 0.012 255)"
+  },
+  {
+    "name": "popover.shadow",
+    "cssVar": "--vx-popover-shadow",
+    "type": "shadow",
+    "layer": "component",
+    "dark": "0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4)",
+    "light": "0 24px 64px oklch(0.2 0.02 255 / 0.22), 0 2px 8px oklch(0.2 0.02 255 / 0.12)"
+  },
+  {
+    "name": "popover.radius",
+    "cssVar": "--vx-popover-radius",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "6px",
+    "light": "6px"
+  },
+  {
+    "name": "popover.padding",
+    "cssVar": "--vx-popover-padding",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "12px",
+    "light": "12px"
+  },
+  {
+    "name": "popover.offset",
+    "cssVar": "--vx-popover-offset",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "4px",
+    "light": "4px"
+  },
+  {
+    "name": "popover.max-width",
+    "cssVar": "--vx-popover-max-width",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "360px",
+    "light": "360px"
+  },
+  {
+    "name": "menu-item.fg",
+    "cssVar": "--vx-menu-item-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "menu-item.fg-muted",
+    "cssVar": "--vx-menu-item-fg-muted",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "menu-item.fg-danger",
+    "cssVar": "--vx-menu-item-fg-danger",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.83 0.09 25)",
+    "light": "oklch(0.46 0.16 27)"
+  },
+  {
+    "name": "menu-item.fg-disabled",
+    "cssVar": "--vx-menu-item-fg-disabled",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.46 0.022 255)",
+    "light": "oklch(0.69 0.02 255)"
+  },
+  {
+    "name": "menu-item.bg-highlight",
+    "cssVar": "--vx-menu-item-bg-highlight",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.37 0.022 255)",
+    "light": "oklch(0.93 0.008 255)"
+  },
+  {
+    "name": "menu-item.height",
+    "cssVar": "--vx-menu-item-height",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "32px",
+    "light": "32px"
+  },
+  {
+    "name": "menu-item.padding-x",
+    "cssVar": "--vx-menu-item-padding-x",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "10px",
+    "light": "10px"
+  },
+  {
+    "name": "menu-item.radius",
+    "cssVar": "--vx-menu-item-radius",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "4px",
+    "light": "4px"
+  },
+  {
+    "name": "menu-item.min-width",
+    "cssVar": "--vx-menu-item-min-width",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "200px",
+    "light": "200px"
   }
 ];
 
@@ -2296,6 +2471,62 @@ export const contrastReport = [
     "ratio": 5.76
   },
   {
+    "theme": "dark",
+    "fg": "popover.fg",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 12.93
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 9.56
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-muted",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 7.3
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-muted",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 5.39
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-danger",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 8.07
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-danger",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 5.96
+  },
+  {
+    "theme": "dark",
+    "fg": "color.focus.ring",
+    "bg": "popover.bg",
+    "min": 3,
+    "ratio": 7.77
+  },
+  {
+    "theme": "dark",
+    "fg": "color.focus.ring",
+    "bg": "menu-item.bg-highlight",
+    "min": 3,
+    "ratio": 5.74
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -2609,5 +2840,61 @@ export const contrastReport = [
     "bg": "dialog.bg",
     "min": 4.5,
     "ratio": 7.74
+  },
+  {
+    "theme": "light",
+    "fg": "popover.fg",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 15.17
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-muted",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-muted",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 8.48
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-danger",
+    "bg": "popover.bg",
+    "min": 4.5,
+    "ratio": 7.74
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-danger",
+    "bg": "menu-item.bg-highlight",
+    "min": 4.5,
+    "ratio": 6.3
+  },
+  {
+    "theme": "light",
+    "fg": "color.focus.ring",
+    "bg": "popover.bg",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "color.focus.ring",
+    "bg": "menu-item.bg-highlight",
+    "min": 3,
+    "ratio": 4.03
   }
 ] as const;

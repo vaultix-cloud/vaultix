@@ -225,6 +225,46 @@
       "fg": "input.error",
       "bg": "dialog.bg",
       "min": 4.5
+    },
+    {
+      "fg": "popover.fg",
+      "bg": "popover.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg",
+      "bg": "menu-item.bg-highlight",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-muted",
+      "bg": "popover.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-muted",
+      "bg": "menu-item.bg-highlight",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-danger",
+      "bg": "popover.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-danger",
+      "bg": "menu-item.bg-highlight",
+      "min": 4.5
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "popover.bg",
+      "min": 3
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "menu-item.bg-highlight",
+      "min": 3
     }
   ]
 }

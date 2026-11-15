@@ -11,12 +11,13 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useRef,
   useState
 } from "react";
 
-import { place, rectOf, TSide, viewportRect } from "../../utils/position";
+import { useAnchoredPosition } from "../../utils/anchored";
+import { TSide } from "../../utils/position";
+import { assignRef } from "../../utils/refs";
 import { durationMs } from "../../utils/tokens";
 
 import "./Tooltip.css";
@@ -44,11 +45,6 @@ type TTriggerProps = {
 };
 
 const LEAVE_GRACE_MS = 120;
-
-const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
-  if (typeof ref === "function") ref(value);
-  else if (ref && typeof ref === "object") Reflect.set(ref, "current", value);
-};
 
 // The Popover API puts the tooltip in the top layer, above dialogs, without a portal or z-index race.
 const popoverAttribute = { popover: "manual" } as Record<string, string>;
@@ -103,35 +99,7 @@ export const Tooltip = ({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, hide]);
 
-  useLayoutEffect(() => {
-    const tip = tipRef.current;
-    const trigger = triggerRef.current;
-    if (!open || !tip || !trigger) return undefined;
-    tip.showPopover?.();
-    const offset =
-      Number.parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--vx-tooltip-offset")
-      ) || 8;
-    const position = () => {
-      const placed = place(rectOf(trigger), rectOf(tip), {
-        side,
-        offset,
-        viewport: viewportRect()
-      });
-      tip.style.top = `${placed.top}px`;
-      tip.style.left = `${placed.left}px`;
-      tip.dataset.side = placed.side;
-      tip.dataset.open = "true";
-    };
-    position();
-    window.addEventListener("scroll", position, true);
-    window.addEventListener("resize", position);
-    return () => {
-      window.removeEventListener("scroll", position, true);
-      window.removeEventListener("resize", position);
-      if (tip.matches?.(":popover-open")) tip.hidePopover?.();
-    };
-  }, [open, side]);
+  useAnchoredPosition(open, triggerRef, tipRef, { side, offsetToken: "--vx-tooltip-offset" });
 
   if (!isValidElement(children)) return children;
   const child = children as ReactElement<TTriggerProps> & { ref?: Ref<HTMLElement> };

@@ -1,0 +1,58 @@
+/* Vaultix floating surfaces: Popover and Menu share this shell. Shown in the top layer with the
+   Popover API and placed with position: fixed. Values come from tokens. */
+.vx-floating,
+.vx-popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--vx-popover-border);
+  border-radius: var(--vx-popover-radius);
+  background: var(--vx-popover-bg);
+  color: var(--vx-popover-fg);
+  box-shadow: var(--vx-popover-shadow);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-normal);
+  opacity: 0;
+  transform: translateY(calc(-1 * var(--vx-space-1)));
+  transition:
+    opacity var(--vx-duration-fast) var(--vx-easing-standard),
+    transform var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-floating[data-side="top"],
+.vx-popover[data-side="top"] {
+  transform: translateY(var(--vx-space-1));
+}
+
+.vx-floating[data-open="true"],
+.vx-popover[data-open="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+.vx-popover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-3);
+  width: max-content;
+  max-width: min(var(--vx-popover-max-width), calc(100vw - 2 * var(--vx-space-2)));
+  padding: var(--vx-popover-padding);
+}
+
+.vx-popover:focus {
+  outline: none;
+}
+
+.vx-popover:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-popover__title {
+  margin: 0;
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-semibold);
+  line-height: var(--vx-font-line-height-snug);
+}

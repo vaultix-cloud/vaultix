@@ -279,5 +279,77 @@
       "$type": "dimension",
       "$value": "480px"
     }
+  },
+  "popover": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.overlay}"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.default}"
+    },
+    "shadow": {
+      "$type": "shadow",
+      "$value": "{elevation.overlay}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.md}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "offset": {
+      "$type": "dimension",
+      "$value": "{space.1}"
+    },
+    "max-width": {
+      "$type": "dimension",
+      "$value": "360px"
+    }
+  },
+  "menu-item": {
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "fg-muted": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "fg-danger": {
+      "$type": "color",
+      "$value": "{color.status.danger-strong}"
+    },
+    "fg-disabled": {
+      "$type": "color",
+      "$value": "{color.text.disabled}"
+    },
+    "bg-highlight": {
+      "$type": "color",
+      "$value": "{color.interactive.highlight}"
+    },
+    "height": {
+      "$type": "dimension",
+      "$value": "{control.height-md}"
+    },
+    "padding-x": {
+      "$type": "dimension",
+      "$value": "{space.2-5}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.sm}"
+    },
+    "min-width": {
+      "$type": "dimension",
+      "$value": "200px"
+    }
   }
 }

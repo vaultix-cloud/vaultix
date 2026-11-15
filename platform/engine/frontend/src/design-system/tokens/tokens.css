@@ -134,11 +134,13 @@
   --vx-color-interactive-selected: var(--vx-color-gold-950);
   --vx-color-interactive-selected-text: var(--vx-color-gold-300);
   --vx-color-interactive-disabled: var(--vx-color-neutral-850);
+  --vx-color-interactive-highlight: var(--vx-color-neutral-700);
   --vx-color-status-success: var(--vx-color-green-400);
   --vx-color-status-success-subtle: var(--vx-color-green-950);
   --vx-color-status-warning: var(--vx-color-orange-400);
   --vx-color-status-warning-subtle: var(--vx-color-orange-950);
   --vx-color-status-danger: var(--vx-color-red-400);
+  --vx-color-status-danger-strong: var(--vx-color-red-300);
   --vx-color-status-danger-subtle: var(--vx-color-red-950);
   --vx-color-status-danger-solid: var(--vx-color-red-600);
   --vx-color-status-danger-solid-hover: var(--vx-color-red-700);
@@ -212,6 +214,23 @@
   --vx-dialog-width-md: 560px;
   --vx-dialog-width-lg: 760px;
   --vx-dialog-sheet-width: 480px;
+  --vx-popover-bg: var(--vx-color-surface-overlay);
+  --vx-popover-fg: var(--vx-color-text-primary);
+  --vx-popover-border: var(--vx-color-border-default);
+  --vx-popover-shadow: var(--vx-elevation-overlay);
+  --vx-popover-radius: var(--vx-radius-md);
+  --vx-popover-padding: var(--vx-space-3);
+  --vx-popover-offset: var(--vx-space-1);
+  --vx-popover-max-width: 360px;
+  --vx-menu-item-fg: var(--vx-color-text-primary);
+  --vx-menu-item-fg-muted: var(--vx-color-text-secondary);
+  --vx-menu-item-fg-danger: var(--vx-color-status-danger-strong);
+  --vx-menu-item-fg-disabled: var(--vx-color-text-disabled);
+  --vx-menu-item-bg-highlight: var(--vx-color-interactive-highlight);
+  --vx-menu-item-height: var(--vx-control-height-md);
+  --vx-menu-item-padding-x: var(--vx-space-2-5);
+  --vx-menu-item-radius: var(--vx-radius-sm);
+  --vx-menu-item-min-width: 200px;
 }
 
 [data-theme="light"] {
@@ -246,11 +265,13 @@
   --vx-color-interactive-selected: var(--vx-color-gold-50);
   --vx-color-interactive-selected-text: var(--vx-color-gold-800);
   --vx-color-interactive-disabled: var(--vx-color-neutral-100);
+  --vx-color-interactive-highlight: var(--vx-color-neutral-100);
   --vx-color-status-success: var(--vx-color-green-700);
   --vx-color-status-success-subtle: var(--vx-color-green-300);
   --vx-color-status-warning: var(--vx-color-orange-700);
   --vx-color-status-warning-subtle: var(--vx-color-orange-300);
   --vx-color-status-danger: var(--vx-color-red-700);
+  --vx-color-status-danger-strong: var(--vx-color-red-700);
   --vx-color-status-danger-subtle: var(--vx-color-red-300);
   --vx-color-status-danger-solid: var(--vx-color-red-600);
   --vx-color-status-danger-solid-hover: var(--vx-color-red-700);
@@ -324,6 +345,23 @@
   --vx-dialog-width-md: 560px;
   --vx-dialog-width-lg: 760px;
   --vx-dialog-sheet-width: 480px;
+  --vx-popover-bg: var(--vx-color-surface-overlay);
+  --vx-popover-fg: var(--vx-color-text-primary);
+  --vx-popover-border: var(--vx-color-border-default);
+  --vx-popover-shadow: var(--vx-elevation-overlay);
+  --vx-popover-radius: var(--vx-radius-md);
+  --vx-popover-padding: var(--vx-space-3);
+  --vx-popover-offset: var(--vx-space-1);
+  --vx-popover-max-width: 360px;
+  --vx-menu-item-fg: var(--vx-color-text-primary);
+  --vx-menu-item-fg-muted: var(--vx-color-text-secondary);
+  --vx-menu-item-fg-danger: var(--vx-color-status-danger-strong);
+  --vx-menu-item-fg-disabled: var(--vx-color-text-disabled);
+  --vx-menu-item-bg-highlight: var(--vx-color-interactive-highlight);
+  --vx-menu-item-height: var(--vx-control-height-md);
+  --vx-menu-item-padding-x: var(--vx-space-2-5);
+  --vx-menu-item-radius: var(--vx-radius-sm);
+  --vx-menu-item-min-width: 200px;
 }
 
 @media (prefers-reduced-motion: reduce) {

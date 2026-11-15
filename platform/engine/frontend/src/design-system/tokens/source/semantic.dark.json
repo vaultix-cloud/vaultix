@@ -103,6 +103,10 @@
       },
       "disabled": {
         "$value": "{color.neutral.850}"
+      },
+      "highlight": {
+        "$value": "{color.neutral.700}",
+        "$description": "The option under the pointer or keyboard in a floating list (menus, listboxes) on an overlay surface."
       }
     },
     "status": {
@@ -120,6 +124,10 @@
       },
       "danger": {
         "$value": "{color.red.400}"
+      },
+      "danger-strong": {
+        "$value": "{color.red.300}",
+        "$description": "Danger text on tinted or highlighted backgrounds, where the base danger colour falls short of 4.5:1."
       },
       "danger-subtle": {
         "$value": "{color.red.950}"
