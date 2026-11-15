@@ -44,7 +44,7 @@ export function expression(schema, path, dependencies) {
     // allOf of objects is how flattened structs arrive: merge their fields into one object. Intersecting two
     // strict objects would reject every valid value, since each rejects the other's keys.
     const objects = schema.allOf.every(part => part.$ref || part.type === "object");
-    return objects ? `${combine(parts, "merge")}.onUndeclaredKey("reject")` : combine(parts, "and");
+    return objects ? `${combine(parts, "merge")}.onUndeclaredKey("reject").narrow(notAnArray)` : combine(parts, "and");
   }
   for (const key of ["oneOf", "anyOf"]) {
     if (schema[key]) return combine(schema[key].map((part, i) => expression(part, `${path}.${key}[${i}]`, dependencies)), "or");
@@ -108,8 +108,8 @@ function single(schema, path, dependencies) {
     }
     case "object": {
       if (!schema.properties) {
-        if (schema.additionalProperties && typeof schema.additionalProperties === "object") return `type.Record("string", ${expression(schema.additionalProperties, `${where}{}`, dependencies)})`;
-        return `type("object")`;
+        if (schema.additionalProperties && typeof schema.additionalProperties === "object") return `type.Record("string", ${expression(schema.additionalProperties, `${where}{}`, dependencies)}).narrow(notAnArray)`;
+        return `type("object").narrow(notAnArray)`;
       }
       if (schema.additionalProperties !== undefined && schema.additionalProperties !== false) fail(where, "an object with properties may only have additionalProperties: false");
       const required = new Set(schema.required ?? []);
@@ -117,7 +117,7 @@ function single(schema, path, dependencies) {
       const members = Object.entries(schema.properties).map(([name, property]) => `  ${str(required.has(name) ? name : `${name}?`)}: ${expression(property, `${where}.${name}`, dependencies)}`);
       // Strict: a field the contract does not declare is an error, which is how drift between server and
       // contract shows up in tests. (Relaxing this for clients is a decision for the beta freeze.)
-      return `type({\n${members.join(",\n")}\n}).onUndeclaredKey("reject")`;
+      return `type({\n${members.join(",\n")}\n}).onUndeclaredKey("reject").narrow(notAnArray)`;
     }
     default: return fail(where, `unsupported type "${schema.type}"`);
   }
@@ -152,7 +152,9 @@ export function generate(document, source = "openapi.json") {
   const schemas = order(document.components?.schemas ?? {});
   const names = new Set(schemas.map(s => s.name));
 
-  let schemasTs = `${BANNER(source)}import { type } from "arktype";\n\n`;
+  // ArkType treats an array as an object, so an object type whose keys are all optional accepts []. JSON Schema's
+  // `type: object` does not, so every object type the generator emits carries this guard (docs/0136).
+  let schemasTs = `${BANNER(source)}import { type } from "arktype";\n\nconst notAnArray = (value: unknown) => !Array.isArray(value);\n\n`;
   for (const { name, text, description } of schemas) {
     if (description) schemasTs += `/** ${description.replace(/\*\//g, "* /").replace(/\n/g, " ")} */\n`;
     schemasTs += `export const ${name} = ${text};\nexport type ${name} = typeof ${name}.infer;\n\n`;

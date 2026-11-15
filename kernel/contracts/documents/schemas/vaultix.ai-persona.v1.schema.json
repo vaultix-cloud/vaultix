@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaultix.cloud/schemas/vaultix.ai-persona.v1.schema.json",
+  "title": "Vaultix AI persona",
+  "description": "One persona of the in-app assistant (docs/0126). A persona narrows what the assistant does and never grants anything: its tools are the person's own. Every length is in characters.",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "domains": {
+          "type": "array",
+          "maxItems": 8,
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "access",
+              "ai",
+              "auth",
+              "automation",
+              "connect",
+              "detect",
+              "experience",
+              "governance",
+              "kms",
+              "operate",
+              "pam",
+              "pki",
+              "public",
+              "secrets",
+              "workspace"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "instructions": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "model": {
+          "type": "object",
+          "properties": {
+            "tier": {
+              "enum": [
+                "deep",
+                "fast",
+                "standard"
+              ]
+            },
+            "connectionId": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "tier"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "role": {
+          "enum": [
+            "guard",
+            "specialist"
+          ]
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-persona.v1"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,31}$"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "use": {
+              "enum": [
+                "all",
+                "instance",
+                "none"
+              ]
+            }
+          },
+          "required": [
+            "use"
+          ],
+          "additionalProperties": false
+        },
+        "modelSettings": {
+          "type": "object",
+          "properties": {
+            "maxOutputTokens": {
+              "type": "integer",
+              "maximum": 32000,
+              "minimum": 1
+            },
+            "stopSequences": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "temperature": {
+              "type": "number",
+              "maximum": 2,
+              "minimum": 0
+            },
+            "toolChoice": {
+              "enum": [
+                "auto",
+                "none"
+              ]
+            },
+            "topP": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "tools": {
+          "anyOf": [
+            {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "type": "string",
+                "pattern": "^vaultix(\\.[a-z][a-z0-9-]*)+$",
+                "minLength": 0,
+                "maxLength": 128
+              },
+              "uniqueItems": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "description",
+        "domains",
+        "instructions",
+        "model",
+        "name",
+        "role",
+        "schemaVersion",
+        "slug"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "domains": {
+          "type": "array",
+          "maxItems": 8,
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "access",
+              "ai",
+              "auth",
+              "automation",
+              "connect",
+              "detect",
+              "experience",
+              "governance",
+              "kms",
+              "operate",
+              "pam",
+              "pki",
+              "public",
+              "secrets",
+              "workspace"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "instructions": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "model": {
+          "type": "object",
+          "properties": {
+            "tier": {
+              "enum": [
+                "deep",
+                "fast",
+                "standard"
+              ]
+            },
+            "connectionId": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "tier"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "role": {
+          "const": "router"
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-persona.v1"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,31}$"
+        },
+        "enabled": {
+          "const": true
+        },
+        "handoffs": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,31}$"
+          },
+          "uniqueItems": true
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "use": {
+              "enum": [
+                "all",
+                "instance",
+                "none"
+              ]
+            }
+          },
+          "required": [
+            "use"
+          ],
+          "additionalProperties": false
+        },
+        "modelSettings": {
+          "type": "object",
+          "properties": {
+            "maxOutputTokens": {
+              "type": "integer",
+              "maximum": 32000,
+              "minimum": 1
+            },
+            "stopSequences": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "temperature": {
+              "type": "number",
+              "maximum": 2,
+              "minimum": 0
+            },
+            "toolChoice": {
+              "enum": [
+                "auto",
+                "none"
+              ]
+            },
+            "topP": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "tools": {
+          "anyOf": [
+            {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "type": "string",
+                "pattern": "^vaultix(\\.[a-z][a-z0-9-]*)+$",
+                "minLength": 0,
+                "maxLength": 128
+              },
+              "uniqueItems": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "description",
+        "domains",
+        "instructions",
+        "model",
+        "name",
+        "role",
+        "schemaVersion",
+        "slug"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

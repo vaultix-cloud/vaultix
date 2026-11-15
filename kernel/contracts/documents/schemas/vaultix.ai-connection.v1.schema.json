@@ -1,0 +1,697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaultix.cloud/schemas/vaultix.ai-connection.v1.schema.json",
+  "title": "Vaultix AI connection",
+  "description": "How the instance reaches one AI model provider (docs/0126). Every length is in characters. The credential is write-only: it is encrypted on save and never returned.",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "apiStyle": {
+          "enum": [
+            "anthropic-messages",
+            "openai-chat"
+          ]
+        },
+        "auth": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "headerName": {
+                  "type": "string",
+                  "pattern": "^(?!(?:authorization|cookie|proxy-authorization|host|content-length|content-type)$)[a-z0-9-]{1,64}$"
+                },
+                "type": {
+                  "const": "header"
+                }
+              },
+              "required": [
+                "headerName",
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "bearer"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^(?:https:\\/\\/|http:\\/\\/(?:127\\.0\\.0\\.1|localhost|\\[::1\\])(?::[0-9]+)?(?:\\/|$))",
+          "allOf": [
+            {
+              "pattern": "^https?:\\/\\/[A-Za-z0-9.\\-\\[\\]:]+(\\/[A-Za-z0-9._~!$&'()*+,;=:@%/\\-]*)?$"
+            }
+          ],
+          "minLength": 0,
+          "maxLength": 512
+        },
+        "kind": {
+          "const": "custom"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "credential": {
+          "type": "object",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "apiKey"
+          ],
+          "additionalProperties": false
+        },
+        "headers": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^(?!(?:authorization|cookie|proxy-authorization|x-api-key|api-key|host|content-length|content-type|x-hf-bill-to)$)[a-z0-9-]{1,64}$"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "apiStyle",
+        "auth",
+        "endpoint",
+        "kind",
+        "models",
+        "name",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiStyle": {
+          "enum": [
+            "anthropic-messages",
+            "openai-chat"
+          ]
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "none"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^https?:\\/\\/[A-Za-z0-9.\\-\\[\\]:]+(\\/[A-Za-z0-9._~!$&'()*+,;=:@%/\\-]*)?$",
+          "minLength": 0,
+          "maxLength": 512
+        },
+        "kind": {
+          "const": "custom"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "headers": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^(?!(?:authorization|cookie|proxy-authorization|x-api-key|api-key|host|content-length|content-type|x-hf-bill-to)$)[a-z0-9-]{1,64}$"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "apiStyle",
+        "auth",
+        "endpoint",
+        "kind",
+        "models",
+        "name",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cloudProject": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{4,28}[a-z0-9]$"
+        },
+        "kind": {
+          "const": "vertex"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^(global|[a-z]+-[a-z]+[0-9])$",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "credential": {
+          "type": "object",
+          "properties": {
+            "serviceAccountJson": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            }
+          },
+          "required": [
+            "serviceAccountJson"
+          ],
+          "additionalProperties": false
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "cloudProject",
+        "kind",
+        "models",
+        "name",
+        "region",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "pattern": "^https:\\/\\/",
+          "allOf": [
+            {
+              "pattern": "^https?:\\/\\/[A-Za-z0-9.\\-\\[\\]:]+(\\/[A-Za-z0-9._~!$&'()*+,;=:@%/\\-]*)?$"
+            }
+          ],
+          "minLength": 0,
+          "maxLength": 512
+        },
+        "kind": {
+          "const": "huggingface-endpoint"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "credential": {
+          "type": "object",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "apiKey"
+          ],
+          "additionalProperties": false
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "endpoint",
+        "kind",
+        "models",
+        "name",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "anthropic",
+            "openai"
+          ]
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "credential": {
+          "type": "object",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "apiKey"
+          ],
+          "additionalProperties": false
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "kind",
+        "models",
+        "name",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "bedrock"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[a-z]+)+-[0-9]$",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "credential": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "accessKeyId": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9]{16,128}$"
+                },
+                "secretAccessKey": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "sessionToken": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "accessKeyId",
+                "secretAccessKey"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "sessionToken": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "sessionToken"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "kind",
+        "models",
+        "name",
+        "region",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "huggingface"
+        },
+        "models": {
+          "type": "object",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "deep": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "fast": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/@-]+$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "standard"
+          ],
+          "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "const": "vaultix.ai-connection.v1"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "billTo": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"
+        },
+        "credential": {
+          "type": "object",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "apiKey"
+          ],
+          "additionalProperties": false
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 120,
+          "minimum": 5
+        }
+      },
+      "required": [
+        "kind",
+        "models",
+        "name",
+        "schemaVersion"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

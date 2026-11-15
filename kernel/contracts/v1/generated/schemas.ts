@@ -2,23 +2,25 @@
 // ArkType 2.2 source, so each validator and its static type come from the same definition.
 import { type } from "arktype";
 
+const notAnArray = (value: unknown) => !Array.isArray(value);
+
 export const AuditEvent = type({
   "action": type("string"),
   "actor": type("string"),
   "at": type("string.date.iso").and(new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$")),
   "chain": type("string"),
-  "detail": type("object"),
+  "detail": type("object").narrow(notAnArray),
   "hasValueFingerprint": type("boolean"),
   "objectRef": type("string"),
   "outcome": type("string"),
   "seq": type("number.integer")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type AuditEvent = typeof AuditEvent.infer;
 
 export const AuditEventsResponse = type({
   "chain": type("string"),
   "events": AuditEvent.array()
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type AuditEventsResponse = typeof AuditEventsResponse.infer;
 
 /** The result of re-computing an audit chain. When it is intact `events` is the number of events; when it is not, `firstAlteredEvent` is the first sequence number that does not verify. */
@@ -27,7 +29,7 @@ export const AuditVerifyResponse = type({
   "events?": type("number.integer").or(type("null")),
   "firstAlteredEvent?": type("number.integer").or(type("null")),
   "intact": type("boolean")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type AuditVerifyResponse = typeof AuditVerifyResponse.infer;
 
 export const DatabaseState = type.enumerated("ok", "unavailable");
@@ -36,7 +38,7 @@ export type DatabaseState = typeof DatabaseState.infer;
 export const ErrorBody = type({
   "code": type("string"),
   "error": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type ErrorBody = typeof ErrorBody.infer;
 
 /** Where a secret lives. Names are environment-variable safe so they can be injected as they are. */
@@ -45,21 +47,21 @@ export const SecretAddress = type({
   "name": type("string").and(new RegExp("^[A-Za-z_][A-Za-z0-9_]{0,127}$")),
   "path?": type("string").or(type("null")),
   "project": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$"))
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type SecretAddress = typeof SecretAddress.infer;
 
 export const InjectionRequest = type({
   "purpose": type("string"),
   "secrets": SecretAddress.array().atLeastLength(1).atMostLength(32),
   "ttlSeconds?": type("number.integer").or(type("null"))
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type InjectionRequest = typeof InjectionRequest.infer;
 
 /** A permission to read named secrets once, for the identity that asked. It is not a value. */
 export const InjectionResponse = type({
   "expiresAt": type("string.date.iso").and(new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$")),
   "handle": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type InjectionResponse = typeof InjectionResponse.infer;
 
 export const JobStatus = type.enumerated("queued", "running", "succeeded", "dead");
@@ -76,12 +78,12 @@ export const JobRow = type({
   "schedule?": type("string").or(type("null")),
   "status": JobStatus,
   "subject": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type JobRow = typeof JobRow.infer;
 
 export const JobsResponse = type({
   "jobs": JobRow.array()
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type JobsResponse = typeof JobsResponse.infer;
 
 /** What anyone sees of a secret: never the value. */
@@ -91,12 +93,12 @@ export const SecretMeta = type({
   "updatedAt": type("string.date.iso").and(new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$")),
   "updatedBy": type("string"),
   "version": type("number.integer").and(type("-2147483648 <= number <= 2147483647"))
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type SecretMeta = typeof SecretMeta.infer;
 
 export const ListSecretsResponse = type({
   "secrets": SecretMeta.array()
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type ListSecretsResponse = typeof ListSecretsResponse.infer;
 
 export const PutOutcome = type.enumerated("applied");
@@ -112,14 +114,14 @@ export const PutSecretRequest = type({
   "path?": type("string").or(type("null")),
   "project": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$")),
   "value": SecretText
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type PutSecretRequest = typeof PutSecretRequest.infer;
 
 export const PutSecretResponse = type({
   "name": type("string"),
   "outcome": PutOutcome,
   "version": type("number.integer").and(type("-2147483648 <= number <= 2147483647"))
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type PutSecretResponse = typeof PutSecretResponse.infer;
 
 export const ValueEncoding = type.enumerated("utf8", "base64url");
@@ -131,12 +133,12 @@ export const RedeemedValue = type({
   "name": type("string"),
   "path": type("string"),
   "value": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type RedeemedValue = typeof RedeemedValue.infer;
 
 export const RedeemResponse = type({
   "values": RedeemedValue.array()
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type RedeemResponse = typeof RedeemResponse.infer;
 
 export const RequestOutcome = type.enumerated("requested");
@@ -148,7 +150,7 @@ export type RetryOutcome = typeof RetryOutcome.infer;
 export const RetryResponse = type({
   "id": type("string.uuid"),
   "outcome": RetryOutcome
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type RetryResponse = typeof RetryResponse.infer;
 
 export const ScheduleRow = type({
@@ -161,12 +163,12 @@ export const ScheduleRow = type({
   "name": type("string"),
   "nextDue": type("string.date.iso").and(new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$")),
   "spec": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type ScheduleRow = typeof ScheduleRow.infer;
 
 export const SchedulesResponse = type({
   "schedules": ScheduleRow.array()
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type SchedulesResponse = typeof SchedulesResponse.infer;
 
 export const StatusResponse = type({
@@ -174,7 +176,7 @@ export const StatusResponse = type({
   "product": type("string"),
   "sealed": type("boolean"),
   "version": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type StatusResponse = typeof StatusResponse.infer;
 
 export const ValueRequest = type({
@@ -183,12 +185,12 @@ export const ValueRequest = type({
   "path?": type("string").or(type("null")),
   "project": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$")),
   "purpose": type("string")
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type ValueRequest = typeof ValueRequest.infer;
 
 export const ValueRequestResponse = type({
   "name": type("string"),
   "outcome": RequestOutcome
-}).onUndeclaredKey("reject");
+}).onUndeclaredKey("reject").narrow(notAnArray);
 export type ValueRequestResponse = typeof ValueRequestResponse.infer;
 

@@ -98,6 +98,60 @@ one; `type.fn` rejected bad arguments; every type exposes the Standard Schema su
 5. **Forms and routes.** Forms move to `@hookform/resolvers` 7's Standard Schema resolver once confirmed on
    the first rewritten form (not yet verified); routes use ArkType directly in `validateSearch`.
 
+### Versioned documents in ArkType (built 2026-11-15)
+
+The repository has about 30 hand-written, versioned JSON Schema documents (`vaultix.<name>.vN`). The first two,
+the AI connection and the AI persona, are now authored in ArkType in `kernel/contracts/documents/`, with a registry
+that reads a document by its `schemaVersion`. `node scripts/test-documents.mjs` is the gate.
+
+**How a version works.**
+
+- A document names its version in `schemaVersion` (`vaultix.ai-connection.v1`). `parseDocument` picks the validator
+  from it; an unknown document, an unknown version and a malformed name are different, specific errors.
+- A **draft** version may change while it is unreleased. A **released** version is frozen: its exported JSON Schema is
+  pinned by hash in `released.lock.json` and the gate fails if it changes, if a release is not locked, or if a lock
+  outlives its release. A breaking change is the next version, with an upgrade function from the one before, applied
+  step by step (`parseDocument(raw, registry, { toLatest: true })`) and validated at each step. Nothing is released
+  yet, so every document is a draft.
+- Every version exports JSON Schema 2020-12 (`schemas/<id>.schema.json`, committed, checked for drift) for the
+  consumers that are not TypeScript: the Go CLI and release tooling, the Rust kernel, MCP tool descriptions.
+
+**What the proof is, and what it found.** The existing hand-written schemas are the oracle. For both documents:
+all 77 existing fixtures agree in three judges (the hand-written schema, the ArkType version, the schema exported from
+it); and a differential fuzz applies random mutations to every valid fixture (a field removed or replaced with an edge
+value, an unknown field, a swapped kind, fields grafted from another document, emoji and non-ASCII lengths) and asks
+the three judges. Four seeds and about 144,000 mutations (both documents) produced no disagreement. The fuzz was tested by breaking the
+ArkType version two subtle ways (a timeout bound off by one; a native length bound), and caught both. It found
+four real problems, each now fixed and tested:
+
+1. **ArkType counts length in UTF-16 units; JSON Schema and the Go server count characters.** Forty emoji are forty
+   characters and eighty units, so a native `1 <= string <= 64` rejects a valid name and its export means something
+   else. `characters(min, max)` counts code points and describes itself to the export.
+2. **An all-optional object accepts an array.** ArkType treats an array as an object, so `modelSettings: []` passed
+   where JSON Schema's `type: object` rejects it. This also affected the v1 contract generator (a free-form
+   `detail` accepted `[]`). Both now guard every object type.
+3. **ArkType's error text for a union repeats the input.** A bad credential came back as
+   `accessKeyId must be matched by ... (was "<the credential>")`, which would have put a credential into a log or a
+   response. `describe()` reports only the branches' expectations and a path, never a summary, and a test fails if a
+   canary reappears.
+4. **A string with two patterns cannot be exported** without a hook. The export now puts the second in `allOf`.
+
+**How the rules were authored.** The hand-written connection schema said "which fields this kind allows" as ten
+`if/then` conditions. Here each kind is one object type that declares exactly its fields and rejects every other, so
+the rule is stated once, reads top to bottom, and exports as plain `anyOf`. The two rules a schema cannot say (an extra
+header must not carry a credential; a Vertex key must be a whole service-account file) stay in the server, which has
+them, instead of becoming a third copy; the fixtures mark them `schemaValid: true, valid: false`.
+
+**One quirk of the original, preserved for parity and flagged:** the AWS credential may be a lone `sessionToken`
+(an access key and its secret must go together, but a session token alone passes). That is probably unintended and is
+a decision for the owner before the first release.
+
+**Not done.** The other documents (the release manifest v1 and v2, instance, install and CLI results, UI actions,
+benchmark receipts, the journal event) are not converted; the order is by who reads them: UI actions and receipts (Node
+scripts), then the release family (the Go release tool). The Go server and its tests still embed the hand-written
+schema files; the exported ones are proven equivalent but are not yet wired in, which waits for the AI domain to move
+into the kernel. No form uses `@hookform/resolvers` with ArkType yet.
+
 ## 4. What "v1 established" means in an alpha
 
 During 0.5 alpha the v1 contract may still change, but only in one way: a change to the OpenAPI document,

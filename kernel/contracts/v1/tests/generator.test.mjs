@@ -8,7 +8,8 @@ import { expression, generate } from "../scripts/generate.mjs";
 
 const build = (schema, scope = {}) => {
   const text = expression(schema, "test", new Set());
-  return new Function("type", ...Object.keys(scope), `return ${text};`)(type, ...Object.values(scope));
+  const notAnArray = value => !Array.isArray(value);
+  return new Function("type", "notAnArray", ...Object.keys(scope), `return ${text};`)(type, notAnArray, ...Object.values(scope));
 };
 const accepts = (validator, value) => !(validator(value) instanceof type.errors);
 
@@ -93,4 +94,14 @@ test("a whole document: recursion, missing refs, missing operation ids and wrong
   const ok = generate(doc({ components: { schemas: { Thing: { type: "object", required: ["id"], properties: { id: { type: "string", format: "uuid" } } } } }, paths: { "/things": { get: { operationId: "listThings", responses: { 200: { description: "ok", content: { "application/json": { schema: { $ref: "#/components/schemas/Thing" } } } } } } } } }));
   assert.match(ok.schemasTs, /export const Thing = /);
   assert.match(ok.operationsTs, /"listThings"/);
+});
+
+test("an array is not an object: an object whose keys are all optional, and a free-form object, reject []", () => {
+  const allOptional = build({ type: "object", properties: { note: { type: "string" } } });
+  assert.ok(accepts(allOptional, {}) && accepts(allOptional, { note: "x" }));
+  assert.ok(!accepts(allOptional, []) && !accepts(allOptional, [1, 2]), "ArkType alone would accept an array here; JSON Schema type object does not");
+  const freeForm = build({ type: "object" });
+  assert.ok(accepts(freeForm, { anything: 1 }) && !accepts(freeForm, []));
+  const record = build({ type: "object", additionalProperties: { type: "string" } });
+  assert.ok(accepts(record, { a: "b" }) && !accepts(record, []));
 });
