@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext, useId, useMemo } from "react";
 
+import { Icon } from "../../icons/Icon";
+
 import "./Field.css";
 
 type TFieldContext = {
@@ -30,13 +32,6 @@ export type TFieldProps = {
   className?: string;
   children: ReactNode;
 };
-
-const ErrorIcon = () => (
-  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-    <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M8 4.75v4M8 10.75v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
 
 // Label, hint and error order follows the control: people read what is asked and what is wrong
 // before they reach the input, by sight and by screen reader.
@@ -86,7 +81,7 @@ export const Field = ({
         )}
         {error && (
           <p id={errorId} className="vx-field__error">
-            <ErrorIcon />
+            <Icon name="alert" />
             <span>
               <span className="vx-field__error-prefix">Error: </span>
               {error}

@@ -127,6 +127,7 @@ export const iconPaths = {
   "arrow-right": ["M2.75 8h10.5", "M9.5 4.25 13.25 8 9.5 11.75"],
   // Status
   info: [circle(8, 8, 6.25), "M8 7.25v4", "M8 4.75v.5"],
+  alert: [circle(8, 8, 6.25), "M8 4.75v4", "M8 10.75v.5"],
   success: [circle(8, 8, 6.25), "m5 8.25 2 2 4-4.5"],
   warning: ["M8 1.75 14.75 13.5H1.25Z", "M8 5.75v3.5", "M8 11.25v.5"],
   error: [circle(8, 8, 6.25), "m5.75 5.75 4.5 4.5", "M10.25 5.75l-4.5 4.5"]

@@ -12,6 +12,7 @@ import {
   useState
 } from "react";
 
+import { Icon } from "../../icons/Icon";
 import { useAnchoredPosition, useDismissOnOutsidePress } from "../../utils/anchored";
 import { useField } from "../Field/Field";
 
@@ -55,30 +56,6 @@ const matches = (option: TComboboxOption, query: string) => {
     Boolean(option.description?.toLowerCase().includes(needle))
   );
 };
-
-const CheckIcon = () => (
-  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false">
-    <path
-      d="m3.5 8.5 3 3 6-7"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const Chevron = () => (
-  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false">
-    <path
-      d="m4.5 6.25 3.5 3.5 3.5-3.5"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 // The WAI-ARIA editable combobox with list autocomplete. Focus stays in the text box; the active
 // option is conveyed with aria-activedescendant. The value must be one of the options: leaving the
@@ -269,7 +246,7 @@ export const Combobox = ({
           }}
         />
         <span className="vx-input__adornment vx-combobox__chevron">
-          <Chevron />
+          <Icon name="chevron-down" />
         </span>
       </span>
       <div ref={listRef} className="vx-floating vx-menu vx-combobox__popup" {...popoverAttribute}>
@@ -309,7 +286,7 @@ export const Combobox = ({
                 )}
               </span>
               <span className="vx-combobox__check" aria-hidden="true">
-                {option.value === selected && <CheckIcon />}
+                {option.value === selected && <Icon name="check" />}
               </span>
             </div>
           ))}

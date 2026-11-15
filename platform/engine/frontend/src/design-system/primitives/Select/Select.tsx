@@ -1,5 +1,6 @@
 import { forwardRef, SelectHTMLAttributes } from "react";
 
+import { Icon } from "../../icons/Icon";
 import { useField } from "../Field/Field";
 import { joinIds, TTextInputSize } from "../TextInput/TextInput";
 
@@ -15,26 +16,6 @@ export type TSelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "size" 
   size?: TTextInputSize;
   invalid?: boolean;
 };
-
-const Chevron = () => (
-  <svg
-    className="vx-select__chevron"
-    viewBox="0 0 16 16"
-    width="16"
-    height="16"
-    fill="none"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path
-      d="m4.5 6.25 3.5 3.5 3.5-3.5"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 // A native <select> in the text-control box: the platform's own keyboard, screen-reader and
 // touch pickers, with Field wiring. For long or searchable lists use Combobox.
@@ -95,7 +76,7 @@ export const Select = forwardRef<HTMLSelectElement, TSelectProps>(
             )
           )}
         </select>
-        <Chevron />
+        <Icon name="chevron-down" className="vx-select__chevron" />
       </span>
     );
   }

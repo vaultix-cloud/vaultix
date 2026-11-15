@@ -1,5 +1,6 @@
 import { ReactElement, ReactNode, useEffect, useId, useState } from "react";
 
+import { Icon } from "../icons/Icon";
 import { IconButton } from "../primitives/IconButton/IconButton";
 import { Tooltip } from "../primitives/Tooltip/Tooltip";
 import { BrandLockup } from "./Brand";
@@ -40,20 +41,6 @@ const readExpanded = () => {
     return false;
   }
 };
-
-const MenuIcon = ({ expanded }: { expanded: boolean }) => (
-  <svg
-    viewBox="0 0 20 20"
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.6"
-    aria-hidden="true"
-  >
-    {expanded ? <path d="M12.5 5 7.5 10l5 5" /> : <path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" />}
-  </svg>
-);
 
 export type TAppFrameProps = {
   groups: TRailGroup[];
@@ -144,7 +131,7 @@ export const AppFrame = ({
         <div className="vx-rail__top">
           {brand ?? homeLink}
           <IconButton
-            icon={<MenuIcon expanded={expanded} />}
+            icon={<Icon name={expanded ? "chevron-left" : "menu"} size={20} />}
             label={expanded ? "Collapse menu" : "Expand menu"}
             tooltipSide="right"
             size="lg"

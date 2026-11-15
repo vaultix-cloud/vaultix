@@ -1,10 +1,20 @@
 import { KeyboardEvent, ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import { Icon } from "../../icons/Icon";
+import { TIconName } from "../../icons/paths";
 import { Button } from "../Button/Button";
 import { IconButton } from "../IconButton/IconButton";
 import { toastStore, TToast, TToastTone } from "./toast-store";
 
 import "./Toast.css";
+
+// Each tone has its own shape as well as colour, so it is never told by colour alone.
+const TONE_ICON: Record<TToastTone, TIconName> = {
+  info: "info",
+  success: "success",
+  warning: "warning",
+  danger: "error"
+};
 
 const TONE_NAME: Record<TToastTone, string> = {
   info: "Information",
@@ -12,36 +22,6 @@ const TONE_NAME: Record<TToastTone, string> = {
   warning: "Warning",
   danger: "Error"
 };
-
-const path: Record<TToastTone, string> = {
-  info: "M8 7.25v4M8 4.75v.5",
-  success: "m5 8.25 2 2 4-4.5",
-  warning: "M8 5v3.75M8 10.75v.5",
-  danger: "m5.75 5.75 4.5 4.5M10.25 5.75l-4.5 4.5"
-};
-
-// Each tone has its own shape as well as colour, so it is never told by colour alone.
-const ToneIcon = ({ tone }: { tone: TToastTone }) => (
-  <svg viewBox="0 0 16 16" width="18" height="18" fill="none" aria-hidden="true" focusable="false">
-    {tone === "warning" ? (
-      <path
-        d="M8 1.75 14.75 13.5H1.25z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    ) : (
-      <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.5" />
-    )}
-    <path d={path[tone]} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true" focusable="false">
-    <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-);
 
 const ToastItem = ({ item, paused }: { item: TToast; paused: boolean }) => {
   const remaining = useRef(item.duration);
@@ -67,7 +47,7 @@ const ToastItem = ({ item, paused }: { item: TToast; paused: boolean }) => {
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Escape inside a toast closes it
     <li className="vx-toast" data-tone={item.tone} onKeyDown={onKeyDown}>
       <span className="vx-toast__icon">
-        <ToneIcon tone={item.tone} />
+        <Icon name={TONE_ICON[item.tone]} size={18} />
       </span>
       <div className="vx-toast__text">
         <p className="vx-toast__title">
@@ -93,7 +73,7 @@ const ToastItem = ({ item, paused }: { item: TToast; paused: boolean }) => {
         className="vx-toast__close"
         size="sm"
         label="Dismiss"
-        icon={<CloseIcon />}
+        icon={<Icon name="close" size={14} />}
         tooltipSide="left"
         onClick={() => toastStore.dismiss(item.id)}
       />

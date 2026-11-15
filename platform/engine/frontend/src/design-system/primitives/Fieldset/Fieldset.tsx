@@ -1,5 +1,7 @@
 import { ReactNode, useId } from "react";
 
+import { Icon } from "../../icons/Icon";
+
 import "../Field/Field.css";
 import "./Fieldset.css";
 
@@ -16,13 +18,6 @@ export type TFieldsetProps = {
   role?: "group" | "radiogroup";
   required?: boolean;
 };
-
-const ErrorIcon = () => (
-  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-    <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M8 4.75v4M8 10.75v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
 
 // A native <fieldset> and <legend> for a group of checkboxes, radios or switches. The hint and
 // error describe the whole group; a disabled fieldset disables every control in it.
@@ -58,7 +53,7 @@ export const Fieldset = ({
       )}
       {error && (
         <p id={errorId} className="vx-field__error">
-          <ErrorIcon />
+          <Icon name="alert" />
           <span>
             <span className="vx-field__error-prefix">Error: </span>
             {error}

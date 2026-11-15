@@ -10,6 +10,7 @@ import {
   useRef
 } from "react";
 
+import { Icon } from "../../icons/Icon";
 import { IconButton } from "../IconButton/IconButton";
 
 import "./Dialog.css";
@@ -41,12 +42,6 @@ type TFrameProps = TModalProps & {
 
 const FOCUSABLE =
   'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
-
-const CloseIcon = () => (
-  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false">
-    <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-);
 
 // A modal on the native <dialog>: showModal() puts it in the top layer, makes the rest of the
 // page inert (which keeps focus inside) and turns Escape into a cancel event. This component keeps
@@ -153,7 +148,7 @@ export const ModalFrame = ({
             {dismissible && (
               <IconButton
                 className="vx-modal__close"
-                icon={<CloseIcon />}
+                icon={<Icon name="close" />}
                 label={closeLabel}
                 size="sm"
                 tooltipSide="bottom"
