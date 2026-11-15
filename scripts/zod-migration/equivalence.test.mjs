@@ -11,12 +11,17 @@ import assert from "node:assert/strict";
 import { inspect, isDeepStrictEqual } from "node:util";
 import test from "node:test";
 import { type } from "arktype";
-import { z } from "zod";
+import { zodEmail, zodUuid } from "./helpers.mjs";
+// Which Zod to measure: the frontend locks 3.24.1, the backend locks 3.25.76, and its package.json asks for ^3.22.4.
+// ZOD_PACKAGE names the installed alias (zod, zod-3-22, zod-3-25).
+const zodPackage = process.env.ZOD_PACKAGE ?? "zod";
+const { z } = await import(zodPackage);
+const zodVersion = JSON.parse((await import("node:fs")).readFileSync(new URL(`./node_modules/${zodPackage}/package.json`, import.meta.url), "utf8")).version;
 
 const emails = ["a@b.co", "a@b", "user+tag@example.com", "A@B.CO", "a b@c.d", "a@b..c", "@b.co", "a@.co", "a@b.c", "ünï@example.com", "a@[127.0.0.1]", "\"quoted\"@example.com", "a@b.co ", " a@b.co", "a@-b.co", "a@b-.co", "x".repeat(65) + "@b.co", "a@b.co.uk", "a.b@c-d.co", "a@1.2.3.4"];
 const uuids = ["6f1c1f0e-8f1e-4e0b-9b5e-0c3f3a4b5c6d", "6F1C1F0E-8F1E-4E0B-9B5E-0C3F3A4B5C6D", "6f1c1f0e8f1e4e0b9b5e0c3f3a4b5c6d", "00000000-0000-0000-0000-000000000000", "ffffffff-ffff-ffff-ffff-ffffffffffff", "6f1c1f0e-8f1e-7e0b-9b5e-0c3f3a4b5c6d", "6f1c1f0e-8f1e-4e0b-1b5e-0c3f3a4b5c6d", "g1c1f0e-8f1e-4e0b-9b5e-0c3f3a4b5c6d", "6f1c1f0e-8f1e-4e0b-9b5e-0c3f3a4b5c6d ", "6f1c1f0e-8f1e-0e0b-9b5e-0c3f3a4b5c6d", "6f1c1f0e-8f1e-9e0b-9b5e-0c3f3a4b5c6d"];
 const urls = ["https://example.com", "http://localhost:3000/x?y=1#z", "ftp://files.example.com", "example.com", "//example.com", "javascript:alert(1)", "mailto:a@b.co", "https://", "https://exa mple.com", "HTTPS://EXAMPLE.COM", "https://a.b/ü", "/relative", "https://user:pw@example.com", "file:///etc/passwd", "data:text/plain,hi", "http://[::1]:80", "https://a", "ws://x.y", "http:/x.y", "http//x.y"];
-const dates = ["2026-11-15T10:00:00Z", "2026-11-15T10:00:00.123Z", "2026-11-15T10:00:00+02:00", "2026-11-15T10:00:00", "2026-11-15", "2026-11-15 10:00:00", "2026-13-45T10:00:00Z", "2026-02-30T10:00:00Z", "yesterday", "2026-11-15T25:00:00Z", "20261115T100000Z", "2026-11-15T10:00Z", "2026-11-15T10:00:00.1234567Z", "+002026-11-15T10:00:00Z"];
+const dates = ["2026-11-15T10:00:00Z", "2026-11-15T10:00:00.123Z", "2026-11-15T10:00:00+02:00", "2026-11-15T10:00:00", "2026-11-15", "2026-11-15 10:00:00", "2026-13-45T10:00:00Z", "2026-02-30T10:00:00Z", "yesterday", "2026-11-15T25:00:00Z", "20261115T100000Z", "2026-11-15T10:00Z", "2026-11-15T10:00:00.1234567Z", "+002026-11-15T10:00:00Z", "2026-04-31T10:00:00Z", "2026-00-10T10:00:00Z", "2026-01-00T10:00:00Z", "2026-11-15T24:00:00Z", "2026-11-15T23:59:60Z", "2024-02-29T10:00:00Z", "2026-02-29T10:00:00Z", "2026-11-15T10:00:00z", "2026-11-15t10:00:00Z", "2026-11-15T10:00:00.Z"];
 const corpus = [
   undefined, null, true, false, 0, -0, 1, -1, 2, 3, 5, 10, 11, 1.5, -1.5, 0.1, 100, NaN, Infinity, -Infinity, 2 ** 53, Number.MAX_VALUE, 15, 25,
   "", " ", "a", "ab", "abc", "abcd", "bc", "ab ", "  x  ", "\n", "A", "ABC", "true", "false", "0", "1", "1.5", "-3", "12abc", "1e3", "0x10", "null", "undefined", "😀", "😀😀😀", "é", "x".repeat(300), "Abc", "aBc",
@@ -58,6 +63,26 @@ function compare(zodSchema, arkSchema, inputs = corpus) {
 const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date) && !(value instanceof Map) && !(value instanceof Set) && typeof value.then !== "function";
 const shape = definition => type(definition).onUndeclaredKey("delete").narrow(isObject); // Zod's default: unknown keys are dropped
 const strictShape = definition => type(definition).onUndeclaredKey("reject").narrow(isObject);
+/**
+ * Zod's datetime() is not one rule: it changed between releases (3.22.4 checks the shape only, so month 13 and
+ * February 30 pass; 3.24.1 also checks the calendar and needs seconds; 3.25.76 makes seconds optional). A faithful
+ * port is written for the Zod version it must match. ArkType's string.date.iso is none of them (it accepts a bare
+ * date, an offset, and February 30).
+ */
+const daysIn = (year, month) => new Date(Date.UTC(year, month, 0)).getUTCDate();
+const datetimeLike = ({ calendar, optionalSeconds }) => {
+  const seconds = optionalSeconds ? /(?::(\d{2})(?:\.\d+)?)?/ : /:(\d{2})(?:\.\d+)?/;
+  const timestamp = new RegExp(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.source + seconds.source + /Z$/.source);
+  return type("string").narrow(value => {
+    const match = timestamp.exec(value);
+    if (!match) return false;
+    if (!calendar) return true;
+    const [, year, month, day, hour, minute, second] = match.map(part => (part === undefined ? undefined : Number(part)));
+    return month >= 1 && month <= 12 && day >= 1 && day <= daysIn(year, month) && hour <= 23 && minute <= 59 && (second === undefined || second <= 59);
+  });
+};
+const faithfulDatetime = datetimeLike({ calendar: zodVersion !== "3.22.4", optionalSeconds: zodVersion === "3.25.76" });
+
 /** Zod's .catch(): ArkType refuses a union of two branches that both transform the same input, so this is a function. */
 const withFallback = (schema, fallback) => value => { const result = schema(value); return result instanceof type.errors ? fallback : result; };
 /** Faithful ports of Zod's z.coerce.*, which are exactly Number(x), Boolean(x), String(x) and new Date(x). */
@@ -86,10 +111,13 @@ const cases = [
   ["string.startsWith", z.string().startsWith("ab"), type("string").and(/^ab/), SAME],
   ["string.endsWith", z.string().endsWith("bc"), type("string").and(/bc$/), SAME],
   ["string.includes", z.string().includes("b"), type("string").and(/b/), SAME],
-  ["string.email", z.string().email(), type("string.email"), DIFFERS, "ArkType accepts addresses Zod rejects (a label that starts with a hyphen). Keep Zod's exact pattern as a regex where behaviour must not change"],
-  ["string.uuid", z.string().uuid(), type("string.uuid"), DIFFERS, "Zod accepts any 8-4-4-4-12 hex string; ArkType's string.uuid enforces the RFC version and variant bits. Use Zod's pattern as a regex, or decide to tighten"],
+  ["string.email, Zod's own pattern", z.string().email(), zodEmail, SAME],
+  ["string.email, idiomatic", z.string().email(), type("string.email"), DIFFERS, "ArkType accepts addresses Zod rejects (a label that starts with a hyphen). Keep Zod's exact pattern as a regex where behaviour must not change"],
+  ["string.uuid, Zod's own pattern", z.string().uuid(), zodUuid, SAME],
+  ["string.uuid, idiomatic", z.string().uuid(), type("string.uuid"), DIFFERS, "Zod accepts any 8-4-4-4-12 hex string; ArkType's string.uuid enforces the RFC version and variant bits. Use Zod's pattern as a regex, or decide to tighten"],
   ["string.url", z.string().url(), type("string.url"), SAME],
-  ["string.datetime", z.string().datetime(), type("string.date.iso"), DIFFERS, "Zod's datetime() needs a full UTC timestamp; string.date.iso also accepts a date alone, no timezone, and offsets. Use an explicit RFC 3339 regex"],
+  ["string.datetime, idiomatic", z.string().datetime(), type("string.date.iso"), DIFFERS, "string.date.iso accepts a bare date, no zone, an offset, and February 30; Zod's datetime() accepts none of those. Never use it as a stand-in"],
+  ["string.datetime, faithful to this Zod", z.string().datetime(), faithfulDatetime, SAME],
   ["string.trim().min(1)", z.string().trim().min(1), type("string.trim").pipe(type("string > 0")), SAME],
   ["string.toLowerCase", z.string().toLowerCase(), type("string.lower"), SAME],
   ["string.toUpperCase", z.string().toUpperCase(), type("string.upper"), SAME],

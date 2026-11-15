@@ -50,7 +50,7 @@ the conversion time competes with moving the domains. If the owner wants B, the 
 Both libraries run over one corpus of awkward inputs (NaN, empty and huge strings, emoji, arrays where objects are
 expected, dates, class instances, missing and undefined keys, emails, UUIDs, URLs and timestamps) and are compared on
 whether a value is accepted and on the value that comes out. Zod is 3.24.1 (the frontend's version), ArkType 2.2.9.
-75 tests: **63 pairs agree and 12 differ**, each difference with what a converter must do. Several first guesses were
+78 tests: **66 pairs agree and 12 differ**, each difference with what a converter must do. Several first guesses were
 wrong when measured (ArkType also rejects `NaN`, and also rejects an invalid `Date`), which is the reason to measure.
 
 What differs, and the rule that follows:
@@ -95,16 +95,36 @@ that states the behaviour it relies on. The proof is the same fuzz that found th
 2. **The shared helper module** and the converter, proven on the 75 plain-shape frontend files.
 3. **Route search parameters** (116 files): small shapes, and TanStack Router needs no adapter.
 4. **Forms** (399 files): needs `@hookform/resolvers` (the frontend is on 3.9.1; 7.0.6 is current) and its
-   Standard Schema resolver checked against ArkType on the first converted form. Not verified yet.
+   Standard Schema resolver checked against ArkType (section 6: verified at runtime, not yet in types).
 5. **Types** (`z.infer`, 1,220 files): mechanical once the schemas have moved.
 6. **Backend and `db/`:** deleted with their domains; the `generate:schema` generator is frozen, not converted.
 7. **The last step:** remove `zod`, the adapters and `scripts/zod-migration/` from every `package.json`.
 
-## 6. Not verified
+## 6. Verified (2026-11-15, `scripts/zod-migration/`, `npm test`: 103 tests; `npm run test:zod-versions`)
 
-- `@hookform/resolvers` 7 with ArkType and the React Hook Form version in use.
-- Whether ArkType's Standard Schema output works with TanStack Router's `validateSearch` on this repository's
-  route files (the documentation says it does; no file has been converted).
-- The frontend's behaviour where a form depends on a difference above; each such form needs reading, not a rule.
-- The backend's Zod 3.22 against the frontend's 3.24: the equivalence suite uses 3.24.1 only.
-- Zod 4 is current (4.6.7) and is not what the code runs; nothing here concerns it.
+**Forms: `@hookform/resolvers` with ArkType, React Hook Form 7.56.3, React 18.3.1, in jsdom.** The same signup form
+(16 input cases, nested and cross-field rules, a real submit) runs under zodResolver 3.9.1 (what the frontend runs),
+and `standardSchemaResolver` 5.2.2 and 7.0.6 with ArkType. Failing fields, error types and parsed values agree, and
+5.2.2 and 7.0.6 are identical. The version jump is therefore safe for ArkType forms. What the measurement found:
+
+- **Resolver and Zod versions are coupled.** 5.1.1 to 5.2.2 `zodResolver` imports `zod/v4/core`, which Zod 3.24.1
+  does not export (`ERR_PACKAGE_PATH_NOT_EXPORTED`). 3.9.1 to 5.1.0 and 5.9.2 to 7.0.6 run on 3.24.1 (7.0.6 checked by
+  running it). So the frontend can go from 3.9.1 straight to 7.0.6 without bumping Zod, and must not stop at 5.2.x.
+- Resolver 7.0.6 declares an optional Zod peer of 3.25 or newer, so installing it beside Zod 3.24.1 needs
+  `legacy-peer-deps` (see `.npmrc` in the tooling). Bumping the frontend to Zod 3.25.76 (the backend's lock) removes that.
+- **Messages differ and can echo what was typed.** ArkType's default text for a pattern failure repeats the input, so a
+  password field with a rule must set `.configure({ message })` (tested). Any test or screen matching Zod's wording changes.
+- Not verified: TypeScript types of `useForm` with a Standard Schema resolver (runtime only).
+
+**Router: `@tanstack/react-router` 1.95.1 (the installed version).** Seven schemas copied from real route files, each ported
+by these rules, run on the real router with 40 URLs: zero differences from `zodValidator`. The router takes the ArkType type
+directly (Standard Schema, no adapter). Rules learned: a `.catch` on an object key is the default tuple
+`[fallbackTo(type, x), "=", x]`. A latent quirk is kept on purpose: `z.coerce.string().catch("")` yields the text
+`"undefined"` for a missing key (12 uses in 10 files); fixing it is a decision. Not verified: `validateSearch` typing.
+
+**Backend Zod.** The backend locks 3.25.76 (not 3.22; the frontend locks 3.24.1). The equivalence suite now runs on 3.22.4,
+3.24.1 and 3.25.76 (78 tests each, all agree with ArkType in the same way); only `datetime()` differs between releases,
+and the faithful helper is per version.
+
+Still open: the frontend's behaviour where a form depends on a difference above (each form needs reading, not a rule).
+Zod 4 is current (4.6.7) and is not what the code runs; nothing here concerns it.

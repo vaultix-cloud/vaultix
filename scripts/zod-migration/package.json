@@ -3,7 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Tooling that exists to remove Zod (docs/0137). It is the one place outside the inherited engine allowed to import Zod, because it compares Zod's behaviour with ArkType's. Delete this folder when the Zod count reaches zero.",
-  "scripts": { "test": "node --test equivalence.test.mjs" },
-  "dependencies": { "arktype": "2.2.9", "zod": "3.24.1" }
+  "description": "Tooling that exists to remove Zod (docs/0137). It is the one place outside the inherited engine allowed to import Zod, because it compares Zod's behaviour with ArkType's on the exact versions the frontend and backend lock. Delete this folder when the Zod count reaches zero.",
+  "scripts": {
+    "test": "node --test equivalence.test.mjs router.test.mjs forms.test.mjs zod-versions.test.mjs",
+    "test:zod-versions": "node scripts/run-versions.mjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "7.0.6",
+    "@hookform/resolvers-3": "npm:@hookform/resolvers@3.9.1",
+    "@tanstack/react-router": "1.95.1",
+    "@tanstack/zod-adapter": "1.91.0",
+    "arktype": "2.2.9",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-hook-form": "7.56.3",
+    "zod": "3.24.1",
+    "zod-3-22": "npm:zod@3.22.4",
+    "zod-3-25": "npm:zod@3.25.76",
+    "@hookform/resolvers-5": "npm:@hookform/resolvers@5.2.2"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/react": "16.1.0",
+    "jsdom": "25.0.1"
+  }
 }
