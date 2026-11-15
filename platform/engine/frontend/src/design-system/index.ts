@@ -16,6 +16,8 @@ export type { TRadioGroupProps, TRadioOption } from "./primitives/Choice/RadioGr
 export { RadioGroup } from "./primitives/Choice/RadioGroup";
 export type { TComboboxOption, TComboboxProps } from "./primitives/Combobox/Combobox";
 export { Combobox } from "./primitives/Combobox/Combobox";
+export type { TDataGridProps, TGridColumn, TGridSort } from "./primitives/DataGrid/DataGrid";
+export { DataGrid } from "./primitives/DataGrid/DataGrid";
 export type { TDialogProps } from "./primitives/Dialog/Dialog";
 export { Dialog } from "./primitives/Dialog/Dialog";
 export type { TEmptyStateProps } from "./primitives/EmptyState/EmptyState";

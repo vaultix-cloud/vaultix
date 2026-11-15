@@ -165,6 +165,12 @@ The WAI-ARIA editable combobox with list autocomplete, for choosing from a long 
 
 Stories: Keyboard, Filter, RevertsOnLeave, LightTheme · [source](frontend/src/design-system/primitives/Combobox/Combobox.stories.tsx)
 
+### Primitives / Data Grid
+
+The WAI-ARIA data grid, for dense keyboard work across many rows. Use Table when rows are only read. The grid is **one Tab stop**. **Keyboard:** arrow keys move between cells, the header row included; Home and End go to the start and end of the row; Ctrl+Home and Ctrl+End to the first and last cell; Page Up and Page Down move by pages. A cell holding **one control** (a sort button, a Rotate button) gives focus straight to it, and Enter or Space presses it. A cell holding **several** takes focus itself: Enter or F2 moves into it, Tab and the arrows then work inside, and Escape returns to the cell. Sorting announces the new order.
+
+Stories: Keyboard, Sorting, LightTheme · [source](frontend/src/design-system/primitives/DataGrid/DataGrid.stories.tsx)
+
 ### Primitives / Dialog
 
 A modal dialog on the native `<dialog>` with `showModal()`: it sits in the top layer, the page behind is inert and does not scroll, and focus stays inside. It is named by its title (`aria-labelledby`) and described by its description (`aria-describedby`). **Keyboard:** on open, focus goes to `initialFocus`, else the first control in the content, else the footer, else the title. Tab and Shift+Tab move through the dialog only. **Escape** closes it, as do the Close button and a press on the backdrop, unless `dismissible` is off. On close, focus returns to the element that opened it. Use `role="alertdialog"` for an interrupting confirmation, with a description and the safe choice focused first.
