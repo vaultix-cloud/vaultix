@@ -83,5 +83,19 @@ export function checkKernel(root) {
   const members = /members\s*=\s*\[([^\]]*)\]/.exec(manifest)?.[1].split(",").map(s => s.trim().replace(/^"|"$/g, "")).filter(Boolean) ?? [];
   const matches = (rel, pattern) => new RegExp(`^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^/]+")}$`).test(rel);
   for (const { rel, name } of byDir.values()) if (!members.some(pattern => matches(rel, pattern))) problems.push(`${name} (${rel}) is not in the workspace members, so it is never built or tested`);
+
+  // A test that installs a log subscriber must be the only test in its file (docs/0139): tracing keeps process-wide state
+  // about which log sites are enabled, and a neighbouring test on another thread made such a test fail every time.
+  for (const { dir, rel } of byDir.values()) {
+    const testsDir = join(dir, "tests");
+    if (!existsSync(testsDir)) continue;
+    for (const file of readdirSync(testsDir)) {
+      if (!file.endsWith(".rs") || !statSync(join(testsDir, file)).isFile()) continue;
+      const source = readFileSync(join(testsDir, file), "utf8");
+      if (!/\b(set_default|with_default|set_global_default)\s*\(/.test(source)) continue;
+      const tests = (source.match(/#\[(tokio::)?test\b/g) ?? []).length;
+      if (tests > 1) problems.push(`${rel}/tests/${file}: installs a log subscriber and has ${tests} tests; keep it to one test per file so no neighbour shares its process`);
+    }
+  }
   return problems;
 }

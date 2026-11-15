@@ -42,8 +42,10 @@ in-memory destination (12 tests in `tests/`):
 - **No value in any report, error, log line or audit row.** A canary value is pushed through success, retry, permanent
   failure, delete, a failing hook and each audit failure; the rendered reports, errors, audit rows (Debug and JSON) and captured
   log output are searched for it, and the test asserts the audit rows and log lines were actually present. Planting a leak into
-  an audit row and into a log line each made it fail. The test runs in its own binary because tracing caches log-site
-  enablement per process and made it flaky beside other tests (found, not assumed).
+  an audit row and into a log line each made it fail. The test runs in its own binary: beside busy neighbour tests it lost
+  its INFO log line 40 runs out of 40; rebuilding the tracing interest cache did not fix that, so the mechanism is not
+  fully explained, and isolation (enforced by `check-kernel-boundaries.mjs`: one test per file that installs a subscriber)
+  is the proven fix.
 - **A failed audit write blocks the sync.** If the plan cannot be recorded, no put, delete or hook runs and the destination
   is exactly as it was; ignoring that failure in the engine made the test fail. If only the outcome cannot be recorded, the
   caller gets `Unrecorded` with the report, never a success.

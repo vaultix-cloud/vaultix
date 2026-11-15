@@ -61,3 +61,17 @@ test("a crate outside the layout or outside the workspace is refused", () => {
   assert.match(checkKernel(fixture({ "stray/thing": [] })).join("\n"), /outside the layout/);
   assert.match(checkKernel(fixture({ "foundation/keys": [] }, ["server"])).join("\n"), /not in the workspace members/);
 });
+
+
+test("a test file that installs a log subscriber must hold exactly one test", () => {
+  const root = fixture({ "domains/connectors/core": [] });
+  mkdirSync(join(root, "kernel/domains/connectors/core/tests"), { recursive: true });
+  const write = (name, body) => writeFileSync(join(root, "kernel/domains/connectors/core/tests", name), body);
+  const one = "#[tokio::test]\nasync fn a() { let _g = tracing::subscriber::set_default(s); }\n";
+  write("one.rs", one);
+  assert.deepEqual(checkKernel(root), [], "one test with a subscriber is fine");
+  write("two.rs", `${one}#[tokio::test]\nasync fn b() {}\n`);
+  assert.match(checkKernel(root).join("\n"), /two\.rs: installs a log subscriber and has 2 tests/);
+  write("two.rs", "#[test]\nfn a() {}\n#[test]\nfn b() {}\n");
+  assert.deepEqual(checkKernel(root), [], "many tests without a subscriber are fine");
+});

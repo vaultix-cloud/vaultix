@@ -1,5 +1,6 @@
-//! The no-leak proof, alone in its own test binary: it installs a log subscriber, and tracing caches which log
-//! sites are enabled for the whole process, so sharing a process with other tests made it flaky.
+//! The no-leak proof. It must stay the only test in this file: it installs a log subscriber, and with busy neighbour tests
+//! in the same process it failed 40 runs out of 40 (the INFO line was missing from its capture). Rebuilding tracing's
+//! interest cache did not cure that, so isolation is the fix, and scripts/lib/kernel-boundaries.mjs enforces it.
 
 mod common;
 use common::*;
