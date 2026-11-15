@@ -265,6 +265,36 @@
       "fg": "color.focus.ring",
       "bg": "menu-item.bg-highlight",
       "min": 3
+    },
+    {
+      "fg": "tabs.fg",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "tabs.fg",
+      "bg": "color.surface.canvas",
+      "min": 4.5
+    },
+    {
+      "fg": "tabs.fg-selected",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "tabs.indicator",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "tabs.indicator",
+      "bg": "color.surface.canvas",
+      "min": 3
+    },
+    {
+      "fg": "tabs.count-fg",
+      "bg": "tabs.count-bg",
+      "min": 4.5
     }
   ]
 }

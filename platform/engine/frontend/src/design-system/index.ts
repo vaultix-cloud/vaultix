@@ -18,6 +18,8 @@ export type { TPopoverProps } from "./primitives/Popover/Popover";
 export { Popover } from "./primitives/Popover/Popover";
 export type { TSheetProps } from "./primitives/Sheet/Sheet";
 export { Sheet } from "./primitives/Sheet/Sheet";
+export type { TTab, TTabsProps } from "./primitives/Tabs/Tabs";
+export { Tabs } from "./primitives/Tabs/Tabs";
 export type { TTextAreaProps } from "./primitives/TextArea/TextArea";
 export { TextArea } from "./primitives/TextArea/TextArea";
 export type { TTextInputProps, TTextInputSize } from "./primitives/TextInput/TextInput";

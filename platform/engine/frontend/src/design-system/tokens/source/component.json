@@ -351,5 +351,55 @@
       "$type": "dimension",
       "$value": "200px"
     }
+  },
+  "tabs": {
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "fg-hover": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "fg-selected": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "fg-disabled": {
+      "$type": "color",
+      "$value": "{color.text.disabled}"
+    },
+    "indicator": {
+      "$type": "color",
+      "$value": "{color.accent.indicator}"
+    },
+    "rule": {
+      "$type": "color",
+      "$value": "{color.border.subtle}"
+    },
+    "count-bg": {
+      "$type": "color",
+      "$value": "{color.interactive.active}"
+    },
+    "count-fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "height": {
+      "$type": "dimension",
+      "$value": "{control.height-lg}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.1}"
+    },
+    "padding-x": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "indicator-width": {
+      "$type": "dimension",
+      "$value": "2px"
+    }
   }
 }
