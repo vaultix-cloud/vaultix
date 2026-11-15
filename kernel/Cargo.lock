@@ -2189,6 +2189,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vx-connectors"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "vx-contract"
 version = "0.1.0"
 dependencies = [
