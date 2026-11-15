@@ -128,3 +128,32 @@ and the faithful helper is per version.
 
 Still open: the frontend's behaviour where a form depends on a difference above (each form needs reading, not a rule).
 Zod 4 is current (4.6.7) and is not what the code runs; nothing here concerns it.
+
+## 7. Decision: route B (owner, 2026-11-15)
+
+The owner chose to convert the backend and `db/` as well, so Zod reaches zero by conversion and not only by deleting
+domains. This supersedes the recommendation in section 2. Domains that move into the kernel first are still deleted, not
+converted, and the ceiling still falls either way.
+
+**The seam is one file.** The backend's only Zod integration is `platform/engine/backend/src/server/plugins/fastify-zod.ts`
+(275 lines, taken in-house from fastify-type-provider-zod), plus `@types/fastify-zod.d.ts` and `swagger.ts`. It does four
+jobs: a validator compiler (`schema.parse`), a serializer compiler (`safeParse`, throws `ResponseValidationError`), a type
+provider (`z.output` / `z.input`), and a JSON Schema transform for OpenAPI (`zod-to-json-schema`, OpenAPI 3 target, with a
+`.describe(JSON.stringify({ "x-hidden": true }))` convention that hides a field from the docs). Anything that replaces it
+must keep all four, and the hidden-field convention needs an ArkType equivalent (a `configure` meta key).
+
+**Order (each step lands with proof, and the ceiling falls in the same commit):**
+
+1. A Standard Schema plugin beside the Zod one: the validator and serializer call `~standard.validate`, the type provider
+   takes `StandardSchemaV1` input and output, and the OpenAPI transform uses ArkType's JSON Schema export (the exporter in
+   `kernel/contracts/documents` already handles the fallbacks). The plugin accepts both libraries, so routes convert one
+   at a time. The test: the OpenAPI document the server serves is byte-compared before and after, route by route.
+2. The shared helper module (`scripts/zod-migration/helpers.mjs` becomes real code) and the converter for plain shapes.
+3. `db/` generated row schemas: change the generator's output, not 280 files by hand.
+4. Route files by domain, plain shapes first, then `refine` / `transform` / `coerce` / `catch` by hand with the section 3 table.
+5. Forms and route search parameters (frontend), then `z.infer` types, then remove `zod`, `zod-to-json-schema`, the
+   adapters and `scripts/zod-migration/` from every `package.json`.
+
+**Risks to watch:** `nativeEnum` (335 files) and `discriminatedUnion` (252) shape the OpenAPI output, so the byte-compare
+in step 1 is the control; 432 backend files need a decision; and response serialization currently strips unknown keys
+through Zod, which ArkType only does with `onUndeclaredKey("delete")` (the helper sets it).
