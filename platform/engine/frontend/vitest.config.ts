@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     projects: [
       {
+        resolve: { alias: { "@app": fileURLToPath(new URL("./src", import.meta.url)) } },
         test: {
           name: "unit",
           include: ["src/**/*.test.ts"],
