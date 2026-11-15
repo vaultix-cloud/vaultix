@@ -551,5 +551,99 @@
       "$type": "color",
       "$value": "{color.status.danger-strong}"
     }
+  },
+  "table": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.base}"
+    },
+    "header-bg": {
+      "$type": "color",
+      "$value": "{color.surface.raised}"
+    },
+    "header-fg": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "fg-muted": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.default}"
+    },
+    "row-border": {
+      "$type": "color",
+      "$value": "{color.border.subtle}"
+    },
+    "row-hover": {
+      "$type": "color",
+      "$value": "{color.interactive.hover}"
+    },
+    "row-selected": {
+      "$type": "color",
+      "$value": "{color.interactive.selected}"
+    },
+    "sort-icon": {
+      "$type": "color",
+      "$value": "{color.text.muted}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.lg}"
+    },
+    "cell-padding-x": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "row-height": {
+      "$type": "dimension",
+      "$value": "44px"
+    },
+    "row-height-compact": {
+      "$type": "dimension",
+      "$value": "32px"
+    }
+  },
+  "skeleton": {
+    "base": {
+      "$type": "color",
+      "$value": "{color.interactive.hover}"
+    },
+    "shine": {
+      "$type": "color",
+      "$value": "{color.interactive.active}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.sm}"
+    }
+  },
+  "empty": {
+    "icon": {
+      "$type": "color",
+      "$value": "{color.text.muted}"
+    },
+    "title": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "description": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.10}"
+    }
   }
 }

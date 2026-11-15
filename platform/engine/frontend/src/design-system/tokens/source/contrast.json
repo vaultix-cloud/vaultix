@@ -395,6 +395,66 @@
       "fg": "color.focus.ring",
       "bg": "toast.bg",
       "min": 3
+    },
+    {
+      "fg": "table.header-fg",
+      "bg": "table.header-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg",
+      "bg": "table.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg-muted",
+      "bg": "table.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg",
+      "bg": "table.row-hover",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg-muted",
+      "bg": "table.row-hover",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg",
+      "bg": "table.row-selected",
+      "min": 4.5
+    },
+    {
+      "fg": "table.fg-muted",
+      "bg": "table.row-selected",
+      "min": 4.5
+    },
+    {
+      "fg": "table.sort-icon",
+      "bg": "table.header-bg",
+      "min": 3
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "table.bg",
+      "min": 3
+    },
+    {
+      "fg": "choice.border",
+      "bg": "table.row-selected",
+      "min": 3
+    },
+    {
+      "fg": "empty.description",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "empty.icon",
+      "bg": "color.surface.base",
+      "min": 3
     }
   ]
 }

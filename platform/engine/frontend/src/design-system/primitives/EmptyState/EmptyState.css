@@ -1,0 +1,39 @@
+/* Vaultix EmptyState. Values come from tokens. */
+.vx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vx-empty-gap);
+  padding: var(--vx-empty-padding) var(--vx-space-4);
+  text-align: center;
+  font-family: var(--vx-font-family-sans);
+}
+
+.vx-empty__icon {
+  display: inline-flex;
+  color: var(--vx-empty-icon);
+}
+
+.vx-empty__title {
+  margin: 0;
+  color: var(--vx-empty-title);
+  font-size: var(--vx-font-size-lg);
+  font-weight: var(--vx-font-weight-semibold);
+  line-height: var(--vx-font-line-height-snug);
+}
+
+.vx-empty__description {
+  max-width: 48ch;
+  margin: calc(-1 * var(--vx-space-1)) 0 0;
+  color: var(--vx-empty-description);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+.vx-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--vx-space-2);
+  margin-top: var(--vx-space-1);
+}

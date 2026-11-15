@@ -1,0 +1,150 @@
+/* Vaultix Table. Values come from tokens. */
+.vx-table {
+  min-width: 0;
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  color: var(--vx-table-fg);
+}
+
+.vx-table__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--vx-table-border);
+  border-radius: var(--vx-table-radius);
+  background: var(--vx-table-bg);
+}
+
+.vx-table__scroll:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vx-table caption {
+  padding: var(--vx-space-3) var(--vx-table-cell-padding-x);
+  color: var(--vx-table-fg);
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-semibold);
+  text-align: start;
+}
+
+.vx-table__caption--hidden,
+.vx-table__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.vx-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: var(--vx-control-height-lg);
+  padding: 0 var(--vx-table-cell-padding-x);
+  border-bottom: 1px solid var(--vx-table-border);
+  background: var(--vx-table-header-bg);
+  color: var(--vx-table-header-fg);
+  font-size: var(--vx-font-size-sm);
+  font-weight: var(--vx-font-weight-medium);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.vx-table th[data-align="end"],
+.vx-table td[data-align="end"] {
+  text-align: end;
+}
+
+.vx-table tbody th,
+.vx-table tbody td {
+  height: var(--vx-table-row-height);
+  padding: 0 var(--vx-table-cell-padding-x);
+  border-bottom: 1px solid var(--vx-table-row-border);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.vx-table tbody th {
+  font-weight: var(--vx-font-weight-medium);
+}
+
+.vx-table--compact tbody th,
+.vx-table--compact tbody td {
+  height: var(--vx-table-row-height-compact);
+}
+
+.vx-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.vx-table tbody tr:hover > * {
+  background: var(--vx-table-row-hover);
+}
+
+.vx-table tbody tr[data-selected] > * {
+  background: var(--vx-table-row-selected);
+}
+
+.vx-table__select {
+  width: 1px;
+  padding-right: 0;
+}
+
+.vx-table__check {
+  margin: 0;
+  vertical-align: middle;
+}
+
+.vx-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vx-space-1);
+  margin: 0 calc(-1 * var(--vx-space-1));
+  padding: var(--vx-space-1);
+  border: 0;
+  border-radius: var(--vx-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vx-table__sort:hover {
+  color: var(--vx-table-fg);
+}
+
+.vx-table__sort:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: 0;
+}
+
+.vx-table__sort-icon {
+  display: inline-flex;
+  color: var(--vx-table-sort-icon);
+}
+
+.vx-table th[aria-sort] .vx-table__sort {
+  color: var(--vx-table-fg);
+}
+
+.vx-table th[aria-sort] .vx-table__sort-icon {
+  color: inherit;
+}
+
+.vx-table__empty {
+  height: auto;
+}
+
+.vx-table tbody tr:has(.vx-table__empty):hover > * {
+  background: transparent;
+}
