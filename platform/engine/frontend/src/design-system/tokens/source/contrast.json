@@ -490,6 +490,36 @@
       "fg": "link.fg",
       "bg": "toast.bg",
       "min": 4.5
+    },
+    {
+      "fg": "listbox.option-selected-fg",
+      "bg": "listbox.option-selected-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-muted",
+      "bg": "listbox.option-selected-bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg",
+      "bg": "listbox.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "menu-item.fg-muted",
+      "bg": "listbox.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "listbox.border",
+      "bg": "color.surface.base",
+      "min": 3
+    },
+    {
+      "fg": "choice.checked-bg",
+      "bg": "listbox.bg",
+      "min": 3
     }
   ]
 }

@@ -673,5 +673,27 @@
       "$type": "color",
       "$value": "{color.text.primary}"
     }
+  },
+  "listbox": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.field}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.control}"
+    },
+    "option-selected-bg": {
+      "$type": "color",
+      "$value": "{color.interactive.selected}"
+    },
+    "option-selected-fg": {
+      "$type": "color",
+      "$value": "{color.interactive.selected-text}"
+    },
+    "max-height": {
+      "$type": "dimension",
+      "$value": "280px"
+    }
   }
 }

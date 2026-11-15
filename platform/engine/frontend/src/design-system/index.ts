@@ -28,6 +28,8 @@ export type { TIconButtonProps } from "./primitives/IconButton/IconButton";
 export { IconButton } from "./primitives/IconButton/IconButton";
 export type { TLinkProps } from "./primitives/Link/Link";
 export { Link, linkClassName } from "./primitives/Link/Link";
+export type { TListboxOption, TListboxProps } from "./primitives/Listbox/Listbox";
+export { Listbox } from "./primitives/Listbox/Listbox";
 export type { TMenuButtonProps, TMenuEntry, TMenuItem } from "./primitives/Menu/MenuButton";
 export { MenuButton } from "./primitives/Menu/MenuButton";
 export type { TPopoverProps } from "./primitives/Popover/Popover";

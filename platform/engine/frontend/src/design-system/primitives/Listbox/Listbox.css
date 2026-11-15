@@ -1,0 +1,64 @@
+/* Vaultix Listbox. Option rows reuse the menu and combobox option styles. */
+.vx-listbox {
+  max-height: var(--vx-listbox-max-height);
+  padding: var(--vx-space-1);
+  overflow-y: auto;
+  border: 1px solid var(--vx-listbox-border);
+  border-radius: var(--vx-control-radius);
+  background: var(--vx-listbox-bg);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+}
+
+.vx-listbox:focus {
+  outline: none;
+}
+
+.vx-listbox:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-listbox__option[aria-selected="true"] {
+  background: var(--vx-listbox-option-selected-bg);
+  color: var(--vx-listbox-option-selected-fg);
+}
+
+/* The active option shows only while the list has focus; otherwise only the choice shows. */
+.vx-listbox:not(:focus-visible) .vx-listbox__option[data-active] {
+  outline: none;
+}
+
+.vx-listbox:not(:focus-visible) .vx-listbox__option[data-active]:not([aria-selected="true"]) {
+  background: transparent;
+}
+
+.vx-listbox__option:hover:not([aria-disabled="true"]) {
+  background: var(--vx-menu-item-bg-highlight);
+}
+
+.vx-listbox__box {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--vx-choice-size);
+  height: var(--vx-choice-size);
+  box-sizing: border-box;
+  border: 1.5px solid var(--vx-choice-border);
+  border-radius: var(--vx-choice-radius);
+  background: var(--vx-choice-bg);
+  color: var(--vx-choice-mark);
+}
+
+.vx-listbox__box[data-checked] {
+  border-color: var(--vx-choice-checked-bg);
+  background: var(--vx-choice-checked-bg);
+}
+
+@media (forced-colors: active) {
+  .vx-listbox__option[aria-selected="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

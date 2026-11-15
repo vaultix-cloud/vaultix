@@ -397,6 +397,13 @@ export const vx = {
     "fg": "var(--vx-link-fg)",
     "fg-hover": "var(--vx-link-fg-hover)",
     "fg-subtle": "var(--vx-link-fg-subtle)"
+  },
+  "listbox": {
+    "bg": "var(--vx-listbox-bg)",
+    "border": "var(--vx-listbox-border)",
+    "option-selected-bg": "var(--vx-listbox-option-selected-bg)",
+    "option-selected-fg": "var(--vx-listbox-option-selected-fg)",
+    "max-height": "var(--vx-listbox-max-height)"
   }
 } as const;
 
@@ -2889,6 +2896,46 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "oklch(0.97 0.005 255)",
     "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "listbox.bg",
+    "cssVar": "--vx-listbox-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.15 0.02 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "listbox.border",
+    "cssVar": "--vx-listbox-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.57 0.022 255)",
+    "light": "oklch(0.57 0.022 255)"
+  },
+  {
+    "name": "listbox.option-selected-bg",
+    "cssVar": "--vx-listbox-option-selected-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.24 0.04 70)",
+    "light": "oklch(0.97 0.03 88)"
+  },
+  {
+    "name": "listbox.option-selected-fg",
+    "cssVar": "--vx-listbox-option-selected-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.85 0.1 86)",
+    "light": "oklch(0.42 0.085 72)"
+  },
+  {
+    "name": "listbox.max-height",
+    "cssVar": "--vx-listbox-max-height",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "280px",
+    "light": "280px"
   }
 ];
 
@@ -3580,6 +3627,48 @@ export const contrastReport = [
     "ratio": 7.77
   },
   {
+    "theme": "dark",
+    "fg": "listbox.option-selected-fg",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 10.43
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 8.56
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 18.04
+  },
+  {
+    "theme": "dark",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 10.18
+  },
+  {
+    "theme": "dark",
+    "fg": "listbox.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 3.93
+  },
+  {
+    "theme": "dark",
+    "fg": "choice.checked-bg",
+    "bg": "listbox.bg",
+    "min": 3,
+    "ratio": 9.76
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -4264,6 +4353,48 @@ export const contrastReport = [
     "bg": "toast.bg",
     "min": 4.5,
     "ratio": 8.61
+  },
+  {
+    "theme": "light",
+    "fg": "listbox.option-selected-fg",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 7.9
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 9.56
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "listbox.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "choice.checked-bg",
+    "bg": "listbox.bg",
+    "min": 3,
+    "ratio": 4.95
   },
   {
     "theme": "dark-more",
@@ -4952,6 +5083,48 @@ export const contrastReport = [
     "ratio": 7.77
   },
   {
+    "theme": "dark-more",
+    "fg": "listbox.option-selected-fg",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 10.43
+  },
+  {
+    "theme": "dark-more",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 13.46
+  },
+  {
+    "theme": "dark-more",
+    "fg": "menu-item.fg",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 18.04
+  },
+  {
+    "theme": "dark-more",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 16.01
+  },
+  {
+    "theme": "dark-more",
+    "fg": "listbox.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 9.07
+  },
+  {
+    "theme": "dark-more",
+    "fg": "choice.checked-bg",
+    "bg": "listbox.bg",
+    "min": 3,
+    "ratio": 9.76
+  },
+  {
     "theme": "light-more",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -5636,5 +5809,47 @@ export const contrastReport = [
     "bg": "toast.bg",
     "min": 4.5,
     "ratio": 8.61
+  },
+  {
+    "theme": "light-more",
+    "fg": "listbox.option-selected-fg",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 7.9
+  },
+  {
+    "theme": "light-more",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.option-selected-bg",
+    "min": 4.5,
+    "ratio": 12.94
+  },
+  {
+    "theme": "light-more",
+    "fg": "menu-item.fg",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light-more",
+    "fg": "menu-item.fg-muted",
+    "bg": "listbox.bg",
+    "min": 4.5,
+    "ratio": 14.1
+  },
+  {
+    "theme": "light-more",
+    "fg": "listbox.border",
+    "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light-more",
+    "fg": "choice.checked-bg",
+    "bg": "listbox.bg",
+    "min": 3,
+    "ratio": 4.95
   }
 ] as const;

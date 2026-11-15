@@ -195,6 +195,12 @@ A native `<a>` for navigation; use Button for actions. Links stay **underlined**
 
 Stories: Inline, External, Subtle, LightTheme · [source](frontend/src/design-system/primitives/Link/Link.stories.tsx)
 
+### Primitives / Listbox
+
+The WAI-ARIA listbox for choosing from a visible list. The list is one Tab stop; the active option is conveyed with `aria-activedescendant` and shows a ring while the list has keyboard focus. **Keyboard:** Up and Down Arrow move, skipping disabled options; Home and End go to the ends; typing letters jumps to an option. **Single:** selection follows focus. **Multiple** (`aria-multiselectable`): Space toggles the active option, Shift with an arrow extends the choice, Ctrl+A (Cmd+A) chooses all or none. Pressing an option chooses it. Use Select or Combobox when the list should stay closed until needed.
+
+Stories: Single, Multiple, LightTheme · [source](frontend/src/design-system/primitives/Listbox/Listbox.stories.tsx)
+
 ### Primitives / Menu Button
 
 The WAI-ARIA menu button. The button has `aria-haspopup="menu"` and `aria-expanded`, and names the menu. Items come from data (`items`), so a catalog can supply them. **Keyboard on the button:** Enter, Space or Down Arrow opens the menu on the first item; Up Arrow opens it on the last. **In the menu:** Down and Up Arrow move and wrap; Home and End go to the first and last; typing letters jumps to the next item that starts with them; Enter or Space chooses the item, closes the menu and returns focus to the button; Escape closes and returns focus; Tab closes and moves on. Disabled items stay reachable so people learn they exist, and do nothing. A press outside closes the menu. Shortcuts are shown and exposed with `aria-keyshortcuts`; keyboard focus gets a ring as well as the fill.
