@@ -133,7 +133,8 @@ export const vx = {
     "12": "var(--vx-space-12)",
     "16": "var(--vx-space-16)",
     "0-5": "var(--vx-space-0-5)",
-    "1-5": "var(--vx-space-1-5)"
+    "1-5": "var(--vx-space-1-5)",
+    "2-5": "var(--vx-space-2-5)"
   },
   "radius": {
     "none": "var(--vx-radius-none)",
@@ -782,6 +783,14 @@ export const tokenList: TTokenEntry[] = [
     "layer": "primitive",
     "dark": "6px",
     "light": "6px"
+  },
+  {
+    "name": "space.2-5",
+    "cssVar": "--vx-space-2-5",
+    "type": "dimension",
+    "layer": "primitive",
+    "dark": "10px",
+    "light": "10px"
   },
   {
     "name": "radius.none",

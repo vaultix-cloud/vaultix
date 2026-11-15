@@ -8,4 +8,6 @@ export type { TIconButtonProps } from "./primitives/IconButton/IconButton";
 export { IconButton } from "./primitives/IconButton/IconButton";
 export type { TTooltipProps } from "./primitives/Tooltip/Tooltip";
 export { Tooltip } from "./primitives/Tooltip/Tooltip";
+export type { TAppFrameProps, TRailGroup, TRailItem, TRenderLink } from "./frame/AppFrame";
+export { AppFrame } from "./frame/AppFrame";
 export { contrastReport, tokenList, vx } from "./tokens/tokens";
