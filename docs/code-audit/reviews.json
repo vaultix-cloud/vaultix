@@ -321,10 +321,10 @@
     },
     {
       "path": "docs/migration/workstreams.json",
-      "blob": "7cb000d9f20a57624e4ae0ca0e00d08b09c2e0c2",
+      "blob": "e72847e5bd96490f22efb2873653b156d77011c9",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete workstream DAG and first-match rules; classify the new interaction ledger under native UI ownership. No migration state or acceptance gate is promoted. 2026-11-13: only change since review is the core/ to platform/engine/ path rename, verified by normalized comparison. 2026-11-13: authored the hosted-service workstream for platform/shippin (docs/0125); one rule, one group and one target added.",
+      "scope": "Read complete workstream DAG and first-match rules; classify the new interaction ledger under native UI ownership. No migration state or acceptance gate is promoted. 2026-11-13: only change since review is the core/ to platform/engine/ path rename, verified by normalized comparison. 2026-11-13: authored the hosted-service workstream for platform/shippin (docs/0125); one rule, one group and one target added. 2026-11-15: added one classification rule placing kernel/ in the foundation workstream; no other rule changed.",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",
@@ -4979,10 +4979,10 @@
     },
     {
       "path": "AGENTS.md",
-      "blob": "fa4b6a44a6d15c195e9f0d1a283783fd1ef6b413",
+      "blob": "335a260254cea13b362e6cfedbddb0cb44b85b5e",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127). 2026-11-14: authored the program-plan note, the UI rule, and the router row for docs/0130. 2026-11-15: re-read the diff; one router row added pointing phase 2 frame work at docs/0131-phase-2-frame-plan.md.",
+      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127). 2026-11-14: authored the program-plan note, the UI rule, and the router row for docs/0130. 2026-11-15: re-read the diff; one router row added pointing phase 2 frame work at docs/0131-phase-2-frame-plan.md. 2026-11-15: authored the new-product direction paragraph (kernel, platform, control, ArkType replacing Zod) and two router rows for docs/0136 and the capability proof; no authority or boundary rule was changed.",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",

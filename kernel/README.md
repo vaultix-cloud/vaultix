@@ -1,22 +1,27 @@
-# vx: the Vaultix core, rewritten
+# kernel: the Vaultix engine, rewritten
 
 The foundation from `docs/0134-foundation-rewrite.md`, in Rust. It does not port the inherited engine;
 it is built from the lessons in `docs/0135-process-review-and-redesign.md`. One process, one Postgres,
 no cache and no queue service.
 
-## Crates
+## Layout
 
-| Crate | What it is |
+Nested by context, two levels deep, enforced by `node scripts/check-kernel-boundaries.mjs`
+(docs/0136): `foundation/` is shared and never depends on a domain; `domains/<domain>/<role>` holds
+everything about one context; `server/`, `clients/` and `services/` assemble them. The kernel never
+depends on `platform/` or `control/`.
+
+| Crate (folder) | What it is |
 | --- | --- |
-| `vx-secret` | `Secret`: the type a value lives in. No `Clone`, `Display`, `Serialize` or `PartialEq`; `Debug` is redacted; wiped on drop. Compile-fail tests prove it. |
-| `vx-store` | Postgres pool and forward-only migrations (`vx_operate_*`, `vx_kms_*` tables, per `docs/0119`). |
-| `vx-jobs` | The one background-work system: `SKIP LOCKED` claims, `LISTEN/NOTIFY` wake-ups, schedules, retries, a visible dead state. An idle worker runs no queries. |
-| `vx-audit` | The audit chain: written in the action's own transaction (fail closed), hash-chained per tenant, values recorded as keyed fingerprints only. |
-| `vx-keys` | The key hierarchy and the value path: root, per-scope key-encryption key, data keys, AES-256-GCM with the value's identity bound in. Starts sealed. |
-| `vx-gate` | The output gate: credential shapes, canaries and learned values (plain, hex, base64) are blocked on the way out, naming the rule and never the match. |
-| `vx-secrets` | Secrets: sealed per version, listed as metadata, read only by redeeming a single-use handle bound to an identity; every read is audited in the same transaction. |
-| `vx-client` | `vx` (a person enters a value at their own terminal) and `vx-mcp` (the tool server an AI client connects to). |
-| `vaultixd` | The server: `/healthz`, `/api/vx/v1/status`, `secrets` (write, list, injections, redeem) and the guarded operate routes (jobs, schedules, audit). `vaultixd init` writes the root key to a file without printing it. |
+| `vx-secret` (`foundation/secret`) | `Secret`: the type a value lives in. No `Clone`, `Display`, `Serialize` or `PartialEq`; `Debug` is redacted; wiped on drop. Compile-fail tests prove it. |
+| `vx-store` (`foundation/store`) | Postgres pool and forward-only migrations (`vx_operate_*`, `vx_kms_*` tables, per `docs/0119`). |
+| `vx-jobs` (`foundation/jobs`) | The one background-work system: `SKIP LOCKED` claims, `LISTEN/NOTIFY` wake-ups, schedules, retries, a visible dead state. An idle worker runs no queries. |
+| `vx-audit` (`foundation/audit`) | The audit chain: written in the action's own transaction (fail closed), hash-chained per tenant, values recorded as keyed fingerprints only. |
+| `vx-keys` (`foundation/keys`) | The key hierarchy and the value path: root, per-scope key-encryption key, data keys, AES-256-GCM with the value's identity bound in. Starts sealed. |
+| `vx-gate` (`foundation/gate`) | The output gate: credential shapes, canaries and learned values (plain, hex, base64) are blocked on the way out, naming the rule and never the match. |
+| `vx-secrets` (`domains/secrets/core`) | Secrets: sealed per version, listed as metadata, read only by redeeming a single-use handle bound to an identity; every read is audited in the same transaction. |
+| `vx-client` (`clients/cli`) | `vx` (a person enters a value at their own terminal) and `vx-mcp` (the tool server an AI client connects to). |
+| `vaultixd` (`server`) | The server: `/healthz`, `/api/vx/v1/status`, `secrets` (write, list, injections, redeem) and the guarded operate routes (jobs, schedules, audit). `vaultixd init` writes the root key to a file without printing it. |
 
 ## Rules the build enforces
 

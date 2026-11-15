@@ -10,6 +10,16 @@ This file is the agent router. Specs live in `docs/`. Humans start at
 
 ## Current direction
 
+New product, 0.5.0-alpha (2026-11-15, owner): Vaultix is treated as a new product; there is no v1, v2 or v3
+compatibility. Three parts, no `core` folder: **`kernel/`** (the engine, every feature, Rust, nested by
+context: foundation, domains, server, clients, services), **`platform/`** (the hosted offering; depends on the
+kernel) and **`control/`** (the cloud panel management; separate, private). The chat assistant is a
+separate service with its own LLM configuration per space. ArkType (Standard Schema) replaces Zod: new code
+never imports Zod and the inherited count only falls (`scripts/check-zod-ceiling.mjs`). The kernel's layout
+rules are code (`scripts/check-kernel-boundaries.mjs`). Read `docs/0136-kernel-platform-control-and-schemas.md`
+and `kernel/README.md`. `platform/engine/` is legacy: it shrinks as domains move into `kernel/`, and nothing
+new goes in it. This supersedes the folder layout notes below.
+
 The program plan (2026-11-14, owner): `docs/0130-vaultix-program-plan.md` orders all remaining work
 and records the business model. Vaultix is its own product, not Infisical. AngryVibes offers it
 self-hosted under a non-compete licence, managed for the customer, and as a tailored hosted service,
@@ -197,6 +207,8 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | Task | Read |
 | --- | --- |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
+| The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
+| Proving the capability (use a secret from Claude without seeing it) | `node scripts/prove-vx-capability.mjs [--claude \| --serve]`; tests `node scripts/test-vx.mjs` |
 | The app frame, switcher, palette, Clyffy overlay (phase 2) | `docs/0131-phase-2-frame-plan.md` + `platform/engine/DESIGN.md` |
 | Deploy, install, upgrade an instance (any AI) | `INSTALL-FOR-AI.md` + `docs/0109-native-install-and-upgrade.md` |
 | Pre-release rules, credentials in chat | `docs/0118-pre-release.md` |
