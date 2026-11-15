@@ -48,3 +48,30 @@ measurement of how much of the old product is left and a rule that the number on
 3. Rewrite the frontend screens from Vaultix primitives (no inherited component as a starting point, per AGENTS).
 4. Replace `platform/engine/docs` (2,325 files, 1,653 identical) with Vaultix's own documentation.
 5. When identical reaches zero and modified is small, remove the notice only with the owner's decision on licence.
+
+## 6. Review: what to rewrite first (`node scripts/lineage-domains.mjs`, 2026-11-15)
+
+Code files only (no tests or stories) in the backend services and routes and the frontend pages and API hooks: 270
+domains, **436,163 lines still byte-identical to the import**. The distribution decides the order.
+
+| Block | Identical lines | What it is | Recommendation |
+| --- | --- | --- | --- |
+| Frontend pages: secret-manager 91k, organization 64k, project 20k, user/auth/admin 8k | about 183k | The screens a customer lives in | Rewrite from Vaultix primitives, screen by screen, behind the app frame (0131). The biggest single block, and the one the owner sees |
+| Frontend pages: cert-manager 56k, pam 21k, kms 4k, secret-scanning 4k | about 85k | Infisical's expansion products | Must exist in Vaultix (0127: more, never less) but are not the core. Sequence them after the core; the open PKI and PAM scope question changes the order, not whether they exist |
+| Connectors: app-connection (455 files, 25k), secret-sync (16k), pki-sync (7k), integration-auth (3k), with their frontend hooks (about 11k) | about 62k | One file group per provider (AWS, GitHub, and so on) | Not 450 rewrites. One declarative connector framework in the kernel (a spec per provider; shared auth, sync, retry, audit), then each provider is data plus its API calls. The largest drop in file count per unit of work |
+| Backend: certificate-authority (11k), certificate, certificate-profile, signer, pki-alert-v2 | about 18k | PKI services | Move with cert-manager above |
+| Backend: smtp, alert, approval-policy, org, project, secret services | about 15k | Core services | Into the kernel by domain (0130), then delete |
+| Backend routes v1/v2 | about 11k identical of 61k | The old API | Deleted as each domain gets its `/api/vx/v1` route (0127) |
+
+Three observations that were not obvious before measuring:
+
+1. **The frontend is 58% of the inherited lines in these groups, not the backend.** The first five page groups alone are
+   about 252k of 436k. The kernel work removes the backend's risk, and the screens remove the upstream's footprint.
+2. **Connectors are a different kind of work.** 455 of the 491 app-connection files are byte-identical, and they differ by
+   provider, not by logic. A framework removes them in one move; rewriting each by hand would be the slowest path.
+3. **Routes are mostly already edited** (176 of 286 v1 route files identical, but 55k lines in the group), so route
+   deletion follows the domain moves and needs no separate project.
+
+Order proposed: (1) the connector framework and the secrets, projects and org domains into the kernel, with their
+screens; (2) identity and auth screens; (3) PKI and KMS; (4) PAM and scanning. Each step lowers
+`scripts/lineage-ceiling.json`. Nothing here has been rewritten yet; this is the map.
