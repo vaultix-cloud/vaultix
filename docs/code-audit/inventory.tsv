@@ -981,7 +981,7 @@ docs/capabilities/explorer.css	136bbc57d7afe0eee89bcf406c0571afd9e1c634	product-
 docs/capabilities/explorer.html	c579dacf8e759bafa29c058b9e08374ea908fc42	product-code	verified
 docs/capabilities/explorer.mjs	699fa26c919398b097895b3ee53cf01cb0721c86	product-code	verified
 docs/capabilities/generated/catalog.json	6c2effdbe4f803f520c2f5ac3cd41ae02cba48b6	generated	unread
-docs/capabilities/generated/source-map.tsv	e31c4cc744012b9b3004c5c389e6390ce63820cc	generated	unread
+docs/capabilities/generated/source-map.tsv	810d70504d33599dc4e6eaf971ded5c9ef8131fd	generated	unread
 docs/capabilities/generated/surface-map.tsv	c1ab8c47d801726c20ee3e1e772a60f35fa59e34	generated	unread
 docs/capabilities/vaultix-capabilities.md	2921e43176626920f642ba82929a1893e1ebebf3	documentation	authored
 docs/delivery/acceptance.md	c6176b238bfd0dbf6ce13c0200b0d25cde30cd94	documentation	authored
@@ -993,8 +993,8 @@ docs/interaction/ui-benchmark-receipt.example.v1.json	b422b903ce3a62a189be2293ab
 docs/interaction/workflows.json	47c4034ef2acbdca39f05a84de9b6aa21104e874	product-code	unread
 docs/mcp-embedded-apps.md	21e2f44647d3a3d07f30c74371d3e6147fcb329f	documentation	authored
 docs/migration/README.md	d50481a9f543fb1a723b053acd249a919f75efe7	documentation	reviewed
-docs/migration/generated/files.tsv	146b9322d4ff20bda8150849f525d4cdc989d99b	generated	unread
-docs/migration/generated/modules.tsv	0751fc4122eb1c7c97c215f4dd45bf097cdb896b	generated	unread
+docs/migration/generated/files.tsv	61568122d1bc0d83641ec185db919de134c9a88d	generated	unread
+docs/migration/generated/modules.tsv	edeb1cc42ea5d3774cea3468c605d400ad537b71	generated	unread
 docs/migration/generated/summary.json	4ad91ab251bdb5908e10f9ad5d78afe62f11eb0f	generated	unread
 docs/migration/workstreams.json	7cb000d9f20a57624e4ae0ca0e00d08b09c2e0c2	product-code	reviewed
 docs/plan/action-plan.md	2700611de78557356d50ea829a9bfdc2525f481a	documentation	unread
