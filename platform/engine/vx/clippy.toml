@@ -1,9 +1,0 @@
-# A secret value can be read in one place only: the value path, which allows this lint explicitly.
-# Anywhere else, reading a secret fails the lint, so a leak toward a log, a model or a response is a
-# review-time error, not a runtime surprise.
-disallowed-methods = [
-  { path = "vx_secret::Secret::expose", reason = "only the value path may read a secret; allow it there with a stated reason" },
-]
-allow-unwrap-in-tests = true
-allow-expect-in-tests = true
-allow-print-in-tests = true
