@@ -4,6 +4,10 @@ import "./tokens/tokens.css";
 
 export type { TAppFrameProps, TRailGroup, TRailItem, TRenderLink } from "./frame/AppFrame";
 export { AppFrame } from "./frame/AppFrame";
+export type { TIconProps } from "./icons/Icon";
+export { Icon } from "./icons/Icon";
+export type { TIconName } from "./icons/paths";
+export { iconNames } from "./icons/paths";
 export type { TButtonProps, TButtonSize, TButtonVariant } from "./primitives/Button/Button";
 export { Button } from "./primitives/Button/Button";
 export type { TCheckboxProps } from "./primitives/Choice/Checkbox";
