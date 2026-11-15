@@ -6,10 +6,14 @@ export type { TAppFrameProps, TRailGroup, TRailItem, TRenderLink } from "./frame
 export { AppFrame } from "./frame/AppFrame";
 export type { TButtonProps, TButtonSize, TButtonVariant } from "./primitives/Button/Button";
 export { Button } from "./primitives/Button/Button";
+export type { TDialogProps } from "./primitives/Dialog/Dialog";
+export { Dialog } from "./primitives/Dialog/Dialog";
 export type { TFieldProps } from "./primitives/Field/Field";
 export { Field, useField } from "./primitives/Field/Field";
 export type { TIconButtonProps } from "./primitives/IconButton/IconButton";
 export { IconButton } from "./primitives/IconButton/IconButton";
+export type { TSheetProps } from "./primitives/Sheet/Sheet";
+export { Sheet } from "./primitives/Sheet/Sheet";
 export type { TTextAreaProps } from "./primitives/TextArea/TextArea";
 export { TextArea } from "./primitives/TextArea/TextArea";
 export type { TTextInputProps, TTextInputSize } from "./primitives/TextInput/TextInput";

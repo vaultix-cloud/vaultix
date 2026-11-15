@@ -136,6 +136,17 @@
       "info-subtle": {
         "$value": "{color.blue.950}"
       }
+    },
+    "backdrop": {
+      "$value": "oklch(0.1 0.02 255 / 0.72)",
+      "$description": "Dims the page behind a modal dialog or sheet."
+    }
+  },
+  "elevation": {
+    "$type": "shadow",
+    "overlay": {
+      "$value": "0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4)",
+      "$description": "Dialogs, sheets and menus that float above the page."
     }
   }
 }

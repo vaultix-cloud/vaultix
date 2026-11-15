@@ -225,5 +225,59 @@
       "$type": "color",
       "$value": "{color.status.danger}"
     }
+  },
+  "dialog": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.overlay}"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "description": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.subtle}"
+    },
+    "backdrop": {
+      "$type": "color",
+      "$value": "{color.backdrop}"
+    },
+    "shadow": {
+      "$type": "shadow",
+      "$value": "{elevation.overlay}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.lg}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.6}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.4}"
+    },
+    "width-sm": {
+      "$type": "dimension",
+      "$value": "400px"
+    },
+    "width-md": {
+      "$type": "dimension",
+      "$value": "560px"
+    },
+    "width-lg": {
+      "$type": "dimension",
+      "$value": "760px"
+    },
+    "sheet-width": {
+      "$type": "dimension",
+      "$value": "480px"
+    }
   }
 }

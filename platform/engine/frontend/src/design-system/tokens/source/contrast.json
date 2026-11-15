@@ -185,6 +185,46 @@
       "fg": "input.label",
       "bg": "color.surface.canvas",
       "min": 4.5
+    },
+    {
+      "fg": "dialog.fg",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "dialog.description",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "button.secondary-fg",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "dialog.bg",
+      "min": 3
+    },
+    {
+      "fg": "input.border",
+      "bg": "dialog.bg",
+      "min": 3
+    },
+    {
+      "fg": "input.label",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "input.help",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "input.error",
+      "bg": "dialog.bg",
+      "min": 4.5
     }
   ]
 }

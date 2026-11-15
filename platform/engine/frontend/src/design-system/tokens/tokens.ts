@@ -119,7 +119,8 @@ export const vx = {
       "danger-solid-hover": "var(--vx-color-status-danger-solid-hover)",
       "info": "var(--vx-color-status-info)",
       "info-subtle": "var(--vx-color-status-info-subtle)"
-    }
+    },
+    "backdrop": "var(--vx-color-backdrop)"
   },
   "space": {
     "0": "var(--vx-space-0)",
@@ -191,6 +192,9 @@ export const vx = {
     "tooltip": "var(--vx-z-tooltip)",
     "toast": "var(--vx-z-toast)"
   },
+  "elevation": {
+    "overlay": "var(--vx-elevation-overlay)"
+  },
   "control": {
     "height-sm": "var(--vx-control-height-sm)",
     "height-md": "var(--vx-control-height-md)",
@@ -257,6 +261,21 @@ export const vx = {
     "label": "var(--vx-input-label)",
     "help": "var(--vx-input-help)",
     "error": "var(--vx-input-error)"
+  },
+  "dialog": {
+    "bg": "var(--vx-dialog-bg)",
+    "fg": "var(--vx-dialog-fg)",
+    "description": "var(--vx-dialog-description)",
+    "border": "var(--vx-dialog-border)",
+    "backdrop": "var(--vx-dialog-backdrop)",
+    "shadow": "var(--vx-dialog-shadow)",
+    "radius": "var(--vx-dialog-radius)",
+    "padding": "var(--vx-dialog-padding)",
+    "gap": "var(--vx-dialog-gap)",
+    "width-sm": "var(--vx-dialog-width-sm)",
+    "width-md": "var(--vx-dialog-width-md)",
+    "width-lg": "var(--vx-dialog-width-lg)",
+    "sheet-width": "var(--vx-dialog-sheet-width)"
   }
 } as const;
 
@@ -1415,6 +1434,22 @@ export const tokenList: TTokenEntry[] = [
     "light": "oklch(0.84 0.07 245)"
   },
   {
+    "name": "color.backdrop",
+    "cssVar": "--vx-color-backdrop",
+    "type": "color",
+    "layer": "semantic",
+    "dark": "oklch(0.1 0.02 255 / 0.72)",
+    "light": "oklch(0.22 0.02 255 / 0.45)"
+  },
+  {
+    "name": "elevation.overlay",
+    "cssVar": "--vx-elevation-overlay",
+    "type": "shadow",
+    "layer": "semantic",
+    "dark": "0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4)",
+    "light": "0 24px 64px oklch(0.2 0.02 255 / 0.22), 0 2px 8px oklch(0.2 0.02 255 / 0.12)"
+  },
+  {
     "name": "control.height-sm",
     "cssVar": "--vx-control-height-sm",
     "type": "dimension",
@@ -1837,6 +1872,110 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "oklch(0.74 0.14 25)",
     "light": "oklch(0.46 0.16 27)"
+  },
+  {
+    "name": "dialog.bg",
+    "cssVar": "--vx-dialog-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.29 0.022 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "dialog.fg",
+    "cssVar": "--vx-dialog-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "dialog.description",
+    "cssVar": "--vx-dialog-description",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "dialog.border",
+    "cssVar": "--vx-dialog-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.29 0.022 255)",
+    "light": "oklch(0.93 0.008 255)"
+  },
+  {
+    "name": "dialog.backdrop",
+    "cssVar": "--vx-dialog-backdrop",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.1 0.02 255 / 0.72)",
+    "light": "oklch(0.22 0.02 255 / 0.45)"
+  },
+  {
+    "name": "dialog.shadow",
+    "cssVar": "--vx-dialog-shadow",
+    "type": "shadow",
+    "layer": "component",
+    "dark": "0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4)",
+    "light": "0 24px 64px oklch(0.2 0.02 255 / 0.22), 0 2px 8px oklch(0.2 0.02 255 / 0.12)"
+  },
+  {
+    "name": "dialog.radius",
+    "cssVar": "--vx-dialog-radius",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "10px",
+    "light": "10px"
+  },
+  {
+    "name": "dialog.padding",
+    "cssVar": "--vx-dialog-padding",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "24px",
+    "light": "24px"
+  },
+  {
+    "name": "dialog.gap",
+    "cssVar": "--vx-dialog-gap",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "16px",
+    "light": "16px"
+  },
+  {
+    "name": "dialog.width-sm",
+    "cssVar": "--vx-dialog-width-sm",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "400px",
+    "light": "400px"
+  },
+  {
+    "name": "dialog.width-md",
+    "cssVar": "--vx-dialog-width-md",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "560px",
+    "light": "560px"
+  },
+  {
+    "name": "dialog.width-lg",
+    "cssVar": "--vx-dialog-width-lg",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "760px",
+    "light": "760px"
+  },
+  {
+    "name": "dialog.sheet-width",
+    "cssVar": "--vx-dialog-sheet-width",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "480px",
+    "light": "480px"
   }
 ];
 
@@ -2101,6 +2240,62 @@ export const contrastReport = [
     "ratio": 17.09
   },
   {
+    "theme": "dark",
+    "fg": "dialog.fg",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 12.93
+  },
+  {
+    "theme": "dark",
+    "fg": "dialog.description",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 7.3
+  },
+  {
+    "theme": "dark",
+    "fg": "button.secondary-fg",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 12.93
+  },
+  {
+    "theme": "dark",
+    "fg": "color.focus.ring",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 7.77
+  },
+  {
+    "theme": "dark",
+    "fg": "input.border",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 3.16
+  },
+  {
+    "theme": "dark",
+    "fg": "input.label",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 12.93
+  },
+  {
+    "theme": "dark",
+    "fg": "input.help",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 7.3
+  },
+  {
+    "theme": "dark",
+    "fg": "input.error",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 5.76
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -2358,5 +2553,61 @@ export const contrastReport = [
     "bg": "color.surface.canvas",
     "min": 4.5,
     "ratio": 17.09
+  },
+  {
+    "theme": "light",
+    "fg": "dialog.fg",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "dialog.description",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "button.secondary-fg",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "color.focus.ring",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "input.border",
+    "bg": "dialog.bg",
+    "min": 3,
+    "ratio": 4.46
+  },
+  {
+    "theme": "light",
+    "fg": "input.label",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "input.help",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "input.error",
+    "bg": "dialog.bg",
+    "min": 4.5,
+    "ratio": 7.74
   }
 ] as const;

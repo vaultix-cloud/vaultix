@@ -1,0 +1,153 @@
+/* Vaultix Dialog and Sheet on the native <dialog>. Values come from tokens. */
+/* Position is stated rather than left to the browser's dialog styles, which page resets clear. */
+.vx-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-width: 100vw;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid var(--vx-dialog-border);
+  background: var(--vx-dialog-bg);
+  color: var(--vx-dialog-fg);
+  box-shadow: var(--vx-dialog-shadow);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  line-height: var(--vx-font-line-height-normal);
+  overflow: hidden;
+}
+
+.vx-modal::backdrop {
+  background: var(--vx-dialog-backdrop);
+}
+
+.vx-dialog {
+  width: min(var(--vx-dialog-width-md), calc(100vw - 2 * var(--vx-space-4)));
+  max-height: calc(100dvh - 2 * var(--vx-space-8));
+  border-radius: var(--vx-dialog-radius);
+}
+
+.vx-dialog--sm {
+  width: min(var(--vx-dialog-width-sm), calc(100vw - 2 * var(--vx-space-4)));
+}
+
+.vx-dialog--lg {
+  width: min(var(--vx-dialog-width-lg), calc(100vw - 2 * var(--vx-space-4)));
+}
+
+.vx-sheet {
+  width: min(var(--vx-dialog-sheet-width), 100vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  margin-block: 0;
+  margin-inline: auto 0;
+  border-block: 0;
+  border-inline-end: 0;
+}
+
+/* The page behind does not scroll while a modal is open. */
+:root:has(.vx-modal[open]) {
+  overflow: hidden;
+}
+
+.vx-modal__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-dialog-gap);
+  max-height: inherit;
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--vx-dialog-padding);
+}
+
+.vx-sheet .vx-modal__panel {
+  max-height: 100dvh;
+}
+
+.vx-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--vx-space-3);
+}
+
+.vx-modal__title {
+  margin: 0;
+  font-size: var(--vx-font-size-xl);
+  font-weight: var(--vx-font-weight-semibold);
+  line-height: var(--vx-font-line-height-tight);
+}
+
+.vx-modal__title:focus {
+  outline: none;
+}
+
+.vx-modal__title:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-modal__close {
+  flex: none;
+  margin: calc(-1 * var(--vx-space-1)) calc(-1 * var(--vx-space-2)) 0 0;
+}
+
+.vx-modal__description {
+  margin: calc(-1 * var(--vx-space-2)) 0 0;
+  color: var(--vx-dialog-description);
+}
+
+.vx-modal__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--vx-space-4);
+  min-height: 0;
+  /* Room for focus rings on controls at the edge of a scrolling body. */
+  margin: calc(-1 * var(--vx-space-1));
+  padding: var(--vx-space-1);
+  overflow: auto;
+}
+
+.vx-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--vx-space-2);
+}
+
+/* Opening motion only: content unmounts on close, and reduced motion zeroes the durations. */
+.vx-modal[open] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--vx-duration-base) var(--vx-easing-emphasized),
+    transform var(--vx-duration-base) var(--vx-easing-emphasized);
+}
+
+.vx-modal[open]::backdrop {
+  opacity: 1;
+  transition: opacity var(--vx-duration-base) var(--vx-easing-standard);
+}
+
+@starting-style {
+  .vx-dialog[open] {
+    opacity: 0;
+    transform: translateY(var(--vx-space-2)) scale(0.98);
+  }
+
+  .vx-sheet[open] {
+    opacity: 0;
+    transform: translateX(var(--vx-space-6));
+  }
+
+  .vx-modal[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .vx-modal__footer > * {
+    flex: 1 1 auto;
+  }
+}

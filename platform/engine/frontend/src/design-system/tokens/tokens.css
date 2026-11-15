@@ -144,6 +144,8 @@
   --vx-color-status-danger-solid-hover: var(--vx-color-red-700);
   --vx-color-status-info: var(--vx-color-blue-400);
   --vx-color-status-info-subtle: var(--vx-color-blue-950);
+  --vx-color-backdrop: oklch(0.1 0.02 255 / 0.72);
+  --vx-elevation-overlay: 0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4);
   --vx-control-height-sm: 28px;
   --vx-control-height-md: 32px;
   --vx-control-height-lg: 40px;
@@ -197,6 +199,19 @@
   --vx-input-label: var(--vx-color-text-primary);
   --vx-input-help: var(--vx-color-text-secondary);
   --vx-input-error: var(--vx-color-status-danger);
+  --vx-dialog-bg: var(--vx-color-surface-overlay);
+  --vx-dialog-fg: var(--vx-color-text-primary);
+  --vx-dialog-description: var(--vx-color-text-secondary);
+  --vx-dialog-border: var(--vx-color-border-subtle);
+  --vx-dialog-backdrop: var(--vx-color-backdrop);
+  --vx-dialog-shadow: var(--vx-elevation-overlay);
+  --vx-dialog-radius: var(--vx-radius-lg);
+  --vx-dialog-padding: var(--vx-space-6);
+  --vx-dialog-gap: var(--vx-space-4);
+  --vx-dialog-width-sm: 400px;
+  --vx-dialog-width-md: 560px;
+  --vx-dialog-width-lg: 760px;
+  --vx-dialog-sheet-width: 480px;
 }
 
 [data-theme="light"] {
@@ -241,6 +256,8 @@
   --vx-color-status-danger-solid-hover: var(--vx-color-red-700);
   --vx-color-status-info: var(--vx-color-blue-700);
   --vx-color-status-info-subtle: var(--vx-color-blue-300);
+  --vx-color-backdrop: oklch(0.22 0.02 255 / 0.45);
+  --vx-elevation-overlay: 0 24px 64px oklch(0.2 0.02 255 / 0.22), 0 2px 8px oklch(0.2 0.02 255 / 0.12);
   --vx-control-height-sm: 28px;
   --vx-control-height-md: 32px;
   --vx-control-height-lg: 40px;
@@ -294,6 +311,19 @@
   --vx-input-label: var(--vx-color-text-primary);
   --vx-input-help: var(--vx-color-text-secondary);
   --vx-input-error: var(--vx-color-status-danger);
+  --vx-dialog-bg: var(--vx-color-surface-overlay);
+  --vx-dialog-fg: var(--vx-color-text-primary);
+  --vx-dialog-description: var(--vx-color-text-secondary);
+  --vx-dialog-border: var(--vx-color-border-subtle);
+  --vx-dialog-backdrop: var(--vx-color-backdrop);
+  --vx-dialog-shadow: var(--vx-elevation-overlay);
+  --vx-dialog-radius: var(--vx-radius-lg);
+  --vx-dialog-padding: var(--vx-space-6);
+  --vx-dialog-gap: var(--vx-space-4);
+  --vx-dialog-width-sm: 400px;
+  --vx-dialog-width-md: 560px;
+  --vx-dialog-width-lg: 760px;
+  --vx-dialog-sheet-width: 480px;
 }
 
 @media (prefers-reduced-motion: reduce) {
