@@ -31,7 +31,8 @@ const entries = walk(system)
     }
     return {
       title,
-      name: title.split("/").at(-1),
+      // The Storybook path without the "Design System" root, e.g. "Primitives / Button".
+      name: title.split("/").slice(1).join(" / "),
       path: relative(resolve(frontend, ".."), file).replaceAll("\\", "/"),
       description: unescape(description),
       stories
