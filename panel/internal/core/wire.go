@@ -6,7 +6,7 @@ package core
 // uses these names.
 //
 // All paths are on the NON-deprecated upstream surface (verified against
-// v0.162.19 source, doc 0006): /api/v1/projects and /api/v4/secrets.
+// v0.100.0 source, doc 0006): /api/v1/projects and /api/v4/secrets.
 // The v1 /workspace and v3 /secrets routes live in files upstream names
 // deprecated-* — we do not build on those.
 const (

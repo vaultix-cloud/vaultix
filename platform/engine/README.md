@@ -6,7 +6,7 @@
   </picture>
 </h1>
 <p align="center">
-  <p align="center"><b>Vaultix — secrets you own</b>: vaultix MIT core, renamed. Sync secrets/configs across your team/infrastructure and prevent secret leaks.</p>
+  <p align="center"><b>Vaultix — secrets you own</b>: Sync secrets/configs across your team/infrastructure and prevent secret leaks.</p>
 </p>
 
 <h4 align="center">

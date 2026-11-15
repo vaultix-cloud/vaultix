@@ -6,7 +6,7 @@
 **Owner:** AngryVibes LLC. **Host:** shippin.ai. **Product:** Vaultix.
 
 Vaultix is **not** a five-table toy and **not** a wrapper around the
-vendor image. It is the vaultix MIT core (pin **v0.162.19**), forked
+vendor image. It is the vaultix MIT core (pin **v0.100.0**), forked
 into `platform/engine/`, remotes off, customer chrome **Vaultix**.
 
 Same move as Tradere’s mail core: we run **our** tree.

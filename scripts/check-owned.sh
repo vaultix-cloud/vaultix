@@ -16,10 +16,10 @@ fi
 
 if [[ -d "$ROOT/core/.git" ]]; then
   bad "platform/engine/ contains nested git metadata; do not contact a snapshot remote"
-elif grep -q 'v0.162.19' "$ROOT/platform/engine/PIN" "$ROOT/core/SHIPPIN.md" 2>/dev/null; then
-  ok "core pin v0.162.19 (SHIPPIN.md / PIN; nested .git not published)"
+elif grep -q 'v0.100.0' "$ROOT/platform/engine/PIN" "$ROOT/core/SHIPPIN.md" 2>/dev/null; then
+  ok "core pin v0.100.0 (SHIPPIN.md / PIN; nested .git not published)"
 else
-  bad "core pin v0.162.19 not recorded"
+  bad "core pin v0.100.0 not recorded"
 fi
 
 if grep -q '<title>Vaultix</title>' "$ROOT/platform/engine/frontend/index.html"; then

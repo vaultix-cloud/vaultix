@@ -6,7 +6,7 @@ ARG POSTHOG_HOST=https://app.posthog.com
 ARG POSTHOG_API_KEY=posthog-api-key
 ARG INTERCOM_ID=intercom-id
 ARG CAPTCHA_SITE_KEY=captcha-site-key
-ARG VAULTIX_PLATFORM_VERSION=0.162.19
+ARG VAULTIX_PLATFORM_VERSION=0.100.0
 
 FROM golang:1.27.3-trixie AS gateway-transport
 WORKDIR /src
@@ -70,7 +70,7 @@ COPY --from=backend-build --chown=non-root-user:nodejs /app/standalone-entrypoin
 COPY --from=frontend-builder --chown=non-root-user:nodejs /app/dist ./frontend-build
 RUN chmod +x ./standalone-entrypoint.sh
 
-ARG VAULTIX_PLATFORM_VERSION=0.162.19
+ARG VAULTIX_PLATFORM_VERSION=0.100.0
 ENV VAULTIX_PLATFORM_VERSION=$VAULTIX_PLATFORM_VERSION
 ARG VAULTIX_SOURCE_REVISION=uncommitted
 LABEL org.opencontainers.image.title="Vaultix"

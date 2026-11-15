@@ -16,7 +16,7 @@ CLI installer removed, telemetry off. Compose pulls those names.
 `/admin/signup` on the live engine.
 
 
-The engine is `core/` pin v0.162.19, remotes off. Customer chrome is
+The engine is `core/` pin v0.100.0, remotes off. Customer chrome is
 Vaultix (title, logos, support@shippin.ai, no 
 `frontend/src`). License server empty / v2 off. Postgres database
 `vaultix_engine` holds the tables that need to be vaultix schema (700+ tables), not the
@@ -24,7 +24,7 @@ five overlay tables. Native run: API `http://127.0.0.1:8200`, UI
 `http://127.0.0.1:3000`. First operator: `/admin/signup`. Overlay
 on `:8201` is PIN/lessons/Clyffy/manager only.
 
-The product is `core/` at pin v0.162.19, remotes off, UI title Vaultix,
+The product is `core/` at pin v0.100.0, remotes off, UI title Vaultix,
 verification `_vaultix-verification`, license server off. Schema overlay
 from `db/`. Compose builds `Dockerfile.standalone-vaultix`. The Go
 overlay is PIN/lessons/Clyffy/manager only. Not a five-table replacement.

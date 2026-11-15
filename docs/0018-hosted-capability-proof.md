@@ -341,7 +341,7 @@ ghcr.io/shippinai/vaultix:12ec63baab380944e19b1179400067d8687a77d3
 sha256:c6fd5587ef4f0c2330a1b3010dd9f6a4a92c22c27ba00b4af3ced287b9567f34
 ```
 
-The `latest` and `0.162.19` tags were pushed to that same registry digest.
+The `latest` and `0.100.0` tags were pushed to that same registry digest.
 Registry pulls require authentication: an independent anonymous manifest request
 returned 401. The digest above comes from the successful CI push, not a claimed
 anonymous/local pull of that registry artifact.

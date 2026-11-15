@@ -6,7 +6,7 @@
   "generatedFrom": {
     "engine": "panel/internal/vault",
     "tables": "vaultix_*",
-    "leftoverInventory": "leftover/upstream.core.v0.162.19.endpoints.tsv"
+    "leftoverInventory": "leftover/upstream.core.v0.100.0.endpoints.tsv"
   },
   "naming": {
     "publicRoutePrefix": "/api/v1/vaultix/",
