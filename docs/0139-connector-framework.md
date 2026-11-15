@@ -55,15 +55,38 @@ in-memory destination (12 tests in `tests/`):
 - **A connector error is a kind and a fixed code, with no text field**, so an upstream error that echoes a request body has
   no path into a log or audit row. The type makes this a compile-time fact, not a test.
 
-Not done: a differential test of the key schema against the inherited TypeScript (list each difference, as 0137 does for
-Zod); the production audit sink (the plan record and outcome record are separate transactions, because the destination
-cannot join one; the hash-chain append is `vx_audit::append`); a real provider; the database tables; the routes; the
-screens. Nothing in the old backend has been deleted and `scripts/lineage-ceiling.json` is unchanged.
+### The key schema against the inherited code (`tests/differential.rs`)
+
+`node scripts/connectors-differential.mjs` runs the inherited `getKeyWithSchema`, `stripSchema` and `matchesSchema` (copied
+verbatim, types removed) on the real `handlebars` 4.7.10 for 22 schemas, 6 environments, 15 keys and about 2,000 destination
+names, and freezes the answers in `tests/fixtures/inherited-schema.json` (`--check` proves the fixture still matches). The
+Rust test compares every answer and fails on any difference that is not in a named class. Result: 666 `apply`, 2,005
+`matches` and 1,978 `strip` answers agree; every other answer falls in one of these classes, none of them a bug in the new
+code, several of them bugs in the inherited code that existing data may depend on:
+
+| Difference | Inherited behaviour | New behaviour |
+| --- | --- | --- |
+| Escaping (504 `apply` cases) | The name is HTML-escaped: `A&B` becomes `A&amp;B`, `K=V` becomes `K&#x3D;V` | Never escaped |
+| Escaped environment (118 `matches`, 120 `strip`) | The environment is escaped too, so a sync could not recognise its own names | Not escaped |
+| Empty secret name (70 + 70) | `APP_` matches `APP_{{secretKey}}` and strips to an empty name | Not a secret |
+| Path rule in `strip` (22) | `matches` enforces one level for `/` schemas, `strip` does not, so the two disagree | One rule for both |
+| Nine schemas refused | `plain` and `{{environment}}` (every secret is written to one name and they overwrite each other); `{{secretKey}}` twice; `{{{secretKey}}}` (triple braces switch escaping off); `{{#if}}` blocks; `{{upper secretKey}}` (errors at run time); `{{unknown}}{{secretKey}}` (the unknown part silently renders as nothing); an unclosed `{{secretKey` | Refused when the schema is saved, with a reason |
+
+The empty schema text means "no schema", and in both it leaves names alone. **Migration:** a stored schema that the grammar
+refuses, or a destination holding escaped names, must be found and reported at import, not silently renamed. That check
+is not written yet; the first provider must include it.
+
+Mutation checks: making `Environment` render as empty produced 670 unexplained differences, and allowing empty names made
+a class stop occurring and fail the test (a class that never occurs would be explaining nothing).
+
+Not done: the production audit sink (the plan record and outcome record are separate transactions, because the destination
+cannot join one; the hash-chain append is `vx_audit::append`); a real provider; the migration check above; the database
+tables; the routes; the screens. Nothing in the old backend has been deleted and `scripts/lineage-ceiling.json` is unchanged.
 
 ## 4. Order
 
 1. **Done:** the trait and the engine against an in-memory destination (section 3).
-2. Differential test of the key schema against the inherited code; list the differences.
+2. **Done:** differential test of the key schema against the inherited code (section 3). Still to do: the import check for stored schemas and escaped names.
 3. First real provider: GitHub (the largest connection, 968 lines, so it tests the trait hardest), then Fly.io (the hook),
    then one pure key-value provider to prove the declarative tier.
 4. The connection record (credentials stored as `Secret`, encrypted, never returned), the `/api/vx/v1/connectors` routes
