@@ -10,6 +10,15 @@ This file is the agent router. Specs live in `docs/`. Humans start at
 
 ## Current direction
 
+The program plan (2026-11-14, owner): `docs/0130-vaultix-program-plan.md` orders all remaining work
+and records the business model. Vaultix is its own product, not Infisical. AngryVibes offers it
+self-hosted under a non-compete licence, managed for the customer, and as a tailored hosted service,
+with a separate control plane (factory). UI rules: no shadcn, no Radix, no third-party primitive
+kits; Vaultix primitives on native HTML and the WAI-ARIA Authoring Practices, styled only through
+Vaultix tokens; Storybook is the source of truth; WCAG 2.2 AA. The app frame has an icon rail, a full
+menu and tooltips, and Clyffy is an overlay in it. Plan before building: no screen from an inherited
+component.
+
 One API; Infisical is a source (2026-11-14, owner): Vaultix has one API, `/api/vx/v1`. Every
 inherited route moves under it and the old one is deleted; no Infisical-compatible routes are kept.
 Infisical is a third-party product customers import from, through its own connector speaking
@@ -153,6 +162,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 
 -Build `Dockerfile.standalone-vaultix`.
 - `leftover/` is notes and dumps. Do not grow it.
+- UI: Vaultix primitives and tokens only, with a Storybook story, keyboard spec and accessibility test for every component. No shadcn, no Radix (`docs/0130`).
 - No fetch, no clone, no connection to a snapshot host. `leftover/consider-upstream.sh` refuses (`docs/0015-frozen-no-connection.md`).
 - Identity supports built-in Vaultix accounts and optional external federation. Vaultix owns built-in credentials and application sessions; providers own their credentials and provider sessions. Preserve method policy and explicit session provenance.
 - Clyffy manages secret **references**, never values in chat or A2UI.
@@ -186,7 +196,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 
 | Task | Read |
 | --- | --- |
-| What is left to finish, in order | `docs/0122-completion-plan.md` |
+| What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
 | Deploy, install, upgrade an instance (any AI) | `INSTALL-FOR-AI.md` + `docs/0109-native-install-and-upgrade.md` |
 | Pre-release rules, credentials in chat | `docs/0118-pre-release.md` |
 | Table names, new API routes (`vx_` tables, `/api/vx/v1/<domain>`) | `docs/0119-schema-and-api-namespaces.md` + `scripts/lib/table-namespaces.mjs` |

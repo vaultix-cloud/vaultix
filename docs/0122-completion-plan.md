@@ -1,3 +1,6 @@
+> The work order moved to [0130](0130-vaultix-program-plan.md) on 2026-11-14. This file stays as
+> the record of what was found and done.
+
 # 0122 — Completion plan
 
 Status: active, written 2026-11-11. Vaultix is pre-release ([0118](0118-pre-release.md)). This is
