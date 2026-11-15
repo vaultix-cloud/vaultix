@@ -73,7 +73,7 @@ Before finishing, delete any comment you added that only says what the code says
 
 ### Design System & Voice
 
-The v3 visual system (colors, typography, components, layout) and product voice/content tone are documented in [`DESIGN.md`](DESIGN.md). Read it before producing new UI or user-visible copy.
+The Vaultix design system (tokens, primitives in `frontend/src/design-system`, accessibility rules) and product voice are documented in [`DESIGN.md`](DESIGN.md). Read it before producing new UI or user-visible copy. Storybook is the source of truth; new UI uses Vaultix primitives, never shadcn or Radix.
 
 ### Documentation
 

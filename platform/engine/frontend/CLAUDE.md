@@ -36,8 +36,8 @@ Middleware pages in `src/pages/middlewares/`: `authenticate.tsx` (auth guard + r
 
 - **`src/pages/`** — Route-level components organized by product feature (secret-manager, cert-manager, kms, pam, secret-scanning, organization, project, admin, auth). Each has `route.tsx` + page component + local `components/`.
 - **`src/views/`** — Reusable page-level UI composed into multiple pages. Pages import views with configuration props.
-- **`src/components/v3/`** — Latest shared UI component library (preferred). Contains `generic/` (Accordion, Alert, Button, Dialog, Select, Table, etc.) and `platform/` (domain-specific components). **Always use v3 components for new code.** Only use v2 components when a v3 equivalent does not exist.
-- **`src/components/v2/`** — Legacy shared UI components built on Radix UI primitives + Tailwind. Uses `cva` (class-variance-authority) for variants and `tailwind-merge` for class conflict resolution. Being superseded by v3 — do not use for new features if a v3 alternative exists.
+- **`src/design-system/`** — The Vaultix design system: tokens, native primitives (Button, Field, TextInput, Select, Combobox, Dialog, Sheet, Popover, MenuButton, Tabs, Checkbox, RadioGroup, Switch, Table, Toast, EmptyState, Skeleton, Icon) and the app frame. **All new UI uses it**, imported from `@app/design-system`. See the repository's `platform/engine/DESIGN.md`.
+- **`src/components/v3/`** and **`src/components/v2/`** — Inherited component libraries built on Radix and shadcn-style wrappers. They are being replaced screen by screen (docs/0130); do not use them in new code. The design-system check holds a Radix ceiling that may only fall.
 
 ### API Layer (React Query + Axios)
 

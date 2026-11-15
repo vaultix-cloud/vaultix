@@ -18,7 +18,7 @@ When writing or editing documentation in `docs/`, follow the [Documentation Styl
 
 ## UI Development
 
-When building frontend UI, follow [DESIGN.md](DESIGN.md) for the v3 design system — colors, typography, components, and voice.
+When building frontend UI, follow [DESIGN.md](DESIGN.md) for the Vaultix design system (`frontend/src/design-system`): tokens, primitives, accessibility and voice. Storybook is the source of truth; no shadcn or Radix in new UI.
 
 ## Issue and PR Guidelines
 

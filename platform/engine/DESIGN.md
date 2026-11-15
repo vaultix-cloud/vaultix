@@ -1,460 +1,255 @@
-# Vaultix DevSCIF visual system
-
-This document captures the v3 visual language and product voice used across
-vaultix. It is the single reference for engineers, designers, and AI coding
-agents producing new UI or user-visible copy.
-
-The 2026-10-27 direction extends crisp vector 2.0 with deliberate depth:
-steel-dark surfaces, mint project accents, compact outlines, clear type,
-and practical controls. Owned vector artwork uses offset planes and restrained
-elevation. Use Lucide vector icons and semantic tokens. Avoid ambient animation,
-large decorative downloads, bouncing controls and invented status counters.
-The shared Card and Button primitives retain their compact flat treatment.
-Keyboard focus must remain visible; muted text must remain readable.
-
-The public landing (0107) uses the same tokens with larger type, offset vector
-planes and a recording of the actual application edited in Remotion. Motion is
-purposeful and user-controlled. Scripted teaching exposes pause, resume and
-takeover; passive discovery never steals focus. Label sample data and scripted
-actions clearly. Reuse actual application controls rather than a second UI.
-
-Whole-UI acceptance targets WCAG 2.2 AA; see
-[`0022-accessibility-acceptance.md`](../../docs/0022-accessibility-acceptance.md).
-Use persistent, associated form labels and semantic headings. Default field
-labels and text separators use full `text-muted`: the previous accent label
-and reduced-opacity separator failed measured contrast in native workflows.
-Check rendered contrast on the actual surface before reducing text opacity.
-
-Authored input is `frontend/src/index.css` and the shared v3 primitives.
-Tailwind/Vite generate the bundled CSS during `npm run build`; do not edit
-`dist/` or the generated route tree. The core catalog authors setup/action
-content; the frontend owns rendering and temporary interaction state.
-
-**Source of truth for tokens:** [`frontend/src/index.css`](frontend/src/index.css) (`@theme` block).
-**Canonical semantic reference:** [`Badge.stories.tsx`](frontend/src/components/v3/generic/Badge/Badge.stories.tsx).
-**Canonical page references:** [`OverviewPage`](frontend/src/pages/secret-manager/OverviewPage) and [`AccessControlPage`](frontend/src/pages/project/AccessControlPage).
-**Component usage reference:** Every v3 generic component has a sibling `<Name>.stories.tsx` at `frontend/src/components/v3/generic/<Name>/`. Read it before producing UI with that component — the stories carry the variants, compositions, and use-when guidance the source does not.
-
----
-
-## 1. Visual Theme & Atmosphere
-
-vaultix is a security tool for operators. The interface reads like
-infrastructure: dense, calm, and legible. Decorative treatments are reserved
-for brand-forward surfaces such as authentication and onboarding; the core
-product remains utilitarian. Dark is the native medium; the page canvas is
-`--color-background`, and light themes are not part of the system yet.
-
-Color carries **meaning before brand**. A danger badge is red because the
-action is destructive, not because red is the accent. A project-colored button
-signals project scope, not visual variety. Designers pick intent; hex values
-follow.
-
-Depth is drawn with borders, surface tones and purposeful elevation. Motion is
-restrained — 200ms ease-in-out, no springs, no decorative animation. Secret
-values are masked by default; revealing one is an intentional act.
-
-**Key characteristics:**
-
-- Dark-native; `--color-background` page canvas
-- Semantic-first color (danger / success / warning / info / neutral)
-- Scope-aware (org / sub-org / project / admin)
-- Layered vector depth; overlapping labels retain the shared Badge styling
-- Inter for product UI, Alliance for display typography, and distinct
-  functional and decorative monospace roles
-- Secrets masked by default; reveal is an act
-
-## 2. Color Palette & Roles
-
-All colors are defined as CSS custom properties in
-[`frontend/src/index.css`](frontend/src/index.css) and consumed via Tailwind v4
-utilities (`bg-org`, `text-danger`, etc.). Never introduce a hex that is not
-in this file.
-
-### Scope colors (hierarchy)
-
-Used to signal the scope a surface, badge, or action belongs to.
-
-| Scope            | Token             |
-| ---------------- | ----------------- |
-| Organization     | `--color-org`     |
-| Sub-Organization | `--color-sub-org` |
-| Project          | `--color-project` |
-| Admin            | `--color-admin`   |
-
-### Semantic colors
-
-| Intent  | Token             | Use                                          |
-| ------- | ----------------- | -------------------------------------------- |
-| Success | `--color-success` | Healthy states, completed rotations          |
-| Info    | `--color-info`    | Informational states, external documentation |
-| Warning | `--color-warning` | Attention-warranting states, stale items     |
-| Danger  | `--color-danger`  | Destructive actions, errors, expired access  |
-| Neutral | `--color-neutral` | Disabled, muted, "empty" states              |
-
-### Surface & chrome
-
-| Role              | Token                     |
-| ----------------- | ------------------------- |
-| Page background   | `--color-background`      |
-| Foreground text   | `--color-foreground`      |
-| Card surface      | `--color-card`            |
-| Popover / Sheet   | `--color-popover`         |
-| Container         | `--color-container`       |
-| Container (hover) | `--color-container-hover` |
-| Border            | `--color-border`          |
-| Focus ring        | `--color-ring`            |
-| Accent text       | `--color-accent`          |
-| Muted text        | `--color-muted`           |
-| Label text        | `--color-label`           |
-
-The `mineshaft-*` scale (50–900) is the underlying neutral ramp; see
-`index.css` for the full list. Prefer semantic tokens (`card`, `border`,
-`accent`) over raw mineshaft values.
-
-### Product-area accents (secret-manager)
-
-Reserved for resource types in the secret management product:
-`--color-folder`, `--color-secret`, `--color-dynamic-secret`,
-`--color-import`, `--color-secret-rotation`, `--color-override`,
-`--color-proxied-service`.
-Do not repurpose these for generic UI.
-
-### Tint pattern
-
-Colored variants always layer as tinted backgrounds with matching borders —
-never as solid fills. The two canonical recipes:
-
-- **Badge** — `bg-<c>/15 border-<c>/10 text-<c>`, hover `bg-<c>/35`
-  (see [`Badge.tsx`](frontend/src/components/v3/generic/Badge/Badge.tsx))
-- **Button** — `bg-<c>/10 border-<c>/25 text-foreground`, hover `bg-<c>/15 border-<c>/30`
-  (see [`Button.tsx`](frontend/src/components/v3/generic/Button/Button.tsx))
-
-## 3. Typography
-
-Typography uses several intentional families. Do not collapse them into one
-font or substitute one role for another:
-
-- **Inter** (`font-inter`, `--font-inter`) is the default product and control
-  face. Body copy, forms, tables, buttons, labels, navigation, and dense product
-  surfaces inherit Inter unless a documented role below applies.
-- **Alliance No. 2** (`font-alliance`, `--font-alliance`) is the display face.
-  Use it selectively for prominent authentication, onboarding, and
-  brand-forward headings or supporting display copy—not routine product chrome.
-- **The existing application mono** (`font-mono`) is functional. Preserve it
-  for code, secret values, identifiers, timestamps, logs, and other content
-  whose character shapes and alignment carry meaning.
-- **JetBrains Mono** (`font-jetbrains-mono`, `--font-jetbrains-mono`) is a
-  decorative mono. Use it for short eyebrow labels, technical decals, and
-  brand-forward microcopy. It does not replace `font-mono` and should not be
-  used for code editors, data tables, IDs, logs, or secret values.
-
-| Role                    | Class                                                                     | Notes                                                              |
-| ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Page title (h1)         | `text-2xl font-medium underline underline-offset-4 decoration-<scope>/90` | In `PageHeader`; scope icon (size 26) sits inline before the title |
-| Page description        | `text-mineshaft-300`                                                      | Sits under the title, `mt-1.5`                                     |
-| Card title              | `text-lg font-semibold leading-none`                                      | `flex gap-1.5` so badges can sit inline                            |
-| Card description        | `text-sm text-accent`                                                     |                                                                    |
-| Body                    | `text-sm`                                                                 | Default for table cells, form values, dialog content               |
-| Label / meta            | `text-xs text-muted`                                                      | Field labels and separators; verify other metadata on its surface  |
-| Field helper / feedback | `text-2xs leading-snug`                                                   | Defaults via `FieldDescription` and `FieldFeedback`                |
-| Badge                   | `text-xs` (auto, via `Badge`)                                             | Never override                                                     |
-| Button                  | `text-sm` (md/sm/lg), `text-xs` (xs)                                      | Auto via `Button` sizing                                           |
-
-On brand-forward surfaces, a short phrase may use the `text-highlight`
-utility to create the solid project-yellow text block. Keep the phrase short,
-use it as typographic emphasis rather than status or scope, and do not apply it
-inside routine product UI.
-
-Sentence case for descriptions, helper text, and empty states. Title Case for
-page titles, card titles, dialog titles, sheet titles, button labels, badge
-labels, and dropdown menu items. See §8 for voice rules on copy itself.
-
-## 4. Component Stylings
-
-New UI must use v3 components from [`frontend/src/components/v3/`](frontend/src/components/v3).
-The v2 library is legacy; only fall back when no v3 equivalent exists.
-`PageHeader` is the notable exception — still v2, still canonical for page titles.
-
-For exact tokens, class lists, and every variant, read the component source
-and its `*.stories.tsx` — this doc cites them rather than duplicating them.
-
-### Reading the stories
-
-Every component's `.stories.tsx` follows the same shape:
-
-- **`Variant: X`** stories — one per prop-driven variant (e.g. `Variant: Outline`).
-- **`Example: X`** stories — composition recipes (e.g. `Example: With Header`,
-  `Example: Inside Card / Sheet / Dialog`).
-- Each story's `parameters.docs.description.story` is the use-when guidance.
-
-When picking a component, find the `Example:` story closest to your need and
-mirror it. When picking a variant, the `Variant:` story descriptions are the
-canonical "use this when..." guidance.
-
-Run Storybook with `cd frontend && npm run storybook` (port 6006) to preview.
-
-### Component inventory
-
-Use these tables to find the component for a given intent. For props,
-variants, sizes, and class lists, open the source or its `*.stories.tsx`
-— the stories are canonical.
-
-#### Actions
-
-| Component                                                                       | Reach for this when…                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`Button`](frontend/src/components/v3/generic/Button/Button.tsx)                | A text-bearing button — primary or secondary action.                                                                                                                                                                                          |
-| [`ButtonBadge`](frontend/src/components/v3/generic/Button/ButtonBadge.tsx)      | A short decorative flag attached to a Button corner—such as "Last Used", "New", or "Recommended". It inherits Badge typography, sizing, radius, border, and casing; only its corner positioning and solidified semantic tint are specialized. |
-| [`IconButton`](frontend/src/components/v3/generic/IconButton/IconButton.tsx)    | A square icon-only button — toolbars, row actions, compact triggers. Always `aria-label`.                                                                                                                                                     |
-| [`ButtonGroup`](frontend/src/components/v3/generic/ButtonGroup/ButtonGroup.tsx) | Visually join related controls — toolbars, segmented controls, split buttons, key-value chips.                                                                                                                                                |
-| [`Dropdown`](frontend/src/components/v3/generic/Dropdown/Dropdown.tsx)          | An action menu — overflow `⋯`, split-button alternates, contextual lists.                                                                                                                                                                     |
-
-#### Forms
-
-| Component                                                                                                                                   | Reach for this when…                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| [`Field`](frontend/src/components/v3/generic/Field/Field.tsx)                                                                               | Wrap every form control — label + control + description + error. **Never render a bare control in a form.** |
-| [`Label`](frontend/src/components/v3/generic/Label/Label.tsx)                                                                               | Standalone form label outside a `Field`.                                                                    |
-| [`Input`](frontend/src/components/v3/generic/Input/Input.tsx) / [`TextArea`](frontend/src/components/v3/generic/TextArea/TextArea.tsx)      | Single-line / multi-line text entry.                                                                        |
-| [`InputGroup`](frontend/src/components/v3/generic/InputGroup/InputGroup.tsx)                                                                | Input with left/right addons — search bars, prefixed values.                                                |
-| [`Select`](frontend/src/components/v3/generic/Select/Select.tsx) / [`ReactSelect`](frontend/src/components/v3/generic/ReactSelect/index.ts) | Native-style dropdown / async or searchable dropdown.                                                       |
-| [`Switch`](frontend/src/components/v3/generic/Switch/Switch.tsx) / [`Checkbox`](frontend/src/components/v3/generic/Checkbox/Checkbox.tsx)   | Boolean toggle / multi-select boolean.                                                                      |
-| [`Calendar`](frontend/src/components/v3/generic/Calendar/Calendar.tsx)                                                                      | Date / multi-date / range picker primitive.                                                                 |
-| [`DateRangeFilter`](frontend/src/components/v3/generic/DateRangeFilter/DateRangeFilter.tsx)                                                 | Date-range filter with presets — for filter bars.                                                           |
-| [`SecretInput`](frontend/src/components/v3/generic/SecretInput/SecretInput.tsx)                                                             | Secret-value editor with mask toggle and `${var}` highlighting.                                             |
-| [`PasswordGenerator`](frontend/src/components/v3/generic/PasswordGenerator/PasswordGenerator.tsx)                                           | Generate a password against project secret-validation rules.                                                |
-
-#### Containers & overlays
-
-| Component                                                                       | Reach for this when…                                                                                                         |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| [`Card`](frontend/src/components/v3/generic/Card/Card.tsx)                      | Default section container — tables, filters, forms, empty states all live in a Card.                                         |
-| [`Sheet`](frontend/src/components/v3/generic/Sheet/Sheet.tsx)                   | Right-side panel — **use for large create/edit forms** (multiple fields, multi-step, scrollable detail).                     |
-| [`Dialog`](frontend/src/components/v3/generic/Dialog/Dialog.tsx)                | Centered modal — **use for small create/edit forms** (1–2 fields, single confirmation prompt) and short interactive prompts. |
-| [`AlertDialog`](frontend/src/components/v3/generic/AlertDialog/AlertDialog.tsx) | Confirm an action (destructive included). Replaces `confirm()`.                                                              |
-| [`Popover`](frontend/src/components/v3/generic/Popover/Popover.tsx)             | Anchored floating panel — filters, pickers, contextual UI.                                                                   |
-| [`Tooltip`](frontend/src/components/v3/generic/Tooltip/Tooltip.tsx)             | Small floating annotation on hover/focus.                                                                                    |
-| [`Accordion`](frontend/src/components/v3/generic/Accordion/Accordion.tsx)       | Collapsible sections.                                                                                                        |
-
-#### Data display
-
-| Component                                                                    | Reach for this when…                                                                                                  |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [`Table`](frontend/src/components/v3/generic/Table/Table.tsx)                | Read-mostly list of records with sortable columns. Pair with `Empty` + `Pagination`.                                  |
-| [`DataGrid`](frontend/src/components/v3/generic/DataGrid/data-grid.tsx)      | Editable spreadsheet-style grid — copy/paste, multi-cell selection, keyboard nav. Use only when `Table` isn't enough. |
-| [`Pagination`](frontend/src/components/v3/generic/Pagination/Pagination.tsx) | Page controls under a Table or list.                                                                                  |
-| [`Item`](frontend/src/components/v3/generic/Item/Item.tsx)                   | Vertically-stacked list rows with shared spacing — when a `Table` is too heavy.                                       |
-| [`Detail`](frontend/src/components/v3/generic/Detail/Detail.tsx)             | Read-only label/value pairs in a detail view.                                                                         |
-| [`Badge`](frontend/src/components/v3/generic/Badge/Badge.tsx)                | Small label or chip — status, scope tag, key/value pair.                                                              |
-
-#### Navigation & search
-
-| Component                                                                    | Reach for this when…                              |
-| ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| [`Sidebar`](frontend/src/components/v3/generic/Sidebar/Sidebar.tsx)          | Scope-aware product navigation panel.             |
-| [`Breadcrumb`](frontend/src/components/v3/generic/Breadcrumb/Breadcrumb.tsx) | Hierarchical location trail at the top of a page. |
-| [`Command`](frontend/src/components/v3/generic/Command/Command.tsx)          | Search-driven command palette / typeahead list.   |
-
-#### Feedback & loading
-
-| Component                                                                    | Reach for this when…                                             |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [`Alert`](frontend/src/components/v3/generic/Alert/Alert.tsx)                | Inline message banner inside a page or Card.                     |
-| [`Toast`](frontend/src/components/v3/generic/Toast/Toast.tsx)                | Transient post-action feedback. Replaces `alert()`.              |
-| [`Empty`](frontend/src/components/v3/generic/Empty/Empty.tsx)                | Zero-state placeholder — pair with Table, list, or empty filter. |
-| [`Skeleton`](frontend/src/components/v3/generic/Skeleton/Skeleton.tsx)       | Shimmer placeholder while data is loading.                       |
-| [`PageLoader`](frontend/src/components/v3/generic/PageLoader/PageLoader.tsx) | Centered Lottie spinner for full-page loading.                   |
-
-#### Atoms & domain
-
-| Component                                                                                                         | Reach for this when…                                                                  |
-| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [`Separator`](frontend/src/components/v3/generic/Separator/Separator.tsx)                                         | Horizontal/vertical divider.                                                          |
-| [`ScopeIcons`](frontend/src/components/v3/platform/ScopeIcons.tsx)                                                | `OrgIcon` / `SubOrgIcon` / `ProjectIcon` / `InstanceIcon` — use when intent is scope. |
-| [`DocumentationLinkBadge`](frontend/src/components/v3/platform/DocumentationLinkBadge/DocumentationLinkBadge.tsx) | Inline "Documentation" link badge in `CardTitle`.                                     |
-
-**Icons** — [`lucide-react`](https://lucide.dev). Sizing is bound by the
-host component; don't override unless necessary.
-
-## 5. Layout Principles
-
-- **Page container** — `max-w-8xl` (88rem) centered, `bg-bunker-800`.
-- **Page header** — `PageHeader` with scope icon + underlined `h1` + description. See [`PageHeader.tsx`](frontend/src/components/v2/PageHeader/PageHeader.tsx). Always set `scope` to the correct hierarchy level.
-- **Section** — one `Card` per logical section. Title + optional `DocumentationLinkBadge` in `CardHeader`; primary action in `CardAction` (top-right).
-- **Tables inside Cards** — filters and search sit in the `CardHeader` above the table; pagination sits in the `CardFooter` or bottom of `CardContent`. **Empty state** — when the table has no rows (and isn't loading), hide the `Table` entirely and render `Empty` in its place; never leave a column header floating above a blank body. Add `className="border"` to `Empty` whenever it's nested in a `Card`, `Sheet`, or `Dialog` so the dashed frame is visible against the parent surface (the component ships dashed-but-borderless on purpose for page-level use).
-- **Forms inside Sheets/Dialog** — create / edit flows open in a Sheet or Dialog, never inline, never as a full-page route. **Pick by form size:** small forms (1–2 fields, e.g. "Add domain", "Rename") go in a centered `Dialog`; large or multi-step forms (multiple fields, scrollable detail, file uploads, wizard steps) go in a right-side `Sheet`. When in doubt, default to Dialog — Sheet is for cases where Dialog feels cramped.
-- **Authentication form stacks** — use `CardContent className="flex flex-col gap-4"` for the major vertical rhythm between fields, validation groups, and primary actions. Use a nested `flex flex-col gap-2` only for compact sets of equivalent actions such as social or SSO provider buttons. Use `FieldSeparator` between alternate authentication paths. Do not recreate sibling spacing with `mt-*`, `mb-*`, or `py-*`; keep a wrapper only when it owns animation, responsive visibility, conditional grouping, or tightly coupled control/error content.
-- **Spacing rhythm** — `gap-1.5` (intra-element), `gap-2 / gap-3` (adjacent elements), `p-4 / p-5` (section padding). Card = `p-5 gap-5`; Sheet header/footer = `p-4`.
-
-## 6. Depth & Elevation
-
-Depth is conveyed by layered surface tones and borders, with semantic shadows
-for a recessed secondary plane (`shadow-recessed`) or floating surface
-(`shadow-elevated`). These tokens live in `frontend/src/index.css`.
-Authentication uses the recessed plane and the owned `AuthVaultIllustration`
-composition. Its SVG geometry consumes surface/brand tokens directly: no raster,
-filter, canvas, external resource, text substitute or continuous animation.
-Keep text and controls outside decorative artwork; hide it from assistive
-technology and keep its aspect ratio fixed. Small screens prioritize the form.
-See [loading and artwork acceptance](../../docs/0028-visual-loading-system.md).
-
-| Layer           | Surface                                  | Border                        |
-| --------------- | ---------------------------------------- | ----------------------------- |
-| Page            | `bg-bunker-800`                          | —                             |
-| Card            | `bg-card`                                | `border-border`               |
-| Popover / Sheet | `bg-popover`                             | `border-border` + semantic elevation (existing consumers migrate with workflow review) |
-| Row hover       | `bg-container-hover`                     | —                             |
-| Focus           | —                                        | 3px ring, `--color-ring`      |
-| Disabled        | `opacity-50 / 75`, `pointer-events-none` | —                             |
-
-Never add a box-shadow to a Card, Table row, standalone Badge, or `ButtonBadge`;
-it breaks the border-defined system. An overlapping `ButtonBadge` uses its
-solidified semantic tint—not custom content styling or elevation—to remain
-legible across the control edge.
-
-## 7. Do's and Don'ts
-
-- **DO** choose Badge and Button variants by **intent** (danger / success /
-  warning / info / neutral), not by color preference.
-- **DO** use scope colors (`org`, `sub-org`, `project`, `admin`) to reinforce
-  hierarchy — the scope of a page, a primary button, a scope-link badge.
-- **DO** mask secret values by default. Reveal must be an explicit user
-  action and should be logged.
-- **DO** put large create / edit forms in a right-side Sheet; smaller forms can be in Dialogs.
-- **DO** pair destructive confirmations with the resource name and the
-  consequence (see §9).
-- **DO** cite tokens (`bg-card`) over hex (`#xxxxxx`) in new code.
-- **DON'T** use v2 components when a v3 equivalent exists unless the existing scope is v2.
-- **DON'T** add box-shadows as a depth cue — borders and surface tones do
-  that work. The exception is elements that genuinely float (Popover,
-  DropdownMenu, Sheet), which already include it.
-- **DON'T** invent new colors. If it isn't in `index.css` `@theme`, it
-  doesn't belong.
-- **DON'T** use `project` yellow, `org` blue, or `sub-org` green as generic
-  accents. They are scope signals; repurposing them creates false hierarchy.
-  The documented brand-forward `text-highlight` treatment and deliberately
-  branded `ButtonBadge` flags are narrow exceptions for authentication and
-  onboarding surfaces.
-- **DON'T** mix font families arbitrarily. Choose the documented role: Inter
-  for product UI, Alliance for display type, `font-mono` for functional
-  monospaced content, and JetBrains Mono for decorative technical microcopy.
-- **DON'T** animate for decoration. Motion should clarify state change only.
-
-## 8. Voice & Content Tone
-
-Copy should read as if written by an engineer for another engineer: direct,
-technical, specific. The domain is serious — secrets, access, compliance —
-and the voice reflects that.
-
-### Stance
-
-- Direct. Active voice. Lead with the subject: "Delete this role" — not
-  "This role will be deleted".
-- Specific. Name the resource, the action, the consequence. Avoid vague
-  verbs ("handle", "manage") when a precise verb exists (`rotate`, `revoke`,
-  `import`).
-- Calm. No exclamation marks. No second-person cheer ("Awesome!",
-  "You're all set!"). No emoji.
-- Honest. Never claim speed, power, or ease in UI copy ("seamless",
-  "powerful", "blazing-fast"). Those belong on the marketing site, not here.
-
-### Shapes
-
-- **Labels & buttons** — Title Case, imperative: "Add Secret", "Revoke
-  Access", "Rotate Key".
-- **Title Case applies to** — buttons, badges, dropdown menu items, card
-  titles, dialog titles, sheet titles, page titles, tab labels, table column
-  headers. Anything that names a thing or an action is Title Case.
-- **Descriptions & helper text** — sentence case, one short sentence.
-- **Empty states** — state what's missing, then the next action:
-  "No secrets yet. Add your first secret to get started."
-- **Errors** — name the failure and the remedy. Never "Something went wrong":
-  "Could not rotate secret — token lacks `secrets:write` permission."
-- **Destructive confirmation** — name the resource and the consequence "Delete "API_KEY" — this cannot be undone."
-- **Success toasts** — past tense, specific: "Secret "API_KEY" created".
-
-### Secrets & sensitive values
-
-Never include a secret's value in any user-visible copy — UI, logs, toasts,
-errors, audit trails, or analytics. Refer to secrets by key only. Mask
-tokens and keys in screenshots and docs as well.
-
-### Documentation links
-
-Use `DocumentationLinkBadge` (info variant, external-link icon). Label it
-"Documentation" — not "Learn more", "Read docs", "See more".
-
-## 9. Agent Prompt Guide
-
-Pasteable prompt fragments for AI coding agents producing new UI.
-
-**Before generating UI for any component:**
-
-1. Open `frontend/src/components/v3/generic/<Name>/<Name>.stories.tsx`.
-2. Pick the `Example:` story closest to your need; mirror its composition exactly.
-3. Pick the variant by reading the matching `Variant:` story's description —
-   not by color preference.
-
-**Adding a section to an existing page:**
-
-> Wrap the section in a `Card` from `@app/components/v3`. Use `CardHeader`
-> with `CardTitle` + optional `CardDescription` + `CardAction` for the
-> top-right primary button (variant `project` on a project page). Put the
-> table or content in `CardContent`.
-
-**A new create/edit form:**
-
-> Pick the container by form size. **Small forms (1–2 fields, e.g. "Add
-> domain", "Rename"):** centered `Dialog` (`Dialog`, `DialogContent`,
-> `DialogHeader` with `DialogTitle` + `DialogDescription`, `DialogFooter`
-> with the action buttons). **Large or multi-step forms (many fields,
-> scrollable detail, wizards):** right-side `Sheet` (`Sheet`, `SheetContent`,
-> `SheetHeader` with `SheetTitle` + `SheetDescription`, `SheetFooter` with
-> the action buttons). Use `react-hook-form` with a Zod resolver in both
-> cases. Each input is wrapped in `Field` + `FieldLabel` + `FieldContent` +
-> `FieldError`. Primary button variant is scope dependent (`project` /
-> `org` / `sub-org`), cancel is `ghost`.
-
-**A status indicator:**
-
-> Use `Badge` from `@app/components/v3`. Pick the variant by intent:
-> `danger` for errors or expired access, `warning` for stale or
-> attention-warranting, `success` for healthy / completed, `info` for
-> informational, `neutral` for disabled / empty, `project` / `org` /
-> `sub-org` for scope references. Include a matching Lucide icon as the
-> first child.
-
-**A destructive confirmation:**
-
-> Use `AlertDialog`. Title: "Delete `<resource-name>`". Description: one
-> sentence naming the consequence, ending with "This cannot be undone."
-> Confirm button is variant `danger`. Cancel button is variant `outline`.
-
-**A documentation link in a section:**
-
-> Use `DocumentationLinkBadge` from `@app/components/v3/platform`. Place it
-> in the `CardTitle` next to the section name.
-
-**Refer to:**
-
-- [`Badge.stories.tsx`](frontend/src/components/v3/generic/Badge/Badge.stories.tsx) — canonical semantic reference for variant choice.
-- [`OverviewPage`](frontend/src/pages/secret-manager/OverviewPage) — full-page reference (PageHeader, Card-with-table, Create Secret Sheet, filters, DropdownMenu + ButtonGroup).
-- [`AccessControlPage`](frontend/src/pages/project/AccessControlPage) — full-page reference (permission-gated actions, `DocumentationLinkBadge`, role badges with `ClockAlertIcon` for expired access).
-- §8 above for any user-visible copy.
-
-## Appendix: Iteration Guide
-
-1. **Run Storybook** — `cd frontend && npm run storybook` (port 6006). Open
-   Badge, Button, Card, Table, Sheet first.
-2. **Read the two reference pages** — `OverviewPage` and `AccessControlPage`
-   render the full v3 vocabulary in production.
-3. **Tokens live in `index.css`** — `@theme` block, lines 56–214. Never
-   introduce a hex that is not here.
-4. **Adding a variant** — extend the `cva()` block in the component and add
-   a story. Keep the tint pattern (`bg-<c>/15 border-<c>/10` for Badge,
-   `bg-<c>/10 border-<c>/25` for Button).
-5. **Never use v2 for new code** — unless no v3 equivalent exists.
-   `PageHeader` is the notable v2 exception still used by all pages.
-6. **Before merging** — `make reviewable-ui` (lint + type-check).
-7. **When in doubt** — mirror `OverviewPage`.
+# Vaultix design system
+
+This is how Vaultix looks, behaves and speaks. It replaces the inherited "v3" visual system
+(docs/0130, phase 1). The code lives in `frontend/src/design-system`; Storybook is the source of
+truth, and the component reference at the end of this file is generated from the stories.
+
+Run it: `cd frontend && npm run storybook` (port 6006). Test it:
+`npx vitest run src/design-system` from PowerShell on Windows.
+
+## Rules
+
+1. **Vaultix primitives on native HTML.** No shadcn, no Radix, no third-party primitive kits.
+   Each primitive follows the matching WAI-ARIA Authoring Practices pattern and adds no
+   dependency. The rest of the app may only use Radix less over time
+   (`scripts/check-design-system.mjs` holds a ceiling that may only fall).
+2. **Tokens only.** Every colour, size, radius, shadow, duration and easing comes from a
+   `--vx-*` token. A colour literal outside `tokens/` fails the build.
+3. **Every component has a story, a keyboard spec and an accessibility test.** The story's
+   description states the keyboard model; its play function proves it; `a11y: { test: "error" }`
+   makes any axe violation fail the build. The build runs these stories in a real browser.
+4. **WCAG 2.2 AA** in both themes. Contrast is computed by the token build and enforced, not
+   eyeballed.
+5. **Values never appear.** No secret value in any UI copy, toast, error, log, screenshot or
+   story. Refer to secrets by name or reference.
+
+## Tokens
+
+Three layers in W3C Design Tokens format under `frontend/src/design-system/tokens/source/`:
+
+| Layer | File | Holds | Example |
+| --- | --- | --- | --- |
+| Primitive | `primitive.json` | Raw values only: OKLCH colour scales, spacing, radius, type, motion, z | `color.gold.500` |
+| Semantic | `semantic.dark.json`, `semantic.light.json` | Roles, one value per theme | `color.text.secondary`, `color.accent.solid` |
+| Component | `component.json` | What a component draws with, pointing at semantic roles | `input.border`, `menu-item.bg-highlight` |
+
+`node scripts/build-tokens.mjs` (from `frontend/`) writes `tokens.css` and a typed `tokens.ts`.
+Components never reference primitives. Dark is the default theme; `data-theme="light"` on any
+ancestor switches everything inside it, because component tokens are declared again in each
+theme scope. Reduced motion sets durations to zero.
+
+**Contrast gate.** `contrast.json` lists every foreground and background pair that must be
+readable, with its minimum: 4.5:1 for text, 3:1 for icons, control borders, state graphics and
+focus rings. The build computes each pair in both themes and refuses a palette that fails. When
+you add a component token that draws text or a state, add its pairs.
+
+Roles worth knowing:
+
+- `color.accent.base` is the gold for filled buttons. `color.accent.solid` is the gold for
+  graphics that carry state (a checked box, an on switch) and meets 3:1 on surfaces in both
+  themes; in light it is a deeper gold with a white mark.
+- `color.status.danger-strong` is danger text on tinted or highlighted backgrounds.
+- `color.interactive.highlight` is the option under the pointer or keyboard in a floating list.
+- `color.surface.field` is the fill behind typed text: recessed in dark, white in light.
+- `elevation.overlay` and `color.backdrop` are for dialogs, sheets, menus and popovers.
+
+## Type, space and shape
+
+- **Type.** Inter for the interface; JetBrains Mono for names, keys, references and code. Sizes
+  12, 13, 14 (body), 16, 18, 22, 28. Controls use 14; touch screens get 16 in text fields so the
+  page does not zoom.
+- **Space.** A 4-pixel scale (`--vx-space-1` = 4px ... `--vx-space-16` = 64px), with 2, 6 and 10
+  for fine adjustments.
+- **Shape.** Radius 4 (small), 6 (controls), 10 (cards, dialogs), 14, and full.
+- **Controls.** Heights 28, 32 (default) and 40. Press targets are at least 24 by 24
+  (WCAG 2.5.8); a checkbox's whole label row is its target.
+
+## Interaction and accessibility
+
+- **Focus** is a 2px gold ring offset by 2px, shown for keyboard focus (`:focus-visible`). Lists
+  that move focus with arrows show the ring inside the row as well as the fill.
+- **Keyboard models** follow the APG: roving focus in menus and tabs, `aria-activedescendant` in
+  the combobox, native behaviour for radios, selects and checkboxes. Escape closes the innermost
+  layer first (a tooltip, then its toast or popover).
+- **Layers** use the platform: `<dialog>` with `showModal()` for Dialog and Sheet (inert page,
+  focus kept inside), the Popover API for tooltips, popovers and menus (top layer, no portals).
+  Focus returns to the control that opened a layer.
+- **Names and descriptions.** Every control has a visible label; icon-only buttons take a
+  required label shown as their tooltip. Hints and errors are linked with `aria-describedby`;
+  errors are prefixed "Error:" for screen readers and never shown by colour alone.
+- **Announcements** go through live regions that are always present: toasts, filter counts,
+  sort order, loading.
+- **Time.** Nothing that needs action disappears on a timer it cannot pause (WCAG 2.2.1).
+- **Motion** is short and purposeful and stops under reduced motion.
+
+## Voice and content
+
+Copy reads as if one engineer wrote it for another: direct, specific, calm and honest. The
+domain is secrets, access and compliance, and the words reflect that.
+
+- **Sentence case everywhere**: buttons, titles, tabs, menu items, column headers ("Add secret",
+  "Rotate now", "Delete project"). It reads as plain speech and keeps names like `payments-api`
+  distinct. *This changes the inherited Title Case rule.*
+- **Lead with the action and name the thing**: "Delete payments-api?", not "Are you sure?".
+- **Precise verbs**: rotate, revoke, import, inject, not handle or manage.
+- **Calm**: no exclamation marks, no emoji, no cheerleading.
+- **Honest**: no "seamless", "powerful" or "blazing-fast" in the product.
+- **Hints** are one short sentence saying what to enter or what happens with it.
+- **Empty states** say what belongs here and offer the next step.
+- **Errors** name the failure and the remedy: "Could not rotate DATABASE_URL: the token lacks
+  `secrets:write`." Never "Something went wrong".
+- **Destructive confirmations** name the thing and the consequence: "Its 42 secrets and their
+  history are deleted for everyone. This cannot be undone."
+- **Success toasts** are past tense and specific: "Secret saved", "DATABASE_URL deleted".
+
+## Adding a component
+
+1. Read the APG pattern it follows. Prefer a native element when one exists (`<dialog>`,
+   `<select>`, `<input type="checkbox">`).
+2. Add component tokens to `component.json` that point at semantic roles, and their pairs to
+   `contrast.json`. Run `node scripts/build-tokens.mjs`.
+3. Build it under `src/design-system/primitives/<Name>/` with its CSS, using tokens only.
+4. Write `<Name>.stories.tsx` with `a11y: { test: "error" }`, a description that states the
+   keyboard model, and play functions that prove it. Include a light-theme story.
+5. Export it from `src/design-system/index.ts`, then run `node scripts/design-reference.mjs` to
+   refresh the reference below.
+
+## Component reference
+
+Generated from the stories; edit the stories, not this section.
+
+<!-- reference:start (generated by frontend/scripts/design-reference.mjs) -->
+
+### App Frame
+
+The Vaultix app frame. **Rail:** every item is a link inside a `nav` landmark named Main; collapsed, each shows its name as a tooltip on hover and on keyboard focus, and the current page has `aria-current="page"` and the gold indicator. **Full menu:** the menu button (`aria-expanded`, `aria-controls`) opens labelled groups; the choice is remembered per device. **Skip to content** is the first stop for keyboard users. Below 720 px the rail becomes a drawer opened by the same button.
+
+Stories: Collapsed, Expanded, LightTheme · [source](frontend/src/design-system/frame/AppFrame.stories.tsx)
+
+### Icons
+
+Vaultix's own line icons on a 16-unit grid with a 1.5 stroke, drawn in `currentColor`. Use `<Icon name="lock" />`. Icons are **decorative by default** (`aria-hidden`): put them beside text or inside a control that has a name, such as IconButton, which requires a label. Give `label` only when the icon alone carries meaning; it then has `role="img"` and that name. Sizes: 16 in dense UI and inline text, 20 in navigation and empty states.
+
+Stories: All, Small, Labelled, LightTheme · [source](frontend/src/design-system/icons/Icon.stories.tsx)
+
+### Button
+
+A native `<button>`. **Keyboard:** Tab focuses it; Enter and Space press it. Focus shows a token ring only for keyboard focus (`:focus-visible`). **Busy** keeps the button focusable and sets `aria-busy` and `aria-disabled`, so its state is announced and presses are ignored; **disabled** uses the native attribute and leaves the tab order.
+
+Stories: Primary, Secondary, Ghost, Danger, Sizes, KeyboardPress, Busy, Disabled, LightTheme · [source](frontend/src/design-system/primitives/Button/Button.stories.tsx)
+
+### Checkbox
+
+A native checkbox drawn with tokens; the whole label row is the press target (at least 24 px tall). **Keyboard:** Tab focuses it and Space toggles it. A **description** is linked with `aria-describedby`. **Indeterminate** (mixed) is for a checkbox that stands for several others, some chosen; pressing it chooses all or none. Group related checkboxes in a **Fieldset**, whose legend names the group and whose hint and error describe it. The checked box meets 3:1 against its surface in both themes, and Windows high contrast keeps the state visible.
+
+Stories: Basic, Indeterminate, GroupWithError, LightTheme · [source](frontend/src/design-system/primitives/Choice/Checkbox.stories.tsx)
+
+### Combobox
+
+The WAI-ARIA editable combobox with list autocomplete, for choosing from a long list. Focus stays in the text box; the active option is conveyed with `aria-activedescendant`, and a polite status says how many options match. The value must be one of the options: leaving the box puts back the chosen option's label. **Keyboard:** typing filters by label and description and opens the list; Down and Up Arrow open the list and move through options, skipping disabled ones; Alt+Down opens without moving and Alt+Up closes; Enter chooses the active option; Escape closes the list, or clears the box when the list is closed. A press on an option chooses it. Use Select for short lists.
+
+Stories: Keyboard, Filter, RevertsOnLeave, LightTheme · [source](frontend/src/design-system/primitives/Combobox/Combobox.stories.tsx)
+
+### Dialog
+
+A modal dialog on the native `<dialog>` with `showModal()`: it sits in the top layer, the page behind is inert and does not scroll, and focus stays inside. It is named by its title (`aria-labelledby`) and described by its description (`aria-describedby`). **Keyboard:** on open, focus goes to `initialFocus`, else the first control in the content, else the footer, else the title. Tab and Shift+Tab move through the dialog only. **Escape** closes it, as do the Close button and a press on the backdrop, unless `dismissible` is off. On close, focus returns to the element that opened it. Use `role="alertdialog"` for an interrupting confirmation, with a description and the safe choice focused first.
+
+Stories: Basic, CloseButtonAndBackdrop, NotDismissible, ConfirmDelete, Open, OpenLightTheme · [source](frontend/src/design-system/primitives/Dialog/Dialog.stories.tsx)
+
+### Empty State
+
+What a list or page shows when it has nothing yet, or when a filter matches nothing. It says what belongs here and offers the next step. The title is a real heading at the level the page outline needs (`headingLevel`); the icon is decorative. **Keyboard:** it adds no Tab stops of its own; Tab reaches its actions.
+
+Stories: Basic, NoMatches, LightTheme · [source](frontend/src/design-system/primitives/EmptyState/EmptyState.stories.tsx)
+
+### Field
+
+Wraps one control with its visible **label**, optional **hint** and **error**. The label is a native `<label for>`, so pressing it focuses the control. The hint and error are joined into the control's `aria-describedby`; an error also sets `aria-invalid` and is prefixed with a hidden "Error:" so it is never conveyed by colour alone. **Required** sets the native attribute (announced by screen readers) and shows the word Required. **Keyboard:** the Field adds no tab stop; Tab reaches the control. Put the hint and error before the control so they are read first.
+
+Stories: Basic, WithHint, Required, WithError, Disabled, LightTheme · [source](frontend/src/design-system/primitives/Field/Field.stories.tsx)
+
+### Fieldset
+
+A native `<fieldset>` whose `<legend>` names a group of checkboxes, radios or switches; screen readers announce the legend when focus enters the group. The hint and error describe the group. **Disabled** disables every control inside. **Keyboard:** the fieldset adds no Tab stop; each control inside keeps its own keyboard behaviour.
+
+Stories: Basic, Disabled, Horizontal, LightTheme · [source](frontend/src/design-system/primitives/Fieldset/Fieldset.stories.tsx)
+
+### Menu Button
+
+The WAI-ARIA menu button. The button has `aria-haspopup="menu"` and `aria-expanded`, and names the menu. Items come from data (`items`), so a catalog can supply them. **Keyboard on the button:** Enter, Space or Down Arrow opens the menu on the first item; Up Arrow opens it on the last. **In the menu:** Down and Up Arrow move and wrap; Home and End go to the first and last; typing letters jumps to the next item that starts with them; Enter or Space chooses the item, closes the menu and returns focus to the button; Escape closes and returns focus; Tab closes and moves on. Disabled items stay reachable so people learn they exist, and do nothing. A press outside closes the menu. Shortcuts are shown and exposed with `aria-keyshortcuts`; keyboard focus gets a ring as well as the fill.
+
+Stories: Keyboard, ChooseAnItem, PointerAndOutsidePress, IconTrigger, LightTheme · [source](frontend/src/design-system/primitives/Menu/MenuButton.stories.tsx)
+
+### Popover
+
+A non-modal panel anchored to a button, in the top layer. The button has `aria-expanded`, `aria-controls` and `aria-haspopup="dialog"`; the panel is a `dialog` named by its title or `label`. **Keyboard:** Enter or Space on the button opens it and moves focus to `initialFocus` or the first control inside; Tab moves through it and on to the rest of the page in reading order; Escape closes it and returns focus to the button. A press outside closes it and leaves focus where the press landed. Use Dialog instead when the person must finish or cancel before going on.
+
+Stories: Basic, CloseFromInside, OutsidePress, LightTheme · [source](frontend/src/design-system/primitives/Popover/Popover.stories.tsx)
+
+### Radio Group
+
+Native radios in a **Fieldset**. The browser provides the keyboard model: **Tab** enters the group at the checked radio (or the first) and leaves it in one step; **arrow keys** move and check the next or previous radio, skipping disabled ones. Each option can have a description linked with `aria-describedby`. A hint and error describe the whole group.
+
+Stories: Keyboard, WithError, Horizontal, LightTheme · [source](frontend/src/design-system/primitives/Choice/RadioGroup.stories.tsx)
+
+### Select
+
+A native `<select>` in the text-control box, with Field wiring. It uses the platform's own picker, which is the most dependable for keyboard, screen readers and touch. **Keyboard:** Tab focuses it; Up and Down Arrow change the choice; Alt+Down (or Space) opens the list; typing letters jumps to an option. Options can be grouped. Use **Combobox** when people need to search a long list.
+
+Stories: Basic, Grouped, Required, Disabled, LightTheme · [source](frontend/src/design-system/primitives/Select/Select.stories.tsx)
+
+### Sheet
+
+A modal panel along the inline end of the window, for details and longer forms. It is the Dialog with a different shape and has the same behavior: **Keyboard:** focus moves into it on open and stays inside; Escape, the Close button and a press on the backdrop close it; focus returns to what opened it.
+
+Stories: Basic, Open · [source](frontend/src/design-system/primitives/Sheet/Sheet.stories.tsx)
+
+### Skeleton
+
+Placeholder shapes laid out like the content that is loading. The shapes are hidden from assistive technology; wrap the area in **Loading**, which sets `aria-busy` and says once, politely, what is loading. With reduced motion the shimmer stops and the shapes stay still. **Keyboard:** nothing to reach; placeholders take no focus.
+
+Stories: Basic, LightTheme · [source](frontend/src/design-system/primitives/Skeleton/Skeleton.stories.tsx)
+
+### Switch
+
+An on/off setting that takes effect at once; use a Checkbox when the choice is submitted with a form. A native checkbox with `role="switch"`, so it is announced as on or off. **Keyboard:** Tab focuses it and Space toggles it. The thumb's position shows the state, so it never relies on colour alone, and the on track meets 3:1 against its surface in both themes.
+
+Stories: Basic, SettingsGroup, LightTheme · [source](frontend/src/design-system/primitives/Switch/Switch.stories.tsx)
+
+### Table
+
+A semantic data table, not an ARIA grid, so screen readers' table navigation works and Tab moves only between controls. The **caption** names it. A column can supply **row headers** (`th scope="row"`) so each cell is read with its row's name. **Sortable** columns put a button in the header; the sorted column has `aria-sort`, and a polite status announces the new order. Sorting is the caller's (server or client). With **selection**, each row has a named checkbox and the header a select-all that shows the mixed state. **Loading** marks the table busy and shows skeleton rows; **empty** shows an EmptyState in place of rows. When the table is wider than its box, the box becomes a named, focusable region so keyboard users can scroll it. The header stays in view while the page scrolls.
+
+Stories: Sortable, Selectable, Loading, Empty, NarrowScrolls, Compact, LightTheme · [source](frontend/src/design-system/primitives/Table/Table.stories.tsx)
+
+### Tabs
+
+The WAI-ARIA tabs pattern. The tab list is named by `label`; each tab controls its panel and each panel is labelled by its tab. **Keyboard:** Tab reaches the selected tab only, and Tab again moves into the panel. Left and Right Arrow (Up and Down when vertical) move between tabs and wrap; Home and End go to the first and last. Disabled tabs are skipped. With **automatic** activation a panel shows as soon as its tab has focus; with **manual**, Enter or Space shows it. The selected tab is marked by a bar, colour and weight together, never colour alone.
+
+Stories: Automatic, PanelWithoutControls, Manual, Vertical, LightTheme · [source](frontend/src/design-system/primitives/Tabs/Tabs.stories.tsx)
+
+### Text Area
+
+A native `<textarea>` with the same box, states and Field wiring as Text Input. **Keyboard:** Tab focuses it; Enter adds a line; Tab leaves it (it never traps Tab). **Grow** sizes it to its text where the browser supports `field-sizing`, up to 24 lines; elsewhere it keeps its rows and can be resized vertically.
+
+Stories: Default, Grow, Monospaced, Invalid, LightTheme · [source](frontend/src/design-system/primitives/TextArea/TextArea.stories.tsx)
+
+### Text Input
+
+A native `<input>` in a bordered box that can also hold **leading** and **trailing** content (an icon, a unit, a button). Use it inside a **Field** for its label, hint and error; on its own it needs an `aria-label`. **Keyboard:** Tab focuses the text, then any button in the trailing slot; all native editing keys apply. The box shows the focus ring while anything inside it has focus. **Read-only** keeps the text focusable and selectable with a dashed border; **disabled** leaves the tab order. Pressing the padding or a decorative adornment focuses the text. On touch screens the text is 16 px so the page does not zoom.
+
+Stories: Default, Sizes, Monospaced, WithAdornments, ReadOnly, Disabled, LightTheme · [source](frontend/src/design-system/primitives/TextInput/TextInput.stories.tsx)
+
+### Tooltip
+
+Meets WCAG 2.2 SC 1.4.13. Opens after `--vx-duration-tooltip-delay` on mouse hover and **immediately on keyboard focus**; stays open while the pointer moves onto it; **Escape** closes it without moving focus or pointer; never opens on touch. `kind="label"` names an icon-only control (the tooltip is hidden from assistive tech, so it is not read twice). `kind="description"` links extra text with `aria-describedby`. Rendered in the top layer with the native Popover API.
+
+Stories: Description, IconLabel, AllSides · [source](frontend/src/design-system/primitives/Tooltip/Tooltip.stories.tsx)
+
+### Secret saved
+
+Brief news about something that just happened. Raise one from anywhere with `toast({ title, description, tone, action })`; mount `<Toaster />` once. **Announcements:** two live regions are always in the page, polite for information, success and warning and an alert for errors, so screen readers announce reliably; focus never moves on its own. **Timing (WCAG 2.2.1):** information and success close after 6 s and warnings after 10 s; anything with an action stays at least 10 s; errors stay until dismissed; every timer pauses while the pointer or focus is on the notifications. **Keyboard:** F8 moves focus to the notifications region; Tab reaches each action and Dismiss button; Escape closes the toast that has focus (an open tooltip closes first). Each tone has its own icon shape and a spoken tone word, so colour is never the only signal.
+
+Stories: Announce, KeyboardAndAction, EscapeDismisses, AllTones, LightTheme · [source](frontend/src/design-system/primitives/Toast/Toaster.stories.tsx)
+
+<!-- reference:end -->

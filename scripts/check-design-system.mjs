@@ -1,7 +1,7 @@
 // Enforces the Vaultix design system rules (docs/0130 rule 2) in the canonical build:
 // the design system uses no Radix; the rest of the app may only use Radix less over time;
 // every primitive has a story with accessibility errors enforced; no color literal appears outside
-// the tokens; and the generated token files match their source.
+// the tokens; and the generated token files and DESIGN.md's component reference match their source.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
