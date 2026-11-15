@@ -4979,10 +4979,10 @@
     },
     {
       "path": "AGENTS.md",
-      "blob": "d20ef2156fe26130b04201b7e65fc2fc76b6e115",
+      "blob": "0a5b0f3022668a1a1d470e413aaa31c93a9fcfc4",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127).",
+      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127). 2026-11-14: authored the program-plan note, the UI rule, and the router row for docs/0130.",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",

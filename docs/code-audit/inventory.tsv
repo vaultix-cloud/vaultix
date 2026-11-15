@@ -20,7 +20,7 @@ path	git_blob	kind	review_status
 .github/workflows/ghcr.yml	2c075f0f1235a30aef353d90cd17770ae6c60c9d	build-and-operations	authored
 .github/workflows/owned.yml	a518913e14d87cd054146c26fd4b24b8479f4f1b	build-and-operations	authored
 .gitignore	1225c250c5b16ada35e1a2c720eae9a21d207556	product-code	reviewed
-AGENTS.md	d20ef2156fe26130b04201b7e65fc2fc76b6e115	documentation	reviewed
+AGENTS.md	0a5b0f3022668a1a1d470e413aaa31c93a9fcfc4	documentation	reviewed
 INSTALL-FOR-AI.md	573f3783bcb203219254b550a187aa768e0aabd5	documentation	unread
 JOURNAL.md	745bd9a4b5c9d9a042d2fb98e0843335135f9964	documentation	reviewed
 NOTICE	f961337300aa4688eb9b718fa46f8be13fcd52a7	documentation	unread
@@ -948,7 +948,7 @@ docs/0118-pre-release.md	d83355f99074bf8a2f186e4b80bfc18814d18d1b	documentation	
 docs/0119-schema-and-api-namespaces.md	13be371e0f9e75c57371d701146ebcdc31e5302b	documentation	unread
 docs/0120-mcpl-framework.md	31fd4c7a172ea701f9747d0f2ddc4b1b4481f78f	documentation	unread
 docs/0121-provider-import.md	373cca41deb58b27d19ea4e7f375d60300866fcf	documentation	unread
-docs/0122-completion-plan.md	7f51cf9ea7e9bd419a39211bf1a3117a82f9c478	documentation	unread
+docs/0122-completion-plan.md	b1926411291bf5b1af9c3d46402525de20ae3c93	documentation	unread
 docs/0123-signal-fabric.md	14ce108b30e7615e033744ea43a348a0a814105c	documentation	unread
 docs/0124-ai-personas-and-machine-loops.md	cc182dd092e2b8c957e78d76d1f94a0ffde56320	documentation	unread
 docs/0125-hosted-control-panel.md	38525e5b3e8d9a5017f67390fdca85d4f3f70198	documentation	unread
@@ -956,6 +956,7 @@ docs/0126-ai-configuration-schema.md	8ca0faee7a952f258049c784f7bd0c4ef8907221	do
 docs/0127-one-api-infisical-as-a-source.md	5357f472931b157c547209de745079002d79cffa	documentation	unread
 docs/0128-api-lessons-learned.md	570305dc12637420b7bf854f5c31c3bcaf4e47d9	documentation	unread
 docs/0129-single-source-schema.md	4de2ea39607f823750cc2c12374f62979c84351d	documentation	unread
+docs/0130-vaultix-program-plan.md	e7164bfd805d7691ccc9f5cb549066f121e0e584	documentation	unread
 docs/auth/authority-review.json	905b7ffef0609f47eb7f236948ff5df05979c418	product-code	unread
 docs/auth/authority-review.schema.json	666418f1376435385aea1f98ad367999abff4e27	product-code	unread
 docs/auth/device-api-consumers.md	676d7222e052a2a29484750677ed36242a5dd752	documentation	unread
