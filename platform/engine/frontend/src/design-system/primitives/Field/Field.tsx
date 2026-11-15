@@ -4,6 +4,8 @@ import "./Field.css";
 
 type TFieldContext = {
   controlId: string;
+  // For controls with a popup (Combobox) whose list is named by the same label.
+  labelId: string;
   describedBy?: string;
   invalid: boolean;
   required: boolean;
@@ -50,13 +52,14 @@ export const Field = ({
 }: TFieldProps) => {
   const generated = useId();
   const controlId = id ?? `vx-field-${generated}`;
+  const labelId = `${controlId}-label`;
   const helpId = help ? `${controlId}-help` : undefined;
   const errorId = error ? `${controlId}-error` : undefined;
   const describedBy = [helpId, errorId].filter(Boolean).join(" ") || undefined;
   const invalid = Boolean(error);
   const context = useMemo(
-    () => ({ controlId, describedBy, invalid, required, disabled }),
-    [controlId, describedBy, invalid, required, disabled]
+    () => ({ controlId, labelId, describedBy, invalid, required, disabled }),
+    [controlId, labelId, describedBy, invalid, required, disabled]
   );
 
   return (
@@ -66,7 +69,7 @@ export const Field = ({
         data-invalid={invalid || undefined}
         data-disabled={disabled || undefined}
       >
-        <label className="vx-field__label" htmlFor={controlId}>
+        <label id={labelId} className="vx-field__label" htmlFor={controlId}>
           {label}
           {required && (
             // The control carries the native required state, which assistive technology

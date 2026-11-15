@@ -10,6 +10,8 @@ export type { TCheckboxProps } from "./primitives/Choice/Checkbox";
 export { Checkbox } from "./primitives/Choice/Checkbox";
 export type { TRadioGroupProps, TRadioOption } from "./primitives/Choice/RadioGroup";
 export { RadioGroup } from "./primitives/Choice/RadioGroup";
+export type { TComboboxOption, TComboboxProps } from "./primitives/Combobox/Combobox";
+export { Combobox } from "./primitives/Combobox/Combobox";
 export type { TDialogProps } from "./primitives/Dialog/Dialog";
 export { Dialog } from "./primitives/Dialog/Dialog";
 export type { TFieldProps } from "./primitives/Field/Field";
