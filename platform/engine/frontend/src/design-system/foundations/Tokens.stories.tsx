@@ -59,7 +59,8 @@ const pairColumns: TColumn<TPair>[] = [
       // shape, which is what they are measured for.
       return (
         <span
-          data-theme={row.theme}
+          data-theme={row.theme.replace("-more", "")}
+          data-contrast={row.theme.endsWith("-more") ? "more" : undefined}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -225,7 +226,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The token reference, read from the generated `tokens.ts`, so it always matches what the build ships. **Semantic colours** are the roles components draw with, with their dark and light values. **Contrast** lists every pair the build checks, in both themes, weakest first; a palette that fails any of them cannot build. **Scales** show space, radius, type and motion. Edit tokens in `tokens/source/*.json` and run `node scripts/build-tokens.mjs`."
+          "The token reference, read from the generated `tokens.ts`, so it always matches what the build ships. **Semantic colours** are the roles components draw with, with their dark and light values. **Contrast** lists every pair the build checks, in both themes and their high-contrast variants, weakest first; a palette that fails any of them cannot build. **Scales** show space, radius, type and motion. Edit tokens in `tokens/source/*.json` and run `node scripts/build-tokens.mjs`."
       }
     }
   }
@@ -253,3 +254,5 @@ export const ContrastChecks: Story = {
 export const SpaceTypeAndMotion: Story = { render: () => <Scales /> };
 
 export const LightTheme: Story = { parameters: { vxTheme: "light" } };
+
+export const HighContrast: Story = { parameters: { vxContrast: "more" } };

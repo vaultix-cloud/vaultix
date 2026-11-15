@@ -1,10 +1,12 @@
 import type { Decorator } from "@storybook/react-vite";
 
 // Renders a design-system story on a Vaultix surface, as it appears in the product, so contrast
-// and axe checks measure real backgrounds rather than Storybook's white canvas.
+// and axe checks measure real backgrounds rather than Storybook's white canvas. Parameters:
+// vxTheme: "light" and vxContrast: "more" (the high-contrast variant).
 export const withSurface: Decorator = (Story, context) => (
   <div
     data-theme={context.parameters.vxTheme === "light" ? "light" : undefined}
+    data-contrast={context.parameters.vxContrast === "more" ? "more" : undefined}
     style={{
       padding: "var(--vx-space-8)",
       minHeight: "160px",

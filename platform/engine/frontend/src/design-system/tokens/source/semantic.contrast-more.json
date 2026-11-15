@@ -1,0 +1,65 @@
+{
+  "$description": "High-contrast overrides, applied when the system asks for more contrast (prefers-contrast: more) or the person turns it on (data-contrast=\"more\"). Each theme overrides semantic roles and may override component tokens; the contrast gate checks both high-contrast themes too.",
+  "dark": {
+    "color": {
+      "border": {
+        "subtle": {
+          "$value": "{color.neutral.600}"
+        },
+        "default": {
+          "$value": "{color.neutral.500}"
+        },
+        "strong": {
+          "$value": "{color.neutral.300}"
+        },
+        "control": {
+          "$value": "{color.neutral.300}"
+        }
+      },
+      "text": {
+        "secondary": {
+          "$value": "{color.neutral.100}"
+        },
+        "muted": {
+          "$value": "{color.neutral.200}"
+        }
+      }
+    },
+    "focus": {
+      "width": {
+        "$value": "3px"
+      }
+    }
+  },
+  "light": {
+    "color": {
+      "border": {
+        "subtle": {
+          "$value": "{color.neutral.400}"
+        },
+        "default": {
+          "$value": "{color.neutral.500}"
+        },
+        "strong": {
+          "$value": "{color.neutral.700}"
+        },
+        "control": {
+          "$value": "{color.neutral.700}"
+        }
+      },
+      "text": {
+        "secondary": {
+          "$value": "{color.neutral.800}"
+        },
+        "muted": {
+          "$value": "{color.neutral.700}"
+        }
+      }
+    },
+    "focus": {
+      "width": {
+        "$value": "3px"
+      }
+    }
+  }
+}
