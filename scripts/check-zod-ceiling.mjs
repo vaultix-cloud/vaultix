@@ -20,6 +20,9 @@ const IMPORT = /from\s+["'](zod(\/[^"']*)?|@tanstack\/zod-adapter|@hookform\/res
 // New code is held to zero from the start.
 const ZERO = /^(kernel|control|platform\/shippin)\//;
 const SOURCE = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
+// The one place allowed to import Zod outside the inherited count: tooling whose job is to compare Zod with
+// ArkType so Zod can be removed (docs/0137). It is not part of the product and goes when the count reaches zero.
+const MIGRATION_TOOLING = /^scripts\/zod-migration\//;
 
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, maxBuffer: 256 * 1024 * 1024 }).toString().split("\0").filter(Boolean);
 const importers = [];
@@ -30,8 +33,10 @@ for (const file of tracked) {
   if (IMPORT.test(text)) importers.push(file);
 }
 
-const inNewCode = importers.filter(file => ZERO.test(file));
-const inherited = importers.length - inNewCode.length;
+const tooling = importers.filter(file => MIGRATION_TOOLING.test(file));
+const counted = importers.filter(file => !MIGRATION_TOOLING.test(file));
+const inNewCode = counted.filter(file => ZERO.test(file));
+const inherited = counted.length - inNewCode.length;
 const packageJsons = tracked.filter(file => ZERO.test(file) && file.endsWith("package.json")).filter(file => /"zod"|zod-adapter|resolvers\/zod/.test(readFileSync(resolve(root, file), "utf8")));
 
 if (process.argv.includes("--write-count")) console.log(JSON.stringify({ inheritedFilesImportingZod: inherited, inNewCode: inNewCode.length }));
@@ -44,4 +49,4 @@ if (problems.length) {
   for (const problem of problems) console.error(`zod ceiling: ${problem}`);
   process.exit(1);
 }
-console.log(`zod ceiling: ${inherited} inherited files (ceiling ${CEILING}), 0 in new code${inherited < CEILING ? `; lower the ceiling to ${inherited}` : ""}`);
+console.log(`zod ceiling: ${inherited} inherited files (ceiling ${CEILING}), 0 in new code, ${tooling.length} migration-tooling file(s)${inherited < CEILING ? `; lower the ceiling to ${inherited}` : ""}`);

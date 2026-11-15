@@ -208,6 +208,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | --- | --- |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
 | The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
+| Retiring Zod (what it does here, ArkType equivalence, the method) | `docs/0137-zod-retirement.md` + `node scripts/zod-census.mjs` + `scripts/zod-migration/` |
 | Versioned documents (AI connection and persona in ArkType, version registry, JSON Schema export) | `kernel/contracts/documents/README.md` + `node scripts/test-documents.mjs` |
 | The v1 contract (OpenAPI from Rust, generated ArkType, contract tests) | `kernel/README.md` + `node scripts/test-contract-v1.mjs [--update]` |
 | Proving the capability (use a secret from Claude without seeing it) | `node scripts/prove-vx-capability.mjs [--claude \| --serve]`; tests `node scripts/test-vx.mjs` |

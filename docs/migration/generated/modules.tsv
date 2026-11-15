@@ -50,9 +50,9 @@ kernel/clients/cli	foundation	supporting-tooling-or-contract	1	2cc14dd563216fb9f
 kernel/clients/cli/src	foundation	supporting-tooling-or-contract	1	3a222f8ff82b1bd82dd796b4e36f37cbcdba1d19b66e42cdd9264356f448b3d3	0	unassessed
 kernel/clients/cli/src/bin	foundation	supporting-tooling-or-contract	2	5c54dc152265a18aff678aae00bee9ef830641fef1a03ad6777f4500e83e6d03	0	unassessed
 kernel/contracts/documents	foundation	supporting-tooling-or-contract	3	ad25439eadfc8baf594c4691acad06be3951876094e9802a8c42f63f2b6caad3	0	unassessed
-kernel/contracts/documents/schemas	foundation	supporting-tooling-or-contract	2	fcab54c3b9ce600fe4541366abb4c750bd01d86d87f19620daec99a60ef86ee1	0	unassessed
+kernel/contracts/documents/schemas	foundation	supporting-tooling-or-contract	2	a022711014ab83233ad203a1fc1c7de3bffe6ced7854718c3a46a257acaca530	0	unassessed
 kernel/contracts/documents/scripts	foundation	supporting-tooling-or-contract	1	8a2f1a11e9b288c1830887b422207237982800287b00d7df759082934772041e	0	unassessed
-kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	4	9a7ebd5cb18c59d64e081053b85bc23eb317c8a4aa033559f8d835374f8b1d26	0	unassessed
+kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	4	d980982d3bda2f71aa29dcd74befc5f4694e89a9f4c2ebc06ae8038133eb53d2	0	unassessed
 kernel/contracts/documents/tests	foundation	supporting-tooling-or-contract	4	d606d75afdbafb3e360133f6408865863ee16b4ce7d59a76616baa532db37296	0	unassessed
 kernel/contracts/v1	foundation	supporting-tooling-or-contract	4	7111d40307247a7e509eb2b2ecd3ad41405902ebde326202506ee23a2f1b20fb	0	unassessed
 kernel/contracts/v1/generated	foundation	supporting-tooling-or-contract	2	7039c4f9c10170fb2cbf0f11639711f1fd8706534f4ff84e065e33b753c9536c	0	unassessed
@@ -143,7 +143,7 @@ platform/engine/backend-go/internal/server/api/templates	foundation	Go-native	1	
 platform/engine/backend-go/internal/server/api/validator	foundation	Go-native	1	ab3bc71ff0bcc595b4b94c6e1bb3b1cfb9485d494ee9b3df1b936dbce053f94d	0	unassessed
 platform/engine/backend-go/internal/server/api/vaultixref	foundation	Go-native	4	8b3f088be76436b216f2d930545d515c72b074fb905797a3b659add0e4ef3995	4	unassessed
 platform/engine/backend-go/internal/server/middlewares	foundation	Go-native	5	3d3328f055d8785f23b5cf0812cc11bb42d595f2fae5005de24549b28fe97906	0	unassessed
-platform/engine/backend-go/internal/services/assistant	foundation	Go-native	18	dd357faea3360b12ec29b83ffa1a3275d47fd1994eff9291e6a36e1085511c9e	0	unassessed
+platform/engine/backend-go/internal/services/assistant	foundation	Go-native	18	078963fdf0ee8374388cea98b887db673901ed506c2c934694c4b31e58ed1430	0	unassessed
 platform/engine/backend-go/internal/services/assumeprivilege	authorization	Go-native	4	6ab594ed64dcbfa57fe695639d0da9be597737566109cbee6cbd7e078b9ad604	4	unassessed
 platform/engine/backend-go/internal/services/auditlog	audit	Go-native	8	da4168c54a6477600084ca395e8cb97b030b992281648d4ac0f889b7ecfc2ee1	5	unassessed
 platform/engine/backend-go/internal/services/auth	identity	Go-native	45	410390517de5e9968d6aeb95d44c3c0c5cca8ee6ddb491e772e0c441f624708a	42	unassessed
@@ -1166,9 +1166,10 @@ platform/shippin/cmd/vaultix-control	hosted-service	Go-hosted-service	1	2f43f1d5
 platform/shippin/console	hosted-service	Go-hosted-service	3	43190eb6519717e7717f83fcf04a180117b919bc86af938ae7187f1526adc88c	0	unassessed
 platform/shippin/fleet	hosted-service	Go-hosted-service	2	d1b1550ad8014a22c430dbe01228fbcb20e06c1c5edfa828004aa72e92fad073	0	unassessed
 schemas	foundation	supporting-tooling-or-contract	1	34998b8b14abbc8838dde9b96eaa7f22bbb815b1715a3104a2195a6042963a3c	0	unassessed
-scripts	delivery	supporting-tooling-or-contract	156	da99947f55fcd423b6cbe43d0a8ae7995abeb27f8c3e5ed40e74d1e201fd4c80	110	unassessed
+scripts	delivery	supporting-tooling-or-contract	157	26295b3d7d288278b90a633541026806733e823ccc39bc7727fe95c7991a428d	110	unassessed
 scripts/fixtures	delivery	supporting-tooling-or-contract	3	1d2aff89334f56081fcbebbab47c6ff9f8f2ef514fd4bc927067e3d6fe619259	3	unassessed
 scripts/fixtures/quic-peer	delivery	supporting-tooling-or-contract	2	d2d724187d04f25b91851d774d02663e060f51a9fe26b9203b393beb175ed3d5	2	unassessed
 scripts/fixtures/windows-install	delivery	supporting-tooling-or-contract	2	ec46359d82e85605c79c1f82b5dc1754d959eafcb99ee59868c36d43d5253d61	0	unassessed
 scripts/fixtures/windows-package	delivery	supporting-tooling-or-contract	1	42ff52df9e3bb5c0f1352f65cd7ffc8849c7a11b7f151a3ac677938205f6bd36	1	unassessed
 scripts/lib	delivery	supporting-tooling-or-contract	16	e5e5934e46d33cc2a1d17e375b1e4e229cd32ac3634614b09f8279925c21d6a0	10	unassessed
+scripts/zod-migration	delivery	supporting-tooling-or-contract	3	afa82edf136af00d59811235e9ab9a7de2d7053ab3627105557c69673c068a9f	0	unassessed

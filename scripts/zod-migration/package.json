@@ -1,0 +1,9 @@
+{
+  "name": "@vaultix/zod-migration",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tooling that exists to remove Zod (docs/0137). It is the one place outside the inherited engine allowed to import Zod, because it compares Zod's behaviour with ArkType's. Delete this folder when the Zod count reaches zero.",
+  "scripts": { "test": "node --test equivalence.test.mjs" },
+  "dependencies": { "arktype": "2.2.9", "zod": "3.24.1" }
+}

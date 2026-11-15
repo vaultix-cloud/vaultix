@@ -782,6 +782,40 @@
           "serviceAccountJson": "{\"type\":\"authorized_user\"}"
         }
       }
+    },
+    {
+      "name": "bedrock session token without an access key",
+      "valid": false,
+      "document": {
+        "schemaVersion": "vaultix.ai-connection.v1",
+        "name": "Bedrock",
+        "kind": "bedrock",
+        "region": "us-east-1",
+        "models": {
+          "standard": "anthropic.claude-sonnet-5-5-v1:0"
+        },
+        "credential": {
+          "sessionToken": "placeholder-session-token"
+        }
+      }
+    },
+    {
+      "name": "bedrock access key, secret and session token together",
+      "valid": true,
+      "document": {
+        "schemaVersion": "vaultix.ai-connection.v1",
+        "name": "Bedrock",
+        "kind": "bedrock",
+        "region": "us-east-1",
+        "models": {
+          "standard": "anthropic.claude-sonnet-5-5-v1:0"
+        },
+        "credential": {
+          "accessKeyId": "EXAMPLEACCESSKEY1",
+          "secretAccessKey": "placeholder-secret",
+          "sessionToken": "placeholder-session-token"
+        }
+      }
     }
   ]
 }

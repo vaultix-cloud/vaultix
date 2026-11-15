@@ -20,7 +20,7 @@ path	git_blob	kind	review_status
 .github/workflows/ghcr.yml	2c075f0f1235a30aef353d90cd17770ae6c60c9d	build-and-operations	authored
 .github/workflows/owned.yml	a518913e14d87cd054146c26fd4b24b8479f4f1b	build-and-operations	authored
 .gitignore	1225c250c5b16ada35e1a2c720eae9a21d207556	product-code	reviewed
-AGENTS.md	a93bd7449a13bc45519656101a5c2c84b0a32680	documentation	reviewed
+AGENTS.md	625408a637107ee6808377d6592828e0e2ec43ed	documentation	reviewed
 INSTALL-FOR-AI.md	573f3783bcb203219254b550a187aa768e0aabd5	documentation	unread
 JOURNAL.md	c7b5725b5b324e0da6aa80aa6c5e38942d2ab7cb	documentation	stale
 NOTICE	f961337300aa4688eb9b718fa46f8be13fcd52a7	documentation	unread
@@ -964,6 +964,7 @@ docs/0133-clean-slate-core-and-ai-safe-space.md	e88ab37083e99b54ad9e3694d5e9d644
 docs/0134-foundation-rewrite.md	2fda18d56990a878d733f65b6507ddba5a01fb5b	documentation	unread
 docs/0135-process-review-and-redesign.md	3fa095c433060e30b076b2ba5fa53c081d573563	documentation	unread
 docs/0136-kernel-platform-control-and-schemas.md	3b27ad46e436b4391370ab39a1b779f0f8bfd9be	documentation	unread
+docs/0137-zod-retirement.md	6bb7bd2921b032dd0d1c67b95054e682abba77a7	documentation	unread
 docs/auth/authority-review.json	905b7ffef0609f47eb7f236948ff5df05979c418	product-code	unread
 docs/auth/authority-review.schema.json	666418f1376435385aea1f98ad367999abff4e27	product-code	unread
 docs/auth/device-api-consumers.md	676d7222e052a2a29484750677ed36242a5dd752	documentation	unread
@@ -987,8 +988,8 @@ docs/capabilities/catalog.mjs	fc1197d55be7b3b76750d031efb6082dbe370731	product-c
 docs/capabilities/explorer.css	136bbc57d7afe0eee89bcf406c0571afd9e1c634	product-code	verified
 docs/capabilities/explorer.html	c579dacf8e759bafa29c058b9e08374ea908fc42	product-code	verified
 docs/capabilities/explorer.mjs	699fa26c919398b097895b3ee53cf01cb0721c86	product-code	verified
-docs/capabilities/generated/catalog.json	dbb1905c05ef557a304f7327d193563846ab35a0	generated	unread
-docs/capabilities/generated/source-map.tsv	35a5dbebab3c5d30a5a664e479740eb3cb9093a8	generated	unread
+docs/capabilities/generated/catalog.json	ce296377e9fb531d24d27d16db1135e2fb16c84e	generated	unread
+docs/capabilities/generated/source-map.tsv	f7b19eaa53e1dd1de466cea1055cab63f22f3007	generated	unread
 docs/capabilities/generated/surface-map.tsv	c1ab8c47d801726c20ee3e1e772a60f35fa59e34	generated	unread
 docs/capabilities/vaultix-capabilities.md	2921e43176626920f642ba82929a1893e1ebebf3	documentation	authored
 docs/delivery/acceptance.md	c6176b238bfd0dbf6ce13c0200b0d25cde30cd94	documentation	authored
@@ -1000,9 +1001,9 @@ docs/interaction/ui-benchmark-receipt.example.v1.json	b422b903ce3a62a189be2293ab
 docs/interaction/workflows.json	47c4034ef2acbdca39f05a84de9b6aa21104e874	product-code	unread
 docs/mcp-embedded-apps.md	21e2f44647d3a3d07f30c74371d3e6147fcb329f	documentation	authored
 docs/migration/README.md	d50481a9f543fb1a723b053acd249a919f75efe7	documentation	reviewed
-docs/migration/generated/files.tsv	9f4063e362a1c6e058f521ce839338cbbad4d4ad	generated	unread
-docs/migration/generated/modules.tsv	9748e06c44f43ba074a97e71d2bde7df2e4be081	generated	unread
-docs/migration/generated/summary.json	02e9da981de263a00449a31d6f9fea7ce14345be	generated	unread
+docs/migration/generated/files.tsv	264f7684cfc9ccc037eeca0263edaecec2b92635	generated	unread
+docs/migration/generated/modules.tsv	6194b0f07704e5ab5f76dae9bcf83c48441d5135	generated	unread
+docs/migration/generated/summary.json	56e1c34938b7f7168eb8127c8e49473b3b4b637e	generated	unread
 docs/migration/workstreams.json	e72847e5bd96490f22efb2873653b156d77011c9	product-code	reviewed
 docs/plan/action-plan.md	2700611de78557356d50ea829a9bfdc2525f481a	documentation	unread
 docs/plan/naming.md	5864fda0319b9656eda20aae09e2a44e9ac4fbfd	documentation	unread
@@ -1109,10 +1110,10 @@ kernel/contracts/documents/.gitignore	c2658d7d1b31848c3b71960543cb0368e56cd4c7	p
 kernel/contracts/documents/README.md	0cfab5ea9ca55d77fc8ef35334f2f3d4e520a707	documentation	unread
 kernel/contracts/documents/package-lock.json	e2667db6bf3501008bc7c8a33d5455a46e475462	dependency-lock	unread
 kernel/contracts/documents/package.json	77157db70cab940479140c6f3dc3501db0344371	product-code	unread
-kernel/contracts/documents/schemas/vaultix.ai-connection.v1.schema.json	8f593e6f9fbc79e9c15233a83b62f401eafef768	product-code	unread
+kernel/contracts/documents/schemas/vaultix.ai-connection.v1.schema.json	ac75caaa564f65a2f4b522caa94b382379eeb647	product-code	unread
 kernel/contracts/documents/schemas/vaultix.ai-persona.v1.schema.json	ac5aa4c85bb86634ae50b29fcfbd6fb9317bde63	product-code	unread
 kernel/contracts/documents/scripts/export.mjs	5459305ebc7e1a4f63b4e37a526a10e8711cb6f6	product-code	unread
-kernel/contracts/documents/src/ai-connection.v1.ts	1382837c07b2e17bee8896d682b8975a65343b02	product-code	unread
+kernel/contracts/documents/src/ai-connection.v1.ts	ad2e4e5b712a6ca4722c25efa05aded9507e26c8	product-code	unread
 kernel/contracts/documents/src/ai-persona.v1.ts	31cc9ab030f5a8065c35322edbe98548fee5a942	product-code	unread
 kernel/contracts/documents/src/registry.ts	692b958995313d4708ef1d0958404e7b6c5d69dd	product-code	unread
 kernel/contracts/documents/src/rules.ts	83399772c60cfad8f69811042a0667941c85540e	product-code	unread
@@ -1376,10 +1377,10 @@ platform/engine/backend-go/internal/services/assistant/model_list_test.go	2b90de
 platform/engine/backend-go/internal/services/assistant/model_test.go	a7a8f36badbf7840cac3ff1b7c7e6fdffafaf54a	test	unread
 platform/engine/backend-go/internal/services/assistant/persona.go	ea211e120803fa56663477af4b7d57c7710dea26	product-code	unread
 platform/engine/backend-go/internal/services/assistant/provider.go	b4d944f6d4b51f5b6b7bafbe4fb1cf687be92ead	product-code	unread
-platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-connection.v1.schema.json	39691698eb123d0ae3db085cd11379c7fd92186c	product-code	unread
+platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-connection.v1.schema.json	6571295b3b6583e34de9a62f9ddfe35fbcff508d	product-code	unread
 platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-persona.v1.schema.json	5cae456525a9453f947caf739a9389c5da91fc99	product-code	unread
-platform/engine/backend-go/internal/services/assistant/spec/spec.go	48fa6a25880fd77b282d73fea2c51987e848e26d	product-code	unread
-platform/engine/backend-go/internal/services/assistant/spec/testdata/connections.json	574498407330380ec17d9983937e4b3c493b6fe6	product-code	unread
+platform/engine/backend-go/internal/services/assistant/spec/spec.go	455f73595eb8f084c9aa3fd9b05e34b60bbf4fd4	product-code	unread
+platform/engine/backend-go/internal/services/assistant/spec/testdata/connections.json	acfbf12933804800fc7db7ae27f576651ff78cc1	product-code	unread
 platform/engine/backend-go/internal/services/assistant/spec/testdata/personas.json	c2c5bc33e33e64b84d860e131b1f6da7e64ab6f9	product-code	unread
 platform/engine/backend-go/internal/services/assumeprivilege/claim_boundary_test.go	8c9dbbb09b17ea2e7462a5ca5a7a6d6fe46ff8bb	test	verified
 platform/engine/backend-go/internal/services/assumeprivilege/service.go	170f0b005d41250b28e16274ddf8e36bb487c2d9	product-code	verified
@@ -12402,7 +12403,7 @@ scripts/check-table-namespaces.mjs	382310c0982745897d9fe7e69e332e6c61fd0d17	buil
 scripts/check-ui-action-standard.mjs	7aaa4f7b50ae29e45a17246c137f9aee536c4709	build-and-operations	unread
 scripts/check-ui-benchmark-receipt.mjs	bfc623a29e24f6f1d47996d2b2589817721df519	build-and-operations	unread
 scripts/check-ui-loading.mjs	f0e0381eabddddde7be856fcd1b2387f33b598b7	build-and-operations	verified
-scripts/check-zod-ceiling.mjs	5d7f9010a251f982a1b59dd2714a9ce0e8ab265d	build-and-operations	unread
+scripts/check-zod-ceiling.mjs	3706830d79d66042672cdfcb77d889061c55bbc3	build-and-operations	unread
 scripts/export-vaultix-capabilities.mjs	feb541794fcebf2513e92913c9e0c1c181ea5888	build-and-operations	authored
 scripts/fixtures/cli-workload.mjs	1a235af5d2d86b05a22e57be2ec1c3406c16fda8	build-and-operations	reviewed
 scripts/fixtures/device-issuer.mjs	fc5b5c5a1a52e8837c54eee24ac25df22720b066	build-and-operations	verified
@@ -12560,3 +12561,8 @@ scripts/verify-native-audit-boundary.mjs	90d7b2d4bddbeaac42cacba6bafa74335a0641d
 scripts/verify-pull-request.mjs	7ad780054d5575f7a32cdc48a3d13958afa67474	build-and-operations	reviewed
 scripts/verify-release-bundle.mjs	d004836cf10ff442e0fe17292871c7c94459519a	build-and-operations	authored
 scripts/warp-points.test.mjs	54ede5de337731e10c3b3d81e95bed303b96d88b	test	unread
+scripts/zod-census.mjs	69e1edb5aec9243c55b1e6879f86cd436ff576fd	build-and-operations	unread
+scripts/zod-migration/.gitignore	c2658d7d1b31848c3b71960543cb0368e56cd4c7	build-and-operations	unread
+scripts/zod-migration/equivalence.test.mjs	38ae44166a3d10346edef269a9bbc1613ad56fff	test	unread
+scripts/zod-migration/package-lock.json	93fc733eadcd94ae8036dbf90d1f537f7c2685b7	dependency-lock	unread
+scripts/zod-migration/package.json	baa74724f90ce698440db98379d5ee98f982e3c2	build-and-operations	unread

@@ -46,7 +46,7 @@
         "required": ["region"],
         "properties": {
           "region": { "pattern": "^[a-z]{2}(-[a-z]+)+-[0-9]$" },
-          "credential": { "propertyNames": { "enum": ["accessKeyId", "secretAccessKey", "sessionToken"] }, "dependentRequired": { "accessKeyId": ["secretAccessKey"], "secretAccessKey": ["accessKeyId"] } }
+          "credential": { "propertyNames": { "enum": ["accessKeyId", "secretAccessKey", "sessionToken"] }, "dependentRequired": { "accessKeyId": ["secretAccessKey"], "secretAccessKey": ["accessKeyId"], "sessionToken": ["accessKeyId", "secretAccessKey"] } }
         },
         "not": { "anyOf": [{ "required": ["endpoint"] }, { "required": ["apiStyle"] }, { "required": ["auth"] }, { "required": ["headers"] }, { "required": ["cloudProject"] }, { "required": ["billTo"] }] }
       }

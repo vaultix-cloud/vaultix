@@ -354,6 +354,9 @@ func ValidateConnection(c *Connection) error {
 		if c.Kind == "bedrock" && has(cred.AccessKeyID) != has(cred.SecretAccessKey) {
 			v.fail("credential", "Bedrock needs the access key ID and secret access key together.")
 		}
+		if c.Kind == "bedrock" && has(cred.SessionToken) && !has(cred.AccessKeyID) {
+			v.fail("credential.sessionToken", "A session token goes with the access key ID and secret access key it was issued for.")
+		}
 	}
 	return v.result()
 }

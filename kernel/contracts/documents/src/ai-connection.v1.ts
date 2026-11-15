@@ -32,10 +32,11 @@ const keyedAuth = type({ type: "'bearer'" }).onUndeclaredKey("reject").narrow(no
 const noAuth = type({ type: "'none'" }).onUndeclaredKey("reject").narrow(notArray);
 
 const apiKey = type({ apiKey: text(1, 4096) }).onUndeclaredKey("reject").narrow(notArray);
-// AWS: an access key and its secret go together; a session token may accompany them or stand alone.
+// AWS: an access key and its secret go together, and a session token belongs to them (it was issued for that key).
+// The first draft of this schema let a lone session token through, which names no identity; tightened 2026-11-15,
+// in the hand-written schema, the Go rule and the fixtures at the same time.
 const awsCredential = type({ accessKeyId: pattern(String.raw`^[A-Z0-9]{16,128}$`), secretAccessKey: text(1, 4096), "sessionToken?": text(1, 4096) })
-  .onUndeclaredKey("reject").narrow(notArray)
-  .or(type({ sessionToken: text(1, 4096) }).onUndeclaredKey("reject").narrow(notArray));
+  .onUndeclaredKey("reject").narrow(notArray);
 const serviceAccount = type({ serviceAccountJson: text(1, 16384) }).onUndeclaredKey("reject").narrow(notArray);
 
 const common = { schemaVersion: "'vaultix.ai-connection.v1'", name: named(1, 64), models, "timeoutSeconds?": timeout, "active?": "boolean" } as const;

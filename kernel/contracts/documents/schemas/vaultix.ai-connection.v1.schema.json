@@ -560,46 +560,28 @@
           "type": "boolean"
         },
         "credential": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "accessKeyId": {
-                  "type": "string",
-                  "pattern": "^[A-Z0-9]{16,128}$"
-                },
-                "secretAccessKey": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 4096
-                },
-                "sessionToken": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 4096
-                }
-              },
-              "required": [
-                "accessKeyId",
-                "secretAccessKey"
-              ],
-              "additionalProperties": false
+          "type": "object",
+          "properties": {
+            "accessKeyId": {
+              "type": "string",
+              "pattern": "^[A-Z0-9]{16,128}$"
             },
-            {
-              "type": "object",
-              "properties": {
-                "sessionToken": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 4096
-                }
-              },
-              "required": [
-                "sessionToken"
-              ],
-              "additionalProperties": false
+            "secretAccessKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "sessionToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
             }
-          ]
+          },
+          "required": [
+            "accessKeyId",
+            "secretAccessKey"
+          ],
+          "additionalProperties": false
         },
         "timeoutSeconds": {
           "type": "integer",

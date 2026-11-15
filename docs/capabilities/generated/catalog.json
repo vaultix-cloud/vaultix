@@ -2604,7 +2604,7 @@
       "capabilities": 8,
       "ui": 15,
       "api": 2,
-      "sourceFiles": 1625
+      "sourceFiles": 1629
     },
     "experience": {
       "capabilities": 6,
@@ -2616,7 +2616,7 @@
   "coverage": {
     "uiRoutes": 275,
     "apiOperations": 2327,
-    "sourceFiles": 10029,
+    "sourceFiles": 10033,
     "providerEntries": 187,
     "capabilityRequirements": 86,
     "unclassified": 0

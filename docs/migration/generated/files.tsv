@@ -948,10 +948,10 @@ kernel/clients/cli/src/lib.rs	kernel/clients/cli/src	foundation	supporting-tooli
 kernel/clippy.toml	kernel	foundation	supporting-tooling-or-contract	toml	6393adc609ac0c37a42e1e2a3f519b957852b540	unread
 kernel/contracts/documents/.gitignore	kernel/contracts/documents	foundation	supporting-tooling-or-contract	build-config	c2658d7d1b31848c3b71960543cb0368e56cd4c7	unread
 kernel/contracts/documents/package.json	kernel/contracts/documents	foundation	supporting-tooling-or-contract	json	77157db70cab940479140c6f3dc3501db0344371	unread
-kernel/contracts/documents/schemas/vaultix.ai-connection.v1.schema.json	kernel/contracts/documents/schemas	foundation	supporting-tooling-or-contract	json	8f593e6f9fbc79e9c15233a83b62f401eafef768	unread
+kernel/contracts/documents/schemas/vaultix.ai-connection.v1.schema.json	kernel/contracts/documents/schemas	foundation	supporting-tooling-or-contract	json	ac75caaa564f65a2f4b522caa94b382379eeb647	unread
 kernel/contracts/documents/schemas/vaultix.ai-persona.v1.schema.json	kernel/contracts/documents/schemas	foundation	supporting-tooling-or-contract	json	ac5aa4c85bb86634ae50b29fcfbd6fb9317bde63	unread
 kernel/contracts/documents/scripts/export.mjs	kernel/contracts/documents/scripts	foundation	supporting-tooling-or-contract	mjs	5459305ebc7e1a4f63b4e37a526a10e8711cb6f6	unread
-kernel/contracts/documents/src/ai-connection.v1.ts	kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	ts	1382837c07b2e17bee8896d682b8975a65343b02	unread
+kernel/contracts/documents/src/ai-connection.v1.ts	kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	ts	ad2e4e5b712a6ca4722c25efa05aded9507e26c8	unread
 kernel/contracts/documents/src/ai-persona.v1.ts	kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	ts	31cc9ab030f5a8065c35322edbe98548fee5a942	unread
 kernel/contracts/documents/src/registry.ts	kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	ts	692b958995313d4708ef1d0958404e7b6c5d69dd	unread
 kernel/contracts/documents/src/rules.ts	kernel/contracts/documents/src	foundation	supporting-tooling-or-contract	ts	83399772c60cfad8f69811042a0667941c85540e	unread
@@ -1194,10 +1194,10 @@ platform/engine/backend-go/internal/services/assistant/model_list_test.go	platfo
 platform/engine/backend-go/internal/services/assistant/model_test.go	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	go	a7a8f36badbf7840cac3ff1b7c7e6fdffafaf54a	unread
 platform/engine/backend-go/internal/services/assistant/persona.go	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	go	ea211e120803fa56663477af4b7d57c7710dea26	unread
 platform/engine/backend-go/internal/services/assistant/provider.go	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	go	b4d944f6d4b51f5b6b7bafbe4fb1cf687be92ead	unread
-platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-connection.v1.schema.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	39691698eb123d0ae3db085cd11379c7fd92186c	unread
+platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-connection.v1.schema.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	6571295b3b6583e34de9a62f9ddfe35fbcff508d	unread
 platform/engine/backend-go/internal/services/assistant/spec/schema/vaultix.ai-persona.v1.schema.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	5cae456525a9453f947caf739a9389c5da91fc99	unread
-platform/engine/backend-go/internal/services/assistant/spec/spec.go	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	go	48fa6a25880fd77b282d73fea2c51987e848e26d	unread
-platform/engine/backend-go/internal/services/assistant/spec/testdata/connections.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	574498407330380ec17d9983937e4b3c493b6fe6	unread
+platform/engine/backend-go/internal/services/assistant/spec/spec.go	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	go	455f73595eb8f084c9aa3fd9b05e34b60bbf4fd4	unread
+platform/engine/backend-go/internal/services/assistant/spec/testdata/connections.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	acfbf12933804800fc7db7ae27f576651ff78cc1	unread
 platform/engine/backend-go/internal/services/assistant/spec/testdata/personas.json	platform/engine/backend-go/internal/services/assistant	foundation	Go-native	json	c2c5bc33e33e64b84d860e131b1f6da7e64ab6f9	unread
 platform/engine/backend-go/internal/services/assumeprivilege/claim_boundary_test.go	platform/engine/backend-go/internal/services/assumeprivilege	authorization	Go-native	go	8c9dbbb09b17ea2e7462a5ca5a7a6d6fe46ff8bb	verified
 platform/engine/backend-go/internal/services/assumeprivilege/service.go	platform/engine/backend-go/internal/services/assumeprivilege	authorization	Go-native	go	170f0b005d41250b28e16274ddf8e36bb487c2d9	verified
@@ -9871,7 +9871,7 @@ scripts/check-table-namespaces.mjs	scripts	delivery	supporting-tooling-or-contra
 scripts/check-ui-action-standard.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	7aaa4f7b50ae29e45a17246c137f9aee536c4709	unread
 scripts/check-ui-benchmark-receipt.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	bfc623a29e24f6f1d47996d2b2589817721df519	unread
 scripts/check-ui-loading.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	f0e0381eabddddde7be856fcd1b2387f33b598b7	verified
-scripts/check-zod-ceiling.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	5d7f9010a251f982a1b59dd2714a9ce0e8ab265d	unread
+scripts/check-zod-ceiling.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	3706830d79d66042672cdfcb77d889061c55bbc3	unread
 scripts/export-vaultix-capabilities.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	feb541794fcebf2513e92913c9e0c1c181ea5888	authored
 scripts/fixtures/cli-workload.mjs	scripts/fixtures	delivery	supporting-tooling-or-contract	mjs	1a235af5d2d86b05a22e57be2ec1c3406c16fda8	reviewed
 scripts/fixtures/device-issuer.mjs	scripts/fixtures	delivery	supporting-tooling-or-contract	mjs	fc5b5c5a1a52e8837c54eee24ac25df22720b066	verified
@@ -10028,3 +10028,7 @@ scripts/verify-native-audit-boundary.mjs	scripts	delivery	supporting-tooling-or-
 scripts/verify-pull-request.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	7ad780054d5575f7a32cdc48a3d13958afa67474	reviewed
 scripts/verify-release-bundle.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	d004836cf10ff442e0fe17292871c7c94459519a	authored
 scripts/warp-points.test.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	54ede5de337731e10c3b3d81e95bed303b96d88b	unread
+scripts/zod-census.mjs	scripts	delivery	supporting-tooling-or-contract	mjs	69e1edb5aec9243c55b1e6879f86cd436ff576fd	unread
+scripts/zod-migration/.gitignore	scripts/zod-migration	delivery	supporting-tooling-or-contract	build-config	c2658d7d1b31848c3b71960543cb0368e56cd4c7	unread
+scripts/zod-migration/equivalence.test.mjs	scripts/zod-migration	delivery	supporting-tooling-or-contract	mjs	38ae44166a3d10346edef269a9bbc1613ad56fff	unread
+scripts/zod-migration/package.json	scripts/zod-migration	delivery	supporting-tooling-or-contract	json	baa74724f90ce698440db98379d5ee98f982e3c2	unread
