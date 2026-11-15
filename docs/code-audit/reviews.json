@@ -4979,10 +4979,10 @@
     },
     {
       "path": "AGENTS.md",
-      "blob": "0a5b0f3022668a1a1d470e413aaa31c93a9fcfc4",
+      "blob": "fa4b6a44a6d15c195e9f0d1a283783fd1ef6b413",
       "status": "reviewed",
       "decision": "modify",
-      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127). 2026-11-14: authored the program-plan note, the UI rule, and the router row for docs/0130.",
+      "scope": "Read complete merged router including invite-only, early-access and lifecycle corrections. Add domain-event routing while preserving all authority and release boundaries. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-13: authored the hosted-instance note and router row for docs/0125. 2026-11-13: authored the AI v1 schema notes (docs/0126): router row, backend-go guidance, and the ai-contracts build step. 2026-11-14: authored the one-API / Infisical-as-a-source direction note and router row (docs/0127). 2026-11-14: authored the program-plan note, the UI rule, and the router row for docs/0130. 2026-11-15: re-read the diff; one router row added pointing phase 2 frame work at docs/0131-phase-2-frame-plan.md.",
       "evidence": [
         "docs/0114-domain-scripted-ui-standard.md",
         "scripts/ui-action-standard.test.mjs",
@@ -8939,10 +8939,10 @@
     },
     {
       "path": "platform/engine/DESIGN.md",
-      "blob": "11e9a5f93c97f094a03ed676dfb59afb18b7d4cc",
+      "blob": "f10cd63550abe749d43bd38e858be0ed1d9fa5a7",
       "status": "authored",
       "decision": "modify",
-      "scope": "WEB-ASSIST-01: reviewed the public-entry, shared reference controls, scripted teaching, media provenance or delivery changes in this file. Existing authorization and capability behavior is retained; this scoped review is not whole-product authorship or parity evidence. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-15: rewritten in full for docs/0130 phase 1. It now documents the Vaultix design system (rules, three token layers and the contrast gate, type, space, interaction and accessibility, voice in sentence case, adding a component); the component reference is generated from the stories by frontend/scripts/design-reference.mjs and checked by scripts/check-design-system.mjs.",
+      "scope": "WEB-ASSIST-01: reviewed the public-entry, shared reference controls, scripted teaching, media provenance or delivery changes in this file. Existing authorization and capability behavior is retained; this scoped review is not whole-product authorship or parity evidence. 2026-11-13: re-read the diff; changes are the platform/engine layout only (path patterns, link depth, ee to shippin pattern, layout note). 2026-11-15: rewritten in full for docs/0130 phase 1. It now documents the Vaultix design system (rules, three token layers and the contrast gate, type, space, interaction and accessibility, voice in sentence case, adding a component); the component reference is generated from the stories by frontend/scripts/design-reference.mjs and checked by scripts/check-design-system.mjs. 2026-11-15: re-read the diff; adds the nested dark scope and the high-contrast variant to the token section, and the generated reference now covers Link, Listbox, DataGrid and the Foundations stories under unique Storybook-path headings.",
       "evidence": [
         "docs/0107-public-experience-and-recorded-workflow.md",
         "scripts/test-public-experience.mjs",
