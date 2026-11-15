@@ -2,6 +2,7 @@ import { ReactElement, ReactNode, useEffect, useId, useState } from "react";
 
 import { IconButton } from "../primitives/IconButton/IconButton";
 import { Tooltip } from "../primitives/Tooltip/Tooltip";
+import { BrandLockup } from "./Brand";
 
 import "./AppFrame.css";
 
@@ -20,6 +21,7 @@ export type TRenderLink = (props: {
   href: string;
   className: string;
   "aria-current"?: "page";
+  "aria-label"?: string;
   children: ReactNode;
 }) => ReactElement;
 
@@ -55,7 +57,9 @@ const MenuIcon = ({ expanded }: { expanded: boolean }) => (
 
 export type TAppFrameProps = {
   groups: TRailGroup[];
-  brand: ReactNode;
+  // Defaults to the Vaultix lockup linked to homeHref.
+  brand?: ReactNode;
+  homeHref?: string;
   header?: ReactNode;
   footer?: ReactNode;
   renderLink?: TRenderLink;
@@ -69,6 +73,7 @@ export type TAppFrameProps = {
 export const AppFrame = ({
   groups,
   brand,
+  homeHref = "/",
   header,
   footer,
   renderLink = defaultLink,
@@ -116,6 +121,20 @@ export const AppFrame = ({
     );
   };
 
+  const home = renderLink({
+    href: homeHref,
+    className: "vx-rail__home",
+    "aria-label": "Vaultix home",
+    children: <BrandLockup />
+  });
+  const homeLink = expanded ? (
+    home
+  ) : (
+    <Tooltip content="Vaultix home" kind="label" side="right">
+      {home}
+    </Tooltip>
+  );
+
   return (
     <div className="vx-frame">
       <a className="vx-frame__skip" href={`#${mainId}`}>
@@ -123,7 +142,7 @@ export const AppFrame = ({
       </a>
       <aside className="vx-rail" data-expanded={expanded}>
         <div className="vx-rail__top">
-          {brand}
+          {brand ?? homeLink}
           <IconButton
             icon={<MenuIcon expanded={expanded} />}
             label={expanded ? "Collapse menu" : "Expand menu"}

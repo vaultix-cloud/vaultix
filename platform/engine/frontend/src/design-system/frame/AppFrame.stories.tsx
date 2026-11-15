@@ -82,36 +82,11 @@ const groups: TRailGroup[] = [
   }
 ];
 
-const Brand = () => (
-  <svg viewBox="0 0 64 64" width="40" height="40" role="img" aria-label="Vaultix">
-    <rect width="64" height="64" rx="12" fill="var(--vx-color-surface-base)" />
-    <rect
-      x="14"
-      y="18"
-      width="36"
-      height="32"
-      rx="6"
-      fill="none"
-      stroke="var(--vx-color-accent-base)"
-      strokeWidth="3"
-    />
-    <path
-      d="M24 18v-4a8 8 0 0 1 16 0v4"
-      fill="none"
-      stroke="var(--vx-color-accent-base)"
-      strokeWidth="3"
-      strokeLinecap="round"
-    />
-    <circle cx="32" cy="36" r="4" fill="var(--vx-color-accent-base)" />
-  </svg>
-);
-
 const meta = {
   title: "Design System/Frame/App Frame",
   component: AppFrame,
   args: {
     groups,
-    brand: <Brand />,
     header: <strong>Payments API · Production</strong>,
     children: <p>Page content goes here.</p>,
     defaultExpanded: false
@@ -140,6 +115,8 @@ export const Collapsed: Story = {
     await userEvent.tab();
     await expect(canvas.getByRole("link", { name: "Skip to content" })).toHaveFocus();
     await userEvent.tab();
+    await expect(canvas.getByRole("link", { name: "Vaultix home" })).toHaveFocus();
+    await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "Expand menu" })).toHaveFocus();
     await userEvent.tab();
     const overview = within(nav).getByRole("link", { name: "Overview" });
@@ -157,6 +134,7 @@ export const Expanded: Story = {
     const toggle = canvas.getByRole("button", { name: "Collapse menu" });
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
     await expect(canvas.getByRole("heading", { name: "Workspace" })).toBeVisible();
+    await expect(canvas.getByText("Vaultix")).toBeVisible();
     await expect(canvas.getByText("Audit and governance")).toBeVisible();
     await userEvent.click(toggle);
     await expect(canvas.getByRole("button", { name: "Expand menu" })).toHaveAttribute(

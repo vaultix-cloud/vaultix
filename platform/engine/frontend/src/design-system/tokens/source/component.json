@@ -645,5 +645,19 @@
       "$type": "dimension",
       "$value": "{space.10}"
     }
+  },
+  "brand": {
+    "tile": {
+      "$type": "color",
+      "$value": "{color.surface.raised}"
+    },
+    "mark": {
+      "$type": "color",
+      "$value": "{color.accent.solid}"
+    },
+    "word": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    }
   }
 }

@@ -304,6 +304,9 @@
   --vx-empty-description: var(--vx-color-text-secondary);
   --vx-empty-gap: var(--vx-space-3);
   --vx-empty-padding: var(--vx-space-10);
+  --vx-brand-tile: var(--vx-color-surface-raised);
+  --vx-brand-mark: var(--vx-color-accent-solid);
+  --vx-brand-word: var(--vx-color-text-primary);
 }
 
 [data-theme="light"] {
@@ -508,6 +511,9 @@
   --vx-empty-description: var(--vx-color-text-secondary);
   --vx-empty-gap: var(--vx-space-3);
   --vx-empty-padding: var(--vx-space-10);
+  --vx-brand-tile: var(--vx-color-surface-raised);
+  --vx-brand-mark: var(--vx-color-accent-solid);
+  --vx-brand-word: var(--vx-color-text-primary);
 }
 
 /* Dark again inside a light area, e.g. a code panel on a light page. */
@@ -713,6 +719,9 @@
   --vx-empty-description: var(--vx-color-text-secondary);
   --vx-empty-gap: var(--vx-space-3);
   --vx-empty-padding: var(--vx-space-10);
+  --vx-brand-tile: var(--vx-color-surface-raised);
+  --vx-brand-mark: var(--vx-color-accent-solid);
+  --vx-brand-word: var(--vx-color-text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

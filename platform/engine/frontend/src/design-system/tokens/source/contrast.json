@@ -455,6 +455,16 @@
       "fg": "empty.icon",
       "bg": "color.surface.base",
       "min": 3
+    },
+    {
+      "fg": "brand.mark",
+      "bg": "brand.tile",
+      "min": 3
+    },
+    {
+      "fg": "brand.word",
+      "bg": "rail.bg",
+      "min": 4.5
     }
   ]
 }

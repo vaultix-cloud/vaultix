@@ -386,6 +386,11 @@ export const vx = {
     "description": "var(--vx-empty-description)",
     "gap": "var(--vx-empty-gap)",
     "padding": "var(--vx-empty-padding)"
+  },
+  "brand": {
+    "tile": "var(--vx-brand-tile)",
+    "mark": "var(--vx-brand-mark)",
+    "word": "var(--vx-brand-word)"
   }
 } as const;
 
@@ -2822,6 +2827,30 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "40px",
     "light": "40px"
+  },
+  {
+    "name": "brand.tile",
+    "cssVar": "--vx-brand-tile",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.25 0.022 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "brand.mark",
+    "cssVar": "--vx-brand-mark",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.78 0.12 85)",
+    "light": "oklch(0.55 0.11 75)"
+  },
+  {
+    "name": "brand.word",
+    "cssVar": "--vx-brand-word",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
   }
 ];
 
@@ -3464,6 +3493,20 @@ export const contrastReport = [
     "ratio": 6.32
   },
   {
+    "theme": "dark",
+    "fg": "brand.mark",
+    "bg": "brand.tile",
+    "min": 3,
+    "ratio": 7.94
+  },
+  {
+    "theme": "dark",
+    "fg": "brand.word",
+    "bg": "rail.bg",
+    "min": 4.5,
+    "ratio": 18.04
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -4099,5 +4142,19 @@ export const contrastReport = [
     "bg": "color.surface.base",
     "min": 3,
     "ratio": 7.12
+  },
+  {
+    "theme": "light",
+    "fg": "brand.mark",
+    "bg": "brand.tile",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "brand.word",
+    "bg": "rail.bg",
+    "min": 4.5,
+    "ratio": 15.17
   }
 ] as const;

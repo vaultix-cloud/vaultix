@@ -59,6 +59,55 @@
   padding: var(--vx-space-2);
 }
 
+.vx-rail[data-expanded="true"] .vx-rail__top {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vx-rail__home {
+  display: inline-flex;
+  align-items: center;
+  height: var(--vx-rail-item-size);
+  padding: 0 var(--vx-space-1);
+  border-radius: var(--vx-control-radius);
+  color: var(--vx-brand-word);
+  text-decoration: none;
+}
+
+.vx-rail__home:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vx-space-2-5);
+}
+
+.vx-brand__tile {
+  fill: var(--vx-brand-tile);
+}
+
+.vx-brand__lock {
+  stroke: var(--vx-brand-mark);
+}
+
+.vx-brand__keyhole {
+  fill: var(--vx-brand-mark);
+}
+
+.vx-brand__word {
+  font-size: var(--vx-font-size-lg);
+  font-weight: var(--vx-font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.vx-rail[data-expanded="false"] .vx-brand__word {
+  display: none;
+}
+
 .vx-rail__nav {
   flex: 1;
   overflow-y: auto;
