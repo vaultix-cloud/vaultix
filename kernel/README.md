@@ -19,6 +19,7 @@ depends on `platform/` or `control/`.
 | `vx-audit` (`foundation/audit`) | The audit chain: written in the action's own transaction (fail closed), hash-chained per tenant, values recorded as keyed fingerprints only. |
 | `vx-keys` (`foundation/keys`) | The key hierarchy and the value path: root, per-scope key-encryption key, data keys, AES-256-GCM with the value's identity bound in. Starts sealed. |
 | `vx-gate` (`foundation/gate`) | The output gate: credential shapes, canaries and learned values (plain, hex, base64) are blocked on the way out, naming the rule and never the match. |
+| `vx-contract` (`foundation/contract`) | The v1 contract: every request and response as a typed struct. The server builds its answers from these, and the OpenAPI document is generated from them. |
 | `vx-secrets` (`domains/secrets/core`) | Secrets: sealed per version, listed as metadata, read only by redeeming a single-use handle bound to an identity; every read is audited in the same transaction. |
 | `vx-client` (`clients/cli`) | `vx` (a person enters a value at their own terminal) and `vx-mcp` (the tool server an AI client connects to). |
 | `vaultixd` (`server`) | The server: `/healthz`, `/api/vx/v1/status`, `secrets` (write, list, injections, redeem) and the guarded operate routes (jobs, schedules, audit). `vaultixd init` writes the root key to a file without printing it. |
@@ -50,6 +51,20 @@ node scripts/test-vx.mjs
 
 This starts a disposable Postgres, runs `cargo test --workspace` and removes the database. Tests that
 need Postgres skip when `VX_TEST_DATABASE_URL` is not set.
+
+## The v1 contract
+
+```text
+node scripts/test-contract-v1.mjs            drift check, generator tests, static types, contract tests on a real server
+node scripts/test-contract-v1.mjs --update   regenerate openapi.json and the TypeScript after changing the Rust types
+```
+
+Rust types (`foundation/contract`) are the source. `vaultixd openapi` prints the OpenAPI 3.1 document, checked
+in as `contracts/v1/openapi.json`. A strict generator (`contracts/v1/scripts/generate.mjs`) turns it into ArkType
+source under `contracts/v1/generated/`, with static types by inference, and refuses any construct it cannot map
+rather than weakening a validator. No Zod. The contract tests call every operation on a real server, validate
+every answer (errors included), mutate answers to prove the validators reject drift, and check that the server and
+the request validators agree on what is invalid.
 
 ## Try it in Claude Code
 

@@ -140,9 +140,13 @@ may depend on the kernel; the kernel never depends on either.
 
 ## 7. Order of work
 
-1. **Contract slice:** typed v1 request and response types for status, secrets and operate in Rust, the
-   OpenAPI document, the strict generator, generated ArkType source, and contract tests that call the real
-   server and validate every response (and reject mutated ones).
+1. **Contract slice. Done 2026-11-15** for status, secrets and operate (11 operations, 28 schemas):
+   typed request and response structs in `kernel/foundation/contract`, the OpenAPI 3.1 document generated from
+   them (`kernel/contracts/v1/openapi.json`), the strict generator, committed ArkType source, a static-type
+   check, and contract tests that call the real server and validate every answer. `node scripts/test-contract-v1.mjs`
+   fails on drift between the Rust types, the document and the generated TypeScript. The tests were themselves
+   mutation-tested (a field the contract does not declare, a generator that weakens `date-time`). Requests reject
+   unknown fields, so a misspelled field is an error, not silence; every error is `{ code, error }`.
 2. **Identity domain,** so the bootstrap token stops being a full-power credential.
 3. **Assistant service skeleton** with the egress test and the model-request gate.
 4. **First rewritten screen** on the design system with ArkType, to prove forms and routes; lower the Zod

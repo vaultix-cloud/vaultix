@@ -8,6 +8,8 @@
 //!   VX_BOOTSTRAP_TOKEN  guards the operate routes until the identity domain lands; without it they answer 503
 
 mod app;
+mod extract;
+mod openapi;
 mod secrets;
 
 use std::sync::Arc;
@@ -35,6 +37,14 @@ fn init(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("openapi") {
+        // The contract document, for the generator and the drift test. It needs no database.
+        #[allow(clippy::print_stdout)]
+        {
+            print!("{}", openapi::document());
+        }
+        return;
+    }
     if args.first().map(String::as_str) == Some("init") {
         if let Err(error) = init(&args[1..]) {
             #[allow(clippy::print_stderr)]

@@ -22,7 +22,9 @@ tokio-util = "0.7"
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
+utoipa = { version = "5", features = ["chrono", "uuid"] }
 vx-audit = { path = "../foundation/audit" }
+vx-contract = { path = "../foundation/contract" }
 vx-gate = { path = "../foundation/gate" }
 vx-jobs = { path = "../foundation/jobs" }
 vx-keys = { path = "../foundation/keys" }

@@ -208,6 +208,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | --- | --- |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
 | The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
+| The v1 contract (OpenAPI from Rust, generated ArkType, contract tests) | `kernel/README.md` + `node scripts/test-contract-v1.mjs [--update]` |
 | Proving the capability (use a secret from Claude without seeing it) | `node scripts/prove-vx-capability.mjs [--claude \| --serve]`; tests `node scripts/test-vx.mjs` |
 | The app frame, switcher, palette, Clyffy overlay (phase 2) | `docs/0131-phase-2-frame-plan.md` + `platform/engine/DESIGN.md` |
 | Deploy, install, upgrade an instance (any AI) | `INSTALL-FOR-AI.md` + `docs/0109-native-install-and-upgrade.md` |

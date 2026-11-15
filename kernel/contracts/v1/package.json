@@ -1,0 +1,19 @@
+{
+  "name": "@vaultix/contract-v1",
+  "version": "0.5.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "description": "The v1 API contract for TypeScript: ArkType validators and an operation map, generated from the Rust server's OpenAPI document. No Zod.",
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "check": "node scripts/generate.mjs --check",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:generator": "node --test tests/generator.test.mjs"
+  },
+  "dependencies": {
+    "arktype": "2.2.9"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

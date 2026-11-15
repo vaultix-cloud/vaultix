@@ -1,0 +1,1433 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Vaultix API",
+    "description": "The one Vaultix API. During the 0.5 alpha the contract can still change, and when it does this document, the generated validators, the server and the contract tests change in the same commit. There are no older versions.",
+    "license": {
+      "name": "LicenseRef-Undecided",
+      "identifier": "LicenseRef-Undecided"
+    },
+    "version": "0.5.0-alpha"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/vx/v1/operate/audit/events": {
+      "get": {
+        "tags": [
+          "operate"
+        ],
+        "summary": "The audit events of a chain, newest first (up to 500). Metadata only: no value, no fingerprint.",
+        "operationId": "listAuditEvents",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "description": "The audit chain, one per project.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/operate/audit/verify": {
+      "get": {
+        "tags": [
+          "operate"
+        ],
+        "summary": "Re-compute a whole audit chain and report whether it is intact.",
+        "operationId": "verifyAuditChain",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "description": "The audit chain, one per project.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditVerifyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/operate/jobs": {
+      "get": {
+        "tags": [
+          "operate"
+        ],
+        "summary": "Background jobs, newest first. A failed job stays here, with its reason, until a person retries it.",
+        "operationId": "listJobs",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Only jobs in this state.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "running",
+                "succeeded",
+                "dead"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "At most this many, newest first; 1 to 500, default 100.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/operate/jobs/{id}/retry": {
+      "post": {
+        "tags": [
+          "operate"
+        ],
+        "summary": "Give a dead job another full set of attempts.",
+        "operationId": "retryJob",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The job to retry",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Only a dead job can be retried",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/operate/schedules": {
+      "get": {
+        "tags": [
+          "operate"
+        ],
+        "summary": "Every recurring job: when it runs next, and the result of its last run.",
+        "operationId": "listSchedules",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/secrets": {
+      "get": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "The secrets in a project environment: names, paths, versions and who last changed them. Never values.",
+        "operationId": "listSecrets",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSecretsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Store a new version of a secret. This is the human's operation: the value is entered at a person's\nown terminal with `vx set`, never through an AI client, and is never returned by any operation but a redeem.",
+        "operationId": "putSecret",
+        "parameters": [
+          {
+            "name": "x-vx-actor",
+            "in": "header",
+            "description": "Who is acting; up to 64 characters of letters, digits and : _ . -",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutSecretRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "The instance is sealed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/secrets/injections": {
+      "post": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Ask for a handle that lets the caller read the named secrets once. The handle is a permission, not a\nvalue: single use, short lived and bound to the identity that asked.",
+        "operationId": "createInjection",
+        "parameters": [
+          {
+            "name": "x-vx-actor",
+            "in": "header",
+            "description": "Who is acting; the same identity must redeem",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InjectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InjectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A named secret does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/secrets/injections/{handle}/redeem": {
+      "post": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Redeem a handle: once, for the identity it was made for. The only operation that returns a value.\nAn unknown, used, expired or wrong-identity handle all answer the same way.",
+        "operationId": "redeemInjection",
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "description": "The handle from `POST /secrets/injections`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-vx-actor",
+            "in": "header",
+            "description": "Must match the identity the handle was made for",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The values, sent with Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedeemResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "The handle is not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/secrets/requests": {
+      "post": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Record that a person is asked to supply a missing value. Nothing is stored but the request.",
+        "operationId": "requestSecretValue",
+        "parameters": [
+          {
+            "name": "x-vx-actor",
+            "in": "header",
+            "description": "Who is acting",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValueRequestResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/status": {
+      "get": {
+        "tags": [
+          "status"
+        ],
+        "summary": "The instance's state: whether it is sealed and whether its database answers. Public.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "The instance state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditEvent": {
+        "type": "object",
+        "required": [
+          "chain",
+          "seq",
+          "at",
+          "actor",
+          "action",
+          "objectRef",
+          "outcome",
+          "detail",
+          "hasValueFingerprint"
+        ],
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "object"
+          },
+          "hasValueFingerprint": {
+            "type": "boolean",
+            "description": "True when the event carries a keyed fingerprint of a value; the fingerprint itself is never shown."
+          },
+          "objectRef": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AuditEventsResponse": {
+        "type": "object",
+        "required": [
+          "chain",
+          "events"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEvent"
+            }
+          }
+        }
+      },
+      "AuditVerifyResponse": {
+        "type": "object",
+        "description": "The result of re-computing an audit chain. When it is intact `events` is the number of events;\nwhen it is not, `firstAlteredEvent` is the first sequence number that does not verify.",
+        "required": [
+          "chain",
+          "intact"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "events": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "firstAlteredEvent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "intact": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DatabaseState": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "unavailable"
+        ]
+      },
+      "ErrorBody": {
+        "type": "object",
+        "required": [
+          "code",
+          "error"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A stable, machine-readable code such as `unauthorized` or `handle_invalid`."
+          },
+          "error": {
+            "type": "string",
+            "description": "A plain sentence for a person."
+          }
+        }
+      },
+      "InjectionRequest": {
+        "type": "object",
+        "required": [
+          "purpose",
+          "secrets"
+        ],
+        "properties": {
+          "purpose": {
+            "type": "string"
+          },
+          "secrets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecretAddress"
+            },
+            "maxItems": 32,
+            "minItems": 1
+          },
+          "ttlSeconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Seconds the handle stays valid; clamped to 5 to 300, default 60."
+          }
+        },
+        "additionalProperties": false
+      },
+      "InjectionResponse": {
+        "type": "object",
+        "description": "A permission to read named secrets once, for the identity that asked. It is not a value.",
+        "required": [
+          "handle",
+          "expiresAt"
+        ],
+        "properties": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "handle": {
+            "type": "string"
+          }
+        }
+      },
+      "JobRow": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "subject",
+          "status",
+          "attempts",
+          "maxAttempts",
+          "runAt",
+          "lastError"
+        ],
+        "properties": {
+          "attempts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "finishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "maxAttempts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "runAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "schedule": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "dead"
+        ]
+      },
+      "JobsResponse": {
+        "type": "object",
+        "required": [
+          "jobs"
+        ],
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobRow"
+            }
+          }
+        }
+      },
+      "ListSecretsResponse": {
+        "type": "object",
+        "required": [
+          "secrets"
+        ],
+        "properties": {
+          "secrets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecretMeta"
+            }
+          }
+        }
+      },
+      "PutOutcome": {
+        "type": "string",
+        "enum": [
+          "applied"
+        ]
+      },
+      "PutSecretRequest": {
+        "type": "object",
+        "required": [
+          "project",
+          "environment",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "example": "prod",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "API_TOKEN",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Starts with `/`; defaults to `/`."
+          },
+          "project": {
+            "type": "string",
+            "example": "payments",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "value": {
+            "$ref": "#/components/schemas/SecretText"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PutSecretResponse": {
+        "type": "object",
+        "required": [
+          "outcome",
+          "name",
+          "version"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/PutOutcome"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "RedeemResponse": {
+        "type": "object",
+        "required": [
+          "values"
+        ],
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RedeemedValue"
+            }
+          }
+        }
+      },
+      "RedeemedValue": {
+        "type": "object",
+        "description": "One redeemed value. This is the only response in the API that carries a secret value; it goes to\nthe trusted client that redeemed the handle and is sent `Cache-Control: no-store`.",
+        "required": [
+          "name",
+          "path",
+          "value",
+          "encoding"
+        ],
+        "properties": {
+          "encoding": {
+            "$ref": "#/components/schemas/ValueEncoding"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "RequestOutcome": {
+        "type": "string",
+        "enum": [
+          "requested"
+        ]
+      },
+      "RetryOutcome": {
+        "type": "string",
+        "enum": [
+          "requeued"
+        ]
+      },
+      "RetryResponse": {
+        "type": "object",
+        "required": [
+          "outcome",
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/RetryOutcome"
+          }
+        }
+      },
+      "ScheduleRow": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "spec",
+          "description",
+          "enabled",
+          "nextDue",
+          "lastResult",
+          "lastError"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "lastResult": {
+            "type": "string"
+          },
+          "lastRunAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nextDue": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spec": {
+            "type": "string",
+            "description": "A five-field cron expression (UTC) or `@every 5m`."
+          }
+        }
+      },
+      "SchedulesResponse": {
+        "type": "object",
+        "required": [
+          "schedules"
+        ],
+        "properties": {
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRow"
+            }
+          }
+        }
+      },
+      "SecretAddress": {
+        "type": "object",
+        "description": "Where a secret lives. Names are environment-variable safe so they can be injected as they are.",
+        "required": [
+          "project",
+          "environment",
+          "name"
+        ],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "example": "prod",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "API_TOKEN",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Starts with `/`; defaults to `/`.",
+            "example": "/"
+          },
+          "project": {
+            "type": "string",
+            "example": "payments",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SecretMeta": {
+        "type": "object",
+        "description": "What anyone sees of a secret: never the value.",
+        "required": [
+          "name",
+          "path",
+          "version",
+          "updatedAt",
+          "updatedBy"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SecretText": {
+        "type": "string",
+        "format": "password",
+        "description": "The secret value. Accepted here and never returned by any other operation.",
+        "writeOnly": true,
+        "maxLength": 65536,
+        "minLength": 1
+      },
+      "StatusResponse": {
+        "type": "object",
+        "required": [
+          "product",
+          "version",
+          "sealed",
+          "database"
+        ],
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/DatabaseState"
+          },
+          "product": {
+            "type": "string",
+            "example": "Vaultix"
+          },
+          "sealed": {
+            "type": "boolean",
+            "description": "True until a root key is supplied; a sealed instance stores and reads no secrets."
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "ValueEncoding": {
+        "type": "string",
+        "enum": [
+          "utf8",
+          "base64url"
+        ]
+      },
+      "ValueRequest": {
+        "type": "object",
+        "required": [
+          "project",
+          "environment",
+          "name",
+          "purpose"
+        ],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "example": "prod",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "API_TOKEN",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "project": {
+            "type": "string",
+            "example": "payments",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "Why the value is needed; recorded, up to 200 characters."
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValueRequestResponse": {
+        "type": "object",
+        "required": [
+          "outcome",
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/RequestOutcome"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A bootstrap token until the identity domain exists (docs/0136)."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "status",
+      "description": "Whether the instance is up and unsealed"
+    },
+    {
+      "name": "secrets",
+      "description": "Store a secret, list metadata, and read a value only by redeeming a handle"
+    },
+    {
+      "name": "operate",
+      "description": "Background work and the audit trail"
+    }
+  ]
+}

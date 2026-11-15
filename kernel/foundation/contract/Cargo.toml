@@ -1,0 +1,18 @@
+[package]
+name = "vx-contract"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+utoipa = { version = "5", features = ["chrono", "uuid"] }
+uuid = { workspace = true }
+vx-secret = { path = "../secret" }
+
+[lints]
+workspace = true
