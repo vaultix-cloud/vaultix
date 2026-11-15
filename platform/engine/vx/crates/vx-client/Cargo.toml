@@ -1,0 +1,26 @@
+[package]
+name = "vx-client"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "vx"
+path = "src/bin/vx.rs"
+
+[[bin]]
+name = "vx-mcp"
+path = "src/bin/vx_mcp.rs"
+
+[dependencies]
+rpassword = "7"
+serde = { workspace = true }
+serde_json = { workspace = true }
+ureq = { version = "2", features = ["json"] }
+vx-gate = { path = "../vx-gate" }
+vx-secret = { path = "../vx-secret" }
+
+[lints]
+workspace = true

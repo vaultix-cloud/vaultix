@@ -27,6 +27,7 @@ vx-gate = { path = "../vx-gate" }
 vx-jobs = { path = "../vx-jobs" }
 vx-keys = { path = "../vx-keys" }
 vx-secret = { path = "../vx-secret" }
+vx-secrets = { path = "../vx-secrets" }
 vx-store = { path = "../vx-store" }
 
 [dev-dependencies]

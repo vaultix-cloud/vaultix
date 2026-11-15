@@ -16,8 +16,8 @@ use vx_gate::Gate;
 use vx_keys::Keyring;
 
 pub struct Inner {
-    pool: PgPool,
-    keyring: Option<Arc<Keyring>>,
+    pub(crate) pool: PgPool,
+    pub(crate) keyring: Option<Arc<Keyring>>,
     bootstrap_token: Option<String>,
     gate: Gate,
 }
@@ -44,10 +44,10 @@ pub struct ApiError {
 }
 
 impl ApiError {
-    fn new(status: StatusCode, code: &'static str, message: &str) -> Self {
+    pub(crate) fn new(status: StatusCode, code: &'static str, message: &str) -> Self {
         Self { status, code, message: message.to_string() }
     }
-    fn internal(error: impl std::fmt::Display) -> Self {
+    pub(crate) fn internal(error: impl std::fmt::Display) -> Self {
         tracing::error!(%error, "request failed");
         Self::new(StatusCode::INTERNAL_SERVER_ERROR, "internal", "Something went wrong on the server. It has been logged.")
     }
@@ -76,15 +76,17 @@ pub fn router(state: State) -> Router {
         .route("/jobs/{id}/retry", post(retry))
         .route("/schedules", get(schedules))
         .route("/audit/verify", get(audit_verify))
+        .route("/audit/events", get(audit_events))
         .layer(middleware::from_fn_with_state(state.clone(), require_bootstrap_token));
     Router::new()
         .route("/healthz", get(|| async { "ok" }))
         .route("/api/vx/v1/status", get(status))
         .nest("/api/vx/v1/operate", operate)
+        .nest("/api/vx/v1/secrets", crate::secrets::router(state.clone()))
         .with_state(state)
 }
 
-async fn require_bootstrap_token(AxumState(state): AxumState<State>, headers: HeaderMap, request: Request, next: Next) -> Result<Response, ApiError> {
+pub(crate) async fn require_bootstrap_token(AxumState(state): AxumState<State>, headers: HeaderMap, request: Request, next: Next) -> Result<Response, ApiError> {
     let Some(expected) = &state.bootstrap_token else {
         return Err(ApiError::new(StatusCode::SERVICE_UNAVAILABLE, "not_configured", "These routes are off until a bootstrap token is set (VX_BOOTSTRAP_TOKEN)."));
     };
@@ -140,4 +142,9 @@ async fn audit_verify(AxumState(state): AxumState<State>, Query(query): Query<Ch
         Err(vx_audit::AuditError::Tampered { seq, .. }) => answer(&state, json!({ "chain": query.chain, "intact": false, "firstAlteredEvent": seq })),
         Err(error) => Err(ApiError::internal(error)),
     }
+}
+
+async fn audit_events(AxumState(state): AxumState<State>, Query(query): Query<ChainQuery>) -> Result<Json<Value>, ApiError> {
+    let rows = vx_audit::list(&state.pool, &query.chain, 500).await.map_err(ApiError::internal)?;
+    answer(&state, json!({ "chain": query.chain, "events": rows }))
 }

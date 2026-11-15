@@ -8,13 +8,43 @@
 //!   VX_BOOTSTRAP_TOKEN  guards the operate routes until the identity domain lands; without it they answer 503
 
 mod app;
+mod secrets;
 
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
+/// `vaultixd init --key-file PATH`: create the root key file. The key is written to the file and is
+/// never printed, so it cannot end up in a terminal log, a chat or a screenshot. Keep an offline copy.
+fn init(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
+    use std::io::Write;
+    let path = match args {
+        [flag, path] if flag == "--key-file" => path,
+        _ => return Err("usage: vaultixd init --key-file PATH".into()),
+    };
+    let root = vx_keys::Keyring::generate_root();
+    let mut file = std::fs::OpenOptions::new().write(true).create_new(true).open(path).map_err(|_| "the key file already exists or cannot be created; it is never overwritten")?;
+    writeln!(file, "{}", vx_keys::recovery_string(&root))?;
+    #[allow(clippy::print_stdout)] // a one-time instruction to the person running init
+    {
+        println!("Wrote the root key to {path}. It is not shown here. Keep an offline copy: without it the secrets cannot be recovered.");
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("init") {
+        if let Err(error) = init(&args[1..]) {
+            #[allow(clippy::print_stderr)]
+            {
+                eprintln!("vaultixd init: {error}");
+            }
+            std::process::exit(1);
+        }
+        return;
+    }
     tracing_subscriber::fmt().json().with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())).init();
     if let Err(error) = run().await {
         tracing::error!(%error, "vaultixd stopped");

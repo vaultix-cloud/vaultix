@@ -13,7 +13,7 @@ use aes_gcm::{Aes256Gcm, Nonce};
 use hmac::{Hmac, Mac};
 use rand::RngCore;
 use sha2::Sha256;
-use sqlx::PgPool;
+use sqlx::PgExecutor;
 use vx_secret::Secret;
 use zeroize::Zeroizing;
 
@@ -59,6 +59,14 @@ impl Keyring {
         let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(self.root.expose()).unwrap_or_else(|_| unreachable!());
         mac.update(b"vx-kek-v1|");
         mac.update(scope.as_bytes());
+        Zeroizing::new(mac.finalize().into_bytes().into())
+    }
+
+    /// A purpose-bound key derived from the root (for example the audit fingerprint key). It is never stored.
+    pub fn derive(&self, label: &str) -> Zeroizing<[u8; KEY]> {
+        let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(self.root.expose()).unwrap_or_else(|_| unreachable!());
+        mac.update(b"vx-derive-v1|");
+        mac.update(label.as_bytes());
         Zeroizing::new(mac.finalize().into_bytes().into())
     }
 
@@ -127,22 +135,31 @@ pub fn parse_recovery(text: &str) -> Result<Secret, KeyError> {
 }
 
 /// Store a wrapped data key. The database holds only ciphertext.
-pub async fn save_data_key(pool: &PgPool, scope: &str, version: i32, wrapped: &[u8]) -> Result<(), KeyError> {
+pub async fn save_data_key<'e, E: PgExecutor<'e>>(db: E, scope: &str, version: i32, wrapped: &[u8]) -> Result<(), KeyError> {
     sqlx::query("INSERT INTO vx_kms_keys (id, scope, version, wrapped, parent) VALUES ($1, $2, $3, $4, 'root')")
         .bind(key_context(scope, version))
         .bind(scope)
         .bind(version)
         .bind(wrapped)
-        .execute(pool)
+        .execute(db)
         .await?;
     Ok(())
 }
 
 /// The newest non-retired key for a scope, as `(version, wrapped)`.
-pub async fn load_current(pool: &PgPool, scope: &str) -> Result<Option<(i32, Vec<u8>)>, KeyError> {
+pub async fn load_current<'e, E: PgExecutor<'e>>(db: E, scope: &str) -> Result<Option<(i32, Vec<u8>)>, KeyError> {
     Ok(sqlx::query_as("SELECT version, wrapped FROM vx_kms_keys WHERE scope = $1 AND retired_at IS NULL ORDER BY version DESC LIMIT 1")
         .bind(scope)
-        .fetch_optional(pool)
+        .fetch_optional(db)
+        .await?)
+}
+
+/// A specific key version for a scope, retired or not, so older ciphertext can still be opened.
+pub async fn load_version<'e, E: PgExecutor<'e>>(db: E, scope: &str, version: i32) -> Result<Option<Vec<u8>>, KeyError> {
+    Ok(sqlx::query_scalar("SELECT wrapped FROM vx_kms_keys WHERE scope = $1 AND version = $2")
+        .bind(scope)
+        .bind(version)
+        .fetch_optional(db)
         .await?)
 }
 

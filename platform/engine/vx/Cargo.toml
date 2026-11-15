@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/vx-secret", "crates/vx-store", "crates/vx-jobs", "crates/vx-audit", "crates/vx-keys", "crates/vx-gate", "crates/vaultixd"]
+members = ["crates/vx-secret", "crates/vx-store", "crates/vx-jobs", "crates/vx-audit", "crates/vx-keys", "crates/vx-gate", "crates/vx-secrets", "crates/vx-client", "crates/vaultixd"]
 
 [workspace.package]
 edition = "2021"

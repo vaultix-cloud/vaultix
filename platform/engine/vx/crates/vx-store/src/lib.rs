@@ -26,7 +26,10 @@ pub enum StoreError {
 }
 
 /// Every migration, in order. Forward only: a released migration is never edited.
-const MIGRATIONS: &[(i32, &str, &str)] = &[(1, "0001_operate", include_str!("../migrations/0001_operate.sql"))];
+const MIGRATIONS: &[(i32, &str, &str)] = &[
+    (1, "0001_operate", include_str!("../migrations/0001_operate.sql")),
+    (2, "0002_secrets", include_str!("../migrations/0002_secrets.sql")),
+];
 
 /// Connect with a pool sized for a small instance.
 pub async fn open(url: &str, max_connections: u32) -> Result<PgPool, StoreError> {
