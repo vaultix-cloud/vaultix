@@ -118,6 +118,7 @@
   --vx-color-text-inverse: var(--vx-color-neutral-950);
   --vx-color-text-on-accent: var(--vx-color-neutral-1000);
   --vx-color-text-link: var(--vx-color-gold-400);
+  --vx-color-text-link-hover: var(--vx-color-gold-300);
   --vx-color-border-subtle: var(--vx-color-neutral-800);
   --vx-color-border-default: var(--vx-color-neutral-700);
   --vx-color-border-strong: var(--vx-color-neutral-500);
@@ -307,6 +308,9 @@
   --vx-brand-tile: var(--vx-color-surface-raised);
   --vx-brand-mark: var(--vx-color-accent-solid);
   --vx-brand-word: var(--vx-color-text-primary);
+  --vx-link-fg: var(--vx-color-text-link);
+  --vx-link-fg-hover: var(--vx-color-text-link-hover);
+  --vx-link-fg-subtle: var(--vx-color-text-primary);
 }
 
 [data-theme="light"] {
@@ -325,6 +329,7 @@
   --vx-color-text-inverse: var(--vx-color-neutral-50);
   --vx-color-text-on-accent: var(--vx-color-neutral-1000);
   --vx-color-text-link: var(--vx-color-gold-800);
+  --vx-color-text-link-hover: var(--vx-color-gold-900);
   --vx-color-border-subtle: var(--vx-color-neutral-100);
   --vx-color-border-default: var(--vx-color-neutral-200);
   --vx-color-border-strong: var(--vx-color-neutral-400);
@@ -514,6 +519,9 @@
   --vx-brand-tile: var(--vx-color-surface-raised);
   --vx-brand-mark: var(--vx-color-accent-solid);
   --vx-brand-word: var(--vx-color-text-primary);
+  --vx-link-fg: var(--vx-color-text-link);
+  --vx-link-fg-hover: var(--vx-color-text-link-hover);
+  --vx-link-fg-subtle: var(--vx-color-text-primary);
 }
 
 /* Dark again inside a light area, e.g. a code panel on a light page. */
@@ -533,6 +541,7 @@
   --vx-color-text-inverse: var(--vx-color-neutral-950);
   --vx-color-text-on-accent: var(--vx-color-neutral-1000);
   --vx-color-text-link: var(--vx-color-gold-400);
+  --vx-color-text-link-hover: var(--vx-color-gold-300);
   --vx-color-border-subtle: var(--vx-color-neutral-800);
   --vx-color-border-default: var(--vx-color-neutral-700);
   --vx-color-border-strong: var(--vx-color-neutral-500);
@@ -722,6 +731,9 @@
   --vx-brand-tile: var(--vx-color-surface-raised);
   --vx-brand-mark: var(--vx-color-accent-solid);
   --vx-brand-word: var(--vx-color-text-primary);
+  --vx-link-fg: var(--vx-color-text-link);
+  --vx-link-fg-hover: var(--vx-color-text-link-hover);
+  --vx-link-fg-subtle: var(--vx-color-text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

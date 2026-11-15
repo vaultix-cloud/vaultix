@@ -47,6 +47,9 @@
       },
       "link": {
         "$value": "{color.gold.800}"
+      },
+      "link-hover": {
+        "$value": "{color.gold.900}"
       }
     },
     "border": {

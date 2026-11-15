@@ -180,6 +180,12 @@ A native `<fieldset>` whose `<legend>` names a group of checkboxes, radios or sw
 
 Stories: Basic, Disabled, Horizontal, LightTheme · [source](frontend/src/design-system/primitives/Fieldset/Fieldset.stories.tsx)
 
+### Link
+
+A native `<a>` for navigation; use Button for actions. Links stay **underlined**, so they are never told apart by colour alone (WCAG 1.4.1); hover thickens the line. **External** links open in a new tab with an icon and a spoken "(opens in a new tab)", and never share the opener or referrer. **Subtle** takes the surrounding text colour. A router's own link can look the same with `linkClassName()`. **Keyboard:** Tab focuses it and Enter follows it.
+
+Stories: Inline, External, Subtle, LightTheme · [source](frontend/src/design-system/primitives/Link/Link.stories.tsx)
+
 ### Menu Button
 
 The WAI-ARIA menu button. The button has `aria-haspopup="menu"` and `aria-expanded`, and names the menu. Items come from data (`items`), so a catalog can supply them. **Keyboard on the button:** Enter, Space or Down Arrow opens the menu on the first item; Up Arrow opens it on the last. **In the menu:** Down and Up Arrow move and wrap; Home and End go to the first and last; typing letters jumps to the next item that starts with them; Enter or Space chooses the item, closes the menu and returns focus to the button; Escape closes and returns focus; Tab closes and moves on. Disabled items stay reachable so people learn they exist, and do nothing. A press outside closes the menu. Shortcuts are shown and exposed with `aria-keyshortcuts`; keyboard focus gets a ring as well as the fill.

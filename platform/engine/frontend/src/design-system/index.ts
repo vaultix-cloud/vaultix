@@ -26,6 +26,8 @@ export type { TFieldsetProps } from "./primitives/Fieldset/Fieldset";
 export { Fieldset } from "./primitives/Fieldset/Fieldset";
 export type { TIconButtonProps } from "./primitives/IconButton/IconButton";
 export { IconButton } from "./primitives/IconButton/IconButton";
+export type { TLinkProps } from "./primitives/Link/Link";
+export { Link, linkClassName } from "./primitives/Link/Link";
 export type { TMenuButtonProps, TMenuEntry, TMenuItem } from "./primitives/Menu/MenuButton";
 export { MenuButton } from "./primitives/Menu/MenuButton";
 export type { TPopoverProps } from "./primitives/Popover/Popover";

@@ -465,6 +465,31 @@
       "fg": "brand.word",
       "bg": "rail.bg",
       "min": 4.5
+    },
+    {
+      "fg": "link.fg",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "link.fg",
+      "bg": "color.surface.canvas",
+      "min": 4.5
+    },
+    {
+      "fg": "link.fg",
+      "bg": "dialog.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "link.fg-hover",
+      "bg": "color.surface.base",
+      "min": 4.5
+    },
+    {
+      "fg": "link.fg",
+      "bg": "toast.bg",
+      "min": 4.5
     }
   ]
 }
