@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const config: StorybookConfig = {
   stories: [
+    "../src/design-system/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../src/components/v3/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../src/components/vaultix/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../src/pages/organization/ProjectsPage/components/**/*.stories.@(js|jsx|mjs|ts|tsx)",

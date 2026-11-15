@@ -1,0 +1,28 @@
+/* Vaultix Tooltip. Rendered in the browser's top layer (Popover API), placed with position: fixed. */
+.vx-tooltip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  max-width: var(--vx-tooltip-max-width);
+  padding: var(--vx-tooltip-padding);
+  border: 0;
+  border-radius: var(--vx-tooltip-radius);
+  background: var(--vx-tooltip-bg);
+  color: var(--vx-tooltip-fg);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-xs);
+  font-weight: var(--vx-font-weight-medium);
+  line-height: var(--vx-font-line-height-snug);
+  overflow: visible;
+  z-index: var(--vx-z-tooltip);
+  opacity: 0;
+  transition: opacity var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-tooltip[data-open="true"] {
+  opacity: 1;
+}
+
+.vx-tooltip:not([popover]):not([data-open="true"]) {
+  display: none;
+}

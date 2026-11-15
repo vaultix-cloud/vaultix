@@ -8,6 +8,13 @@ export default defineConfig({
   test: {
     projects: [
       {
+        test: {
+          name: "unit",
+          include: ["src/**/*.test.ts"],
+          environment: "node"
+        }
+      },
+      {
         ...workbench,
         optimizeDeps: { include: ["react/jsx-dev-runtime", "@tanstack/react-router"] },
         plugins: [

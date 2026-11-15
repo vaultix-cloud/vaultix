@@ -78,6 +78,8 @@ try {
   step("ui-action-standard", process.execPath, ["--experimental-strip-types", "--test", "scripts/ui-action-standard.test.mjs"]);
   step("warp-points", process.execPath, ["--experimental-strip-types", "--test", "scripts/warp-points.test.mjs"]);
   node("ai-contracts", "scripts/test-ai-contracts.mjs");
+  node("design-system", "scripts/check-design-system.mjs");
+  step("design-system-stories", process.execPath, [resolve(root, "platform/engine/frontend/node_modules/vitest/vitest.mjs"), "run", "--project=storybook", "--root", resolve(root, "platform/engine/frontend"), "src/design-system"]);
   step("ai-migration", process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/test-ai-migration.mjs"]);
   step("ui-command-compatibility", process.execPath, ["--experimental-strip-types", "scripts/test-reference-commands.mjs"]);
   step("login-failure-policy", process.execPath, ["--experimental-strip-types", "scripts/test-login-failure.mjs"]);

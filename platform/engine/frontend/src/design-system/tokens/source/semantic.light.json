@@ -1,0 +1,137 @@
+{
+  "$description": "Vaultix semantic tokens, light theme ([data-theme=light]). Same names as the dark theme.",
+  "color": {
+    "$type": "color",
+    "surface": {
+      "canvas": {
+        "$value": "{color.neutral.50}"
+      },
+      "base": {
+        "$value": "{color.neutral.0}"
+      },
+      "raised": {
+        "$value": "{color.neutral.0}"
+      },
+      "overlay": {
+        "$value": "{color.neutral.0}"
+      },
+      "sunken": {
+        "$value": "{color.neutral.100}"
+      },
+      "inverse": {
+        "$value": "{color.neutral.900}"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "{color.neutral.950}"
+      },
+      "secondary": {
+        "$value": "{color.neutral.700}"
+      },
+      "muted": {
+        "$value": "{color.neutral.600}"
+      },
+      "disabled": {
+        "$value": "{color.neutral.400}"
+      },
+      "inverse": {
+        "$value": "{color.neutral.50}"
+      },
+      "on-accent": {
+        "$value": "{color.neutral.1000}"
+      },
+      "link": {
+        "$value": "{color.gold.800}"
+      }
+    },
+    "border": {
+      "subtle": {
+        "$value": "{color.neutral.100}"
+      },
+      "default": {
+        "$value": "{color.neutral.200}"
+      },
+      "strong": {
+        "$value": "{color.neutral.400}"
+      },
+      "control": {
+        "$value": "{color.neutral.500}"
+      }
+    },
+    "accent": {
+      "base": {
+        "$value": "{color.gold.500}"
+      },
+      "hover": {
+        "$value": "{color.gold.400}"
+      },
+      "active": {
+        "$value": "{color.gold.600}"
+      },
+      "subtle": {
+        "$value": "{color.gold.50}"
+      },
+      "subtle-text": {
+        "$value": "{color.gold.800}"
+      },
+      "indicator": {
+        "$value": "{color.gold.700}"
+      }
+    },
+    "focus": {
+      "ring": {
+        "$value": "{color.gold.700}"
+      }
+    },
+    "interactive": {
+      "hover": {
+        "$value": "{color.neutral.100}"
+      },
+      "active": {
+        "$value": "{color.neutral.200}"
+      },
+      "selected": {
+        "$value": "{color.gold.50}"
+      },
+      "selected-text": {
+        "$value": "{color.gold.800}"
+      },
+      "disabled": {
+        "$value": "{color.neutral.100}"
+      }
+    },
+    "status": {
+      "success": {
+        "$value": "{color.green.700}"
+      },
+      "success-subtle": {
+        "$value": "{color.green.300}"
+      },
+      "warning": {
+        "$value": "{color.orange.700}"
+      },
+      "warning-subtle": {
+        "$value": "{color.orange.300}"
+      },
+      "danger": {
+        "$value": "{color.red.700}"
+      },
+      "danger-subtle": {
+        "$value": "{color.red.300}"
+      },
+      "danger-solid": {
+        "$value": "{color.red.600}"
+      },
+      "danger-solid-hover": {
+        "$value": "{color.red.700}"
+      },
+      "info": {
+        "$value": "{color.blue.700}"
+      },
+      "info-subtle": {
+        "$value": "{color.blue.300}"
+      }
+    }
+  }
+}

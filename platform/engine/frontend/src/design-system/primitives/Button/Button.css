@@ -1,0 +1,128 @@
+/* Vaultix Button. Every value comes from tokens (src/design-system/tokens). */
+.vx-button {
+  --vx-button-bg: transparent;
+  --vx-button-bg-hover: var(--vx-button-ghost-bg-hover);
+  --vx-button-bg-active: var(--vx-button-ghost-bg-active);
+  --vx-button-fg: var(--vx-button-ghost-fg);
+  --vx-button-border: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vx-control-gap);
+  height: var(--vx-control-height-md);
+  padding: 0 var(--vx-control-padding-x);
+  border: 1px solid var(--vx-button-border);
+  border-radius: var(--vx-control-radius);
+  background: var(--vx-button-bg);
+  color: var(--vx-button-fg);
+  font-family: var(--vx-font-family-sans);
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-medium);
+  line-height: var(--vx-font-line-height-tight);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--vx-duration-fast) var(--vx-easing-standard),
+    border-color var(--vx-duration-fast) var(--vx-easing-standard),
+    color var(--vx-duration-fast) var(--vx-easing-standard);
+}
+
+.vx-button:hover {
+  background: var(--vx-button-bg-hover);
+}
+
+.vx-button:active {
+  background: var(--vx-button-bg-active);
+}
+
+.vx-button:focus-visible {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+}
+
+.vx-button--primary {
+  --vx-button-bg: var(--vx-button-primary-bg);
+  --vx-button-bg-hover: var(--vx-button-primary-bg-hover);
+  --vx-button-bg-active: var(--vx-button-primary-bg-active);
+  --vx-button-fg: var(--vx-button-primary-fg);
+}
+
+.vx-button--secondary {
+  --vx-button-bg: var(--vx-button-secondary-bg);
+  --vx-button-bg-hover: var(--vx-button-secondary-bg-hover);
+  --vx-button-bg-active: var(--vx-button-secondary-bg-active);
+  --vx-button-fg: var(--vx-button-secondary-fg);
+  --vx-button-border: var(--vx-button-secondary-border);
+}
+
+.vx-button--danger {
+  --vx-button-bg: var(--vx-button-danger-bg);
+  --vx-button-bg-hover: var(--vx-button-danger-bg-hover);
+  --vx-button-bg-active: var(--vx-button-danger-bg-hover);
+  --vx-button-fg: var(--vx-button-danger-fg);
+}
+
+.vx-button--sm {
+  height: var(--vx-control-height-sm);
+  padding: 0 var(--vx-space-2);
+  font-size: var(--vx-font-size-sm);
+}
+
+.vx-button--lg {
+  height: var(--vx-control-height-lg);
+  padding: 0 var(--vx-space-4);
+}
+
+.vx-button--icon {
+  width: var(--vx-control-height-md);
+  padding: 0;
+}
+
+.vx-button--icon.vx-button--sm {
+  width: var(--vx-control-height-sm);
+}
+
+.vx-button--icon.vx-button--lg {
+  width: var(--vx-control-height-lg);
+}
+
+/* Disabled and busy look the same and ignore presses; busy keeps focus so its status is announced. */
+.vx-button:disabled,
+.vx-button[aria-disabled="true"] {
+  --vx-button-bg: var(--vx-button-disabled-bg);
+  --vx-button-bg-hover: var(--vx-button-disabled-bg);
+  --vx-button-bg-active: var(--vx-button-disabled-bg);
+  --vx-button-fg: var(--vx-button-disabled-fg);
+  --vx-button-border: transparent;
+  cursor: not-allowed;
+}
+
+.vx-button__icon {
+  display: inline-flex;
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+
+.vx-button__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--vx-radius-full);
+  animation: vx-spin 0.8s linear infinite;
+}
+
+@keyframes vx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vx-button__spinner {
+    animation-duration: 2.4s;
+  }
+}

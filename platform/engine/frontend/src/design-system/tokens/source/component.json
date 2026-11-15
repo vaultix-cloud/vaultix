@@ -1,0 +1,183 @@
+{
+  "$description": "Vaultix component tokens: what each primitive and the frame use. They refer to semantic tokens (theme-aware) or primitives for sizes.",
+  "control": {
+    "height-sm": {
+      "$type": "dimension",
+      "$value": "28px"
+    },
+    "height-md": {
+      "$type": "dimension",
+      "$value": "32px"
+    },
+    "height-lg": {
+      "$type": "dimension",
+      "$value": "40px"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.md}"
+    },
+    "padding-x": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2}"
+    }
+  },
+  "focus": {
+    "width": {
+      "$type": "dimension",
+      "$value": "2px"
+    },
+    "offset": {
+      "$type": "dimension",
+      "$value": "2px"
+    }
+  },
+  "button": {
+    "primary-bg": {
+      "$type": "color",
+      "$value": "{color.accent.base}"
+    },
+    "primary-bg-hover": {
+      "$type": "color",
+      "$value": "{color.accent.hover}"
+    },
+    "primary-bg-active": {
+      "$type": "color",
+      "$value": "{color.accent.active}"
+    },
+    "primary-fg": {
+      "$type": "color",
+      "$value": "{color.text.on-accent}"
+    },
+    "secondary-bg": {
+      "$type": "color",
+      "$value": "{color.surface.raised}"
+    },
+    "secondary-bg-hover": {
+      "$type": "color",
+      "$value": "{color.interactive.hover}"
+    },
+    "secondary-bg-active": {
+      "$type": "color",
+      "$value": "{color.interactive.active}"
+    },
+    "secondary-fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "secondary-border": {
+      "$type": "color",
+      "$value": "{color.border.control}"
+    },
+    "ghost-bg-hover": {
+      "$type": "color",
+      "$value": "{color.interactive.hover}"
+    },
+    "ghost-bg-active": {
+      "$type": "color",
+      "$value": "{color.interactive.active}"
+    },
+    "ghost-fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "danger-bg": {
+      "$type": "color",
+      "$value": "{color.status.danger-solid}"
+    },
+    "danger-bg-hover": {
+      "$type": "color",
+      "$value": "{color.status.danger-solid-hover}"
+    },
+    "danger-fg": {
+      "$type": "color",
+      "$value": "{color.neutral.0}"
+    },
+    "disabled-bg": {
+      "$type": "color",
+      "$value": "{color.interactive.disabled}"
+    },
+    "disabled-fg": {
+      "$type": "color",
+      "$value": "{color.text.disabled}"
+    }
+  },
+  "tooltip": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.inverse}"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.inverse}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.sm}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.1-5} {space.2}"
+    },
+    "max-width": {
+      "$type": "dimension",
+      "$value": "280px"
+    },
+    "offset": {
+      "$type": "dimension",
+      "$value": "{space.2}"
+    }
+  },
+  "rail": {
+    "width": {
+      "$type": "dimension",
+      "$value": "56px"
+    },
+    "item-size": {
+      "$type": "dimension",
+      "$value": "40px"
+    },
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.sunken}"
+    },
+    "item-fg": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "item-fg-hover": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "item-bg-hover": {
+      "$type": "color",
+      "$value": "{color.interactive.hover}"
+    },
+    "item-bg-current": {
+      "$type": "color",
+      "$value": "{color.interactive.selected}"
+    },
+    "item-fg-current": {
+      "$type": "color",
+      "$value": "{color.interactive.selected-text}"
+    },
+    "indicator": {
+      "$type": "color",
+      "$value": "{color.accent.indicator}"
+    }
+  },
+  "menu": {
+    "width": {
+      "$type": "dimension",
+      "$value": "256px"
+    },
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.base}"
+    }
+  }
+}
