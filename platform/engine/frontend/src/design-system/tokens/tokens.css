@@ -268,6 +268,20 @@
   --vx-switch-thumb-off: var(--vx-color-text-secondary);
   --vx-switch-track-on: var(--vx-color-accent-solid);
   --vx-switch-thumb-on: var(--vx-color-accent-solid-fg);
+  --vx-toast-bg: var(--vx-color-surface-overlay);
+  --vx-toast-fg: var(--vx-color-text-primary);
+  --vx-toast-description: var(--vx-color-text-secondary);
+  --vx-toast-border: var(--vx-color-border-default);
+  --vx-toast-shadow: var(--vx-elevation-overlay);
+  --vx-toast-radius: var(--vx-radius-lg);
+  --vx-toast-padding: var(--vx-space-3);
+  --vx-toast-width: 380px;
+  --vx-toast-gap: var(--vx-space-2);
+  --vx-toast-inset: var(--vx-space-4);
+  --vx-toast-icon-info: var(--vx-color-status-info);
+  --vx-toast-icon-success: var(--vx-color-status-success);
+  --vx-toast-icon-warning: var(--vx-color-status-warning);
+  --vx-toast-icon-danger: var(--vx-color-status-danger-strong);
 }
 
 [data-theme="light"] {
@@ -436,6 +450,20 @@
   --vx-switch-thumb-off: var(--vx-color-text-secondary);
   --vx-switch-track-on: var(--vx-color-accent-solid);
   --vx-switch-thumb-on: var(--vx-color-accent-solid-fg);
+  --vx-toast-bg: var(--vx-color-surface-overlay);
+  --vx-toast-fg: var(--vx-color-text-primary);
+  --vx-toast-description: var(--vx-color-text-secondary);
+  --vx-toast-border: var(--vx-color-border-default);
+  --vx-toast-shadow: var(--vx-elevation-overlay);
+  --vx-toast-radius: var(--vx-radius-lg);
+  --vx-toast-padding: var(--vx-space-3);
+  --vx-toast-width: 380px;
+  --vx-toast-gap: var(--vx-space-2);
+  --vx-toast-inset: var(--vx-space-4);
+  --vx-toast-icon-info: var(--vx-color-status-info);
+  --vx-toast-icon-success: var(--vx-color-status-success);
+  --vx-toast-icon-warning: var(--vx-color-status-warning);
+  --vx-toast-icon-danger: var(--vx-color-status-danger-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {

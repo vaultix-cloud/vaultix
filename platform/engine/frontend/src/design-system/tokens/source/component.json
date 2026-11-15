@@ -493,5 +493,63 @@
       "$type": "color",
       "$value": "{color.accent.solid-fg}"
     }
+  },
+  "toast": {
+    "bg": {
+      "$type": "color",
+      "$value": "{color.surface.overlay}"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": "{color.text.primary}"
+    },
+    "description": {
+      "$type": "color",
+      "$value": "{color.text.secondary}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.default}"
+    },
+    "shadow": {
+      "$type": "shadow",
+      "$value": "{elevation.overlay}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.lg}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.3}"
+    },
+    "width": {
+      "$type": "dimension",
+      "$value": "380px"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2}"
+    },
+    "inset": {
+      "$type": "dimension",
+      "$value": "{space.4}"
+    },
+    "icon-info": {
+      "$type": "color",
+      "$value": "{color.status.info}"
+    },
+    "icon-success": {
+      "$type": "color",
+      "$value": "{color.status.success}"
+    },
+    "icon-warning": {
+      "$type": "color",
+      "$value": "{color.status.warning}"
+    },
+    "icon-danger": {
+      "$type": "color",
+      "$value": "{color.status.danger-strong}"
+    }
   }
 }

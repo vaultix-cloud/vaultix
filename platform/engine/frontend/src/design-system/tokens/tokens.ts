@@ -342,6 +342,22 @@ export const vx = {
     "thumb-off": "var(--vx-switch-thumb-off)",
     "track-on": "var(--vx-switch-track-on)",
     "thumb-on": "var(--vx-switch-thumb-on)"
+  },
+  "toast": {
+    "bg": "var(--vx-toast-bg)",
+    "fg": "var(--vx-toast-fg)",
+    "description": "var(--vx-toast-description)",
+    "border": "var(--vx-toast-border)",
+    "shadow": "var(--vx-toast-shadow)",
+    "radius": "var(--vx-toast-radius)",
+    "padding": "var(--vx-toast-padding)",
+    "width": "var(--vx-toast-width)",
+    "gap": "var(--vx-toast-gap)",
+    "inset": "var(--vx-toast-inset)",
+    "icon-info": "var(--vx-toast-icon-info)",
+    "icon-success": "var(--vx-toast-icon-success)",
+    "icon-warning": "var(--vx-toast-icon-warning)",
+    "icon-danger": "var(--vx-toast-icon-danger)"
   }
 } as const;
 
@@ -2490,6 +2506,118 @@ export const tokenList: TTokenEntry[] = [
     "layer": "component",
     "dark": "oklch(0.15 0.02 255)",
     "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "toast.bg",
+    "cssVar": "--vx-toast-bg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.29 0.022 255)",
+    "light": "oklch(1 0 0)"
+  },
+  {
+    "name": "toast.fg",
+    "cssVar": "--vx-toast-fg",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.97 0.005 255)",
+    "light": "oklch(0.185 0.022 255)"
+  },
+  {
+    "name": "toast.description",
+    "cssVar": "--vx-toast-description",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.79 0.016 255)",
+    "light": "oklch(0.37 0.022 255)"
+  },
+  {
+    "name": "toast.border",
+    "cssVar": "--vx-toast-border",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.37 0.022 255)",
+    "light": "oklch(0.87 0.012 255)"
+  },
+  {
+    "name": "toast.shadow",
+    "cssVar": "--vx-toast-shadow",
+    "type": "shadow",
+    "layer": "component",
+    "dark": "0 24px 64px oklch(0 0 0 / 0.55), 0 2px 8px oklch(0 0 0 / 0.4)",
+    "light": "0 24px 64px oklch(0.2 0.02 255 / 0.22), 0 2px 8px oklch(0.2 0.02 255 / 0.12)"
+  },
+  {
+    "name": "toast.radius",
+    "cssVar": "--vx-toast-radius",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "10px",
+    "light": "10px"
+  },
+  {
+    "name": "toast.padding",
+    "cssVar": "--vx-toast-padding",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "12px",
+    "light": "12px"
+  },
+  {
+    "name": "toast.width",
+    "cssVar": "--vx-toast-width",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "380px",
+    "light": "380px"
+  },
+  {
+    "name": "toast.gap",
+    "cssVar": "--vx-toast-gap",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "8px",
+    "light": "8px"
+  },
+  {
+    "name": "toast.inset",
+    "cssVar": "--vx-toast-inset",
+    "type": "dimension",
+    "layer": "component",
+    "dark": "16px",
+    "light": "16px"
+  },
+  {
+    "name": "toast.icon-info",
+    "cssVar": "--vx-toast-icon-info",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.76 0.11 245)",
+    "light": "oklch(0.46 0.14 258)"
+  },
+  {
+    "name": "toast.icon-success",
+    "cssVar": "--vx-toast-icon-success",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.78 0.14 155)",
+    "light": "oklch(0.45 0.1 155)"
+  },
+  {
+    "name": "toast.icon-warning",
+    "cssVar": "--vx-toast-icon-warning",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.8 0.14 58)",
+    "light": "oklch(0.5 0.13 50)"
+  },
+  {
+    "name": "toast.icon-danger",
+    "cssVar": "--vx-toast-icon-danger",
+    "type": "color",
+    "layer": "component",
+    "dark": "oklch(0.83 0.09 25)",
+    "light": "oklch(0.46 0.16 27)"
   }
 ];
 
@@ -2999,6 +3127,55 @@ export const contrastReport = [
     "ratio": 8.69
   },
   {
+    "theme": "dark",
+    "fg": "toast.fg",
+    "bg": "toast.bg",
+    "min": 4.5,
+    "ratio": 12.93
+  },
+  {
+    "theme": "dark",
+    "fg": "toast.description",
+    "bg": "toast.bg",
+    "min": 4.5,
+    "ratio": 7.3
+  },
+  {
+    "theme": "dark",
+    "fg": "toast.icon-info",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 6.64
+  },
+  {
+    "theme": "dark",
+    "fg": "toast.icon-success",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.45
+  },
+  {
+    "theme": "dark",
+    "fg": "toast.icon-warning",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.26
+  },
+  {
+    "theme": "dark",
+    "fg": "toast.icon-danger",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 8.07
+  },
+  {
+    "theme": "dark",
+    "fg": "color.focus.ring",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.77
+  },
+  {
     "theme": "light",
     "fg": "color.text.primary",
     "bg": "color.surface.canvas",
@@ -3499,6 +3676,55 @@ export const contrastReport = [
     "theme": "light",
     "fg": "switch.track-on",
     "bg": "color.surface.base",
+    "min": 3,
+    "ratio": 4.95
+  },
+  {
+    "theme": "light",
+    "fg": "toast.fg",
+    "bg": "toast.bg",
+    "min": 4.5,
+    "ratio": 18.63
+  },
+  {
+    "theme": "light",
+    "fg": "toast.description",
+    "bg": "toast.bg",
+    "min": 4.5,
+    "ratio": 10.42
+  },
+  {
+    "theme": "light",
+    "fg": "toast.icon-info",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.24
+  },
+  {
+    "theme": "light",
+    "fg": "toast.icon-success",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.08
+  },
+  {
+    "theme": "light",
+    "fg": "toast.icon-warning",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 6.31
+  },
+  {
+    "theme": "light",
+    "fg": "toast.icon-danger",
+    "bg": "toast.bg",
+    "min": 3,
+    "ratio": 7.74
+  },
+  {
+    "theme": "light",
+    "fg": "color.focus.ring",
+    "bg": "toast.bg",
     "min": 3,
     "ratio": 4.95
   }

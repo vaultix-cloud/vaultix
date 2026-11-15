@@ -360,6 +360,41 @@
       "fg": "switch.track-on",
       "bg": "color.surface.base",
       "min": 3
+    },
+    {
+      "fg": "toast.fg",
+      "bg": "toast.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "toast.description",
+      "bg": "toast.bg",
+      "min": 4.5
+    },
+    {
+      "fg": "toast.icon-info",
+      "bg": "toast.bg",
+      "min": 3
+    },
+    {
+      "fg": "toast.icon-success",
+      "bg": "toast.bg",
+      "min": 3
+    },
+    {
+      "fg": "toast.icon-warning",
+      "bg": "toast.bg",
+      "min": 3
+    },
+    {
+      "fg": "toast.icon-danger",
+      "bg": "toast.bg",
+      "min": 3
+    },
+    {
+      "fg": "color.focus.ring",
+      "bg": "toast.bg",
+      "min": 3
     }
   ]
 }

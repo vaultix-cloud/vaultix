@@ -1,0 +1,127 @@
+/* Vaultix toasts. Values come from tokens. */
+.vx-toaster {
+  position: fixed;
+  inset: auto var(--vx-toast-inset) var(--vx-toast-inset) auto;
+  z-index: var(--vx-z-toast);
+  width: min(var(--vx-toast-width), calc(100vw - 2 * var(--vx-toast-inset)));
+  font-family: var(--vx-font-family-sans);
+  pointer-events: none;
+}
+
+.vx-toaster:focus {
+  outline: none;
+}
+
+.vx-toaster:focus-visible .vx-toaster__list {
+  outline: var(--vx-focus-width) solid var(--vx-color-focus-ring);
+  outline-offset: var(--vx-focus-offset);
+  border-radius: var(--vx-toast-radius);
+}
+
+.vx-toaster__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-toast-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vx-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vx-space-2-5);
+  padding: var(--vx-toast-padding);
+  border: 1px solid var(--vx-toast-border);
+  border-radius: var(--vx-toast-radius);
+  background: var(--vx-toast-bg);
+  color: var(--vx-toast-fg);
+  box-shadow: var(--vx-toast-shadow);
+  pointer-events: auto;
+  transition:
+    opacity var(--vx-duration-base) var(--vx-easing-emphasized),
+    transform var(--vx-duration-base) var(--vx-easing-emphasized);
+}
+
+@starting-style {
+  .vx-toast {
+    opacity: 0;
+    transform: translateY(var(--vx-space-2));
+  }
+}
+
+.vx-toast__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+}
+
+.vx-toast[data-tone="info"] .vx-toast__icon {
+  color: var(--vx-toast-icon-info);
+}
+
+.vx-toast[data-tone="success"] .vx-toast__icon {
+  color: var(--vx-toast-icon-success);
+}
+
+.vx-toast[data-tone="warning"] .vx-toast__icon {
+  color: var(--vx-toast-icon-warning);
+}
+
+.vx-toast[data-tone="danger"] .vx-toast__icon {
+  color: var(--vx-toast-icon-danger);
+}
+
+.vx-toast__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--vx-space-1);
+  min-width: 0;
+}
+
+.vx-toast__title {
+  margin: 0;
+  font-size: var(--vx-font-size-md);
+  font-weight: var(--vx-font-weight-semibold);
+  line-height: var(--vx-font-line-height-snug);
+}
+
+/* The tone word is for screen readers; sighted people get the icon's shape and colour. */
+.vx-toast__tone,
+.vx-toaster__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.vx-toast__description {
+  margin: 0;
+  color: var(--vx-toast-description);
+  font-size: var(--vx-font-size-sm);
+  line-height: var(--vx-font-line-height-normal);
+}
+
+.vx-toast__actions {
+  display: flex;
+  gap: var(--vx-space-2);
+  margin-top: var(--vx-space-1);
+}
+
+.vx-toast__close {
+  flex: none;
+  margin: calc(-1 * var(--vx-space-1)) calc(-1 * var(--vx-space-1)) 0 0;
+}
+
+@media (max-width: 480px) {
+  .vx-toaster {
+    inset: auto var(--vx-space-2) var(--vx-space-2);
+    width: auto;
+  }
+}
