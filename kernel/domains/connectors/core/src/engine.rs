@@ -11,7 +11,7 @@
 //! Neither the report, an error, a log line nor an audit row ever holds a value: names, counts, kinds and fixed codes only.
 
 use crate::connector::{Connector, ConnectorError, ErrorKind, Fingerprinter};
-use crate::plan::{plan, Entry, PlanOptions};
+use crate::plan::{plan_with, Entry, PlanOptions};
 use serde_json::json;
 use std::future::Future;
 use std::time::Duration;
@@ -73,6 +73,9 @@ pub enum SyncError {
     /// The destination could not be read, so nothing was planned and nothing was changed.
     #[error("the destination could not be listed ({0})")]
     List(ConnectorError),
+    /// Two Vaultix names would become one name in the destination, so nothing was changed. The names are the destination's.
+    #[error("these names would collide in the destination: {0:?}")]
+    NameCollision(Vec<String>),
     /// The plan could not be recorded, so nothing was changed.
     #[error("the sync was not started because it could not be recorded: {0}")]
     NotRecorded(AuditError),
@@ -81,19 +84,22 @@ pub enum SyncError {
     Unrecorded { error: AuditError, report: Box<Report> },
 }
 
-async fn with_retry<F, Fut>(policy: RetryPolicy, mut call: F) -> Result<(), ConnectorError>
+async fn with_retry<T, F, Fut>(policy: RetryPolicy, mut call: F) -> Result<T, ConnectorError>
 where
     F: FnMut() -> Fut,
-    Fut: Future<Output = Result<(), ConnectorError>>,
+    Fut: Future<Output = Result<T, ConnectorError>>,
 {
     let mut attempt = 0;
     loop {
         match call().await {
-            Ok(()) => return Ok(()),
+            Ok(value) => return Ok(value),
             Err(error) if error.kind == ErrorKind::Transient && attempt + 1 < policy.attempts => {
                 attempt += 1;
                 tracing::debug!(code = error.code, attempt, "connector call failed, retrying");
-                tokio::time::sleep(policy.base * 2u32.saturating_pow(attempt - 1)).await;
+                let backoff = policy.base * 2u32.saturating_pow(attempt - 1);
+                // Honour the destination's own wait, but never longer than a minute: a sync is not a place to sleep for an hour.
+                let asked = Duration::from_secs(u64::from(error.retry_after_secs.unwrap_or(0).min(60)));
+                tokio::time::sleep(backoff.max(asked)).await;
             }
             Err(error) => return Err(error),
         }
@@ -108,9 +114,12 @@ pub async fn sync<C: Connector, A: AuditSink>(
     request: &SyncRequest<'_>,
     desired: &[(String, Secret)],
 ) -> Result<Report, SyncError> {
-    let remote = connector.list(fingerprints).await.map_err(SyncError::List)?;
+    let remote = with_retry(request.retry, || connector.list(fingerprints)).await.map_err(SyncError::List)?;
     let desired_entries: Vec<Entry> = desired.iter().map(|(name, value)| Entry { name: name.clone(), fingerprint: Some(fingerprints.of(value)) }).collect();
-    let plan = plan(&desired_entries, &remote, &request.options);
+    let plan = plan_with(&desired_entries, &remote, &request.options, &|name| connector.fold(name));
+    if !plan.conflicts.is_empty() {
+        return Err(SyncError::NameCollision(plan.conflicts));
+    }
 
     audit
         .record(
@@ -136,7 +145,7 @@ pub async fn sync<C: Connector, A: AuditSink>(
     }
     for name in &plan.put {
         let Some((_, value)) = desired.iter().find(|(n, _)| n == name) else { continue };
-        let destination_name = schema.apply(name, environment);
+        let destination_name = connector.fold(&schema.apply(name, environment));
         match with_retry(request.retry, || connector.put(&destination_name, value)).await {
             Ok(()) => report.put += 1,
             Err(error) => report.failed.push(Failure { name: name.clone(), kind: error.kind, code: error.code }),

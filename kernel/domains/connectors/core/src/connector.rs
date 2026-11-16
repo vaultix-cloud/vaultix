@@ -26,11 +26,18 @@ pub enum ErrorKind {
 pub struct ConnectorError {
     pub kind: ErrorKind,
     pub code: &'static str,
+    /// How long the destination asked us to wait before trying again (a rate limit's `Retry-After`). A number, not text.
+    pub retry_after_secs: Option<u32>,
 }
 
 impl ConnectorError {
     pub const fn new(kind: ErrorKind, code: &'static str) -> Self {
-        Self { kind, code }
+        Self { kind, code, retry_after_secs: None }
+    }
+
+    pub const fn retry_after(mut self, seconds: u32) -> Self {
+        self.retry_after_secs = Some(seconds);
+        self
     }
 }
 
@@ -63,6 +70,13 @@ impl Fingerprinter {
 pub trait Connector: Send + Sync {
     /// A stable identifier for audit and the screen, such as `github`.
     fn id(&self) -> &'static str;
+
+    /// The destination's own spelling of a name. GitHub, for instance, upper-cases secret names, so `db_url` and `DB_URL` are
+    /// one secret there. The engine compares and writes names after this, and refuses a sync in which two Vaultix names would
+    /// become one (otherwise one secret silently overwrites the other).
+    fn fold(&self, name: &str) -> String {
+        name.to_string()
+    }
 
     /// What the destination holds now. If it can return a value, fingerprint it with `fingerprints`; if it cannot, leave the
     /// fingerprint empty and the engine will write the secret.

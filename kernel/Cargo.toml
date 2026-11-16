@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["foundation/*", "domains/*/core", "server", "clients/*"]
+members = ["foundation/*", "domains/*/*", "server", "clients/*"]
 
 [workspace.package]
 edition = "2021"
@@ -42,3 +42,9 @@ lto = true
 codegen-units = 1
 strip = true
 panic = "abort"
+
+# RSA key generation is the slowest thing the GitHub App tests do; optimise just those crates in debug builds.
+[profile.dev.package.rsa]
+opt-level = 3
+[profile.dev.package.num-bigint-dig]
+opt-level = 3

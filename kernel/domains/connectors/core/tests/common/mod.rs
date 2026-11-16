@@ -26,12 +26,14 @@ pub struct Memory {
     pub fingerprints: Fingerprinter,
     pub failures: Mutex<BTreeMap<String, VecDeque<ConnectorError>>>,
     pub after_sync_error: Option<ConnectorError>,
+    pub fold_upper: bool,
+    pub list_failures: Mutex<VecDeque<ConnectorError>>,
     pub log: Log,
 }
 
 impl Memory {
     pub fn new(log: &Log) -> Self {
-        Self { store: Mutex::default(), readable: true, fingerprints: Fingerprinter::new(KEY), failures: Mutex::default(), after_sync_error: None, log: log.clone() }
+        Self { store: Mutex::default(), readable: true, fingerprints: Fingerprinter::new(KEY), failures: Mutex::default(), after_sync_error: None, fold_upper: false, list_failures: Mutex::default(), log: log.clone() }
     }
     pub fn fail(self, name: &str, errors: &[ConnectorError]) -> Self {
         self.failures.lock().unwrap().insert(name.into(), errors.iter().copied().collect());
@@ -47,11 +49,17 @@ impl Memory {
 }
 
 impl Connector for Memory {
+    fn fold(&self, name: &str) -> String {
+        if self.fold_upper { name.to_ascii_uppercase() } else { name.to_string() }
+    }
     fn id(&self) -> &'static str {
         "memory"
     }
     async fn list(&self, _: &Fingerprinter) -> Result<Vec<Entry>, ConnectorError> {
         self.log.lock().unwrap().push("list".into());
+        if let Some(error) = self.list_failures.lock().unwrap().pop_front() {
+            return Err(error);
+        }
         Ok(self.store.lock().unwrap().iter().map(|(name, fp)| Entry { name: name.clone(), fingerprint: self.readable.then_some(*fp) }).collect())
     }
     async fn put(&self, name: &str, value: &Secret) -> Result<(), ConnectorError> {

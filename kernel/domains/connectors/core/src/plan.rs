@@ -4,7 +4,7 @@
 //! entry may have no fingerprint; the plan then writes it, because "unknown" is not "equal".
 
 use crate::schema::KeySchema;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 /// A name and, if it can be known, a keyed fingerprint of its value.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -29,32 +29,42 @@ pub struct Plan {
     pub delete: Vec<String>,
     /// Vaultix names the destination already holds with the same value.
     pub unchanged: Vec<String>,
+    /// Destination names that more than one Vaultix name would be written to (for example `a` and `A` where the
+    /// destination ignores case). A plan with conflicts must not be applied: one secret would silently overwrite another.
+    pub conflicts: Vec<String>,
 }
 
 /// `desired`: every secret Vaultix wants in the destination, by Vaultix name, with its fingerprint.
 /// `remote`: what the destination holds, by destination name.
 pub fn plan(desired: &[Entry], remote: &[Entry], options: &PlanOptions) -> Plan {
-    let remote_by_name: BTreeMap<&str, &Entry> = remote.iter().map(|e| (e.name.as_str(), e)).collect();
+    plan_with(desired, remote, options, &|name| name.to_string())
+}
+
+/// As `plan`, for a destination that rewrites names (GitHub upper-cases them). `fold` is the destination's spelling of a
+/// name; two names that fold to the same text are the same name there.
+pub fn plan_with(desired: &[Entry], remote: &[Entry], options: &PlanOptions, fold: &dyn Fn(&str) -> String) -> Plan {
+    let remote_by_name: BTreeMap<String, &Entry> = remote.iter().map(|e| (fold(&e.name), e)).collect();
     let mut result = Plan::default();
-    let mut wanted_remote_names = BTreeSet::new();
+    let mut wanted_remote_names: BTreeMap<String, usize> = BTreeMap::new();
 
     let mut desired_sorted: Vec<&Entry> = desired.iter().collect();
     desired_sorted.sort_by(|a, b| a.name.cmp(&b.name));
     for entry in desired_sorted {
-        let destination_name = options.schema.apply(&entry.name, &options.environment);
-        match remote_by_name.get(destination_name.as_str()) {
+        let destination_name = fold(&options.schema.apply(&entry.name, &options.environment));
+        match remote_by_name.get(&destination_name) {
             Some(r) if r.fingerprint.is_some() && r.fingerprint == entry.fingerprint => result.unchanged.push(entry.name.clone()),
             _ => result.put.push(entry.name.clone()),
         }
-        wanted_remote_names.insert(destination_name);
+        *wanted_remote_names.entry(destination_name).or_default() += 1;
     }
+    result.conflicts = wanted_remote_names.iter().filter(|(_, count)| **count > 1).map(|(name, _)| name.clone()).collect();
 
     if !options.keep_removed {
         // BTreeMap keys are already sorted.
         result.delete = remote_by_name
-            .keys()
-            .filter(|name| !wanted_remote_names.contains(**name) && options.schema.matches(name, &options.environment))
-            .map(|name| (*name).to_string())
+            .iter()
+            .filter(|(folded, _)| !wanted_remote_names.contains_key(*folded) && options.schema.matches_folded(folded, &options.environment, fold))
+            .map(|(_, entry)| entry.name.clone())
             .collect();
     }
     result

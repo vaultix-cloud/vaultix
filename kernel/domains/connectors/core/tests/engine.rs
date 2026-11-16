@@ -133,3 +133,65 @@ async fn a_failing_after_sync_hook_is_reported_not_hidden() {
     assert_eq!(report.after_sync_failed.as_ref().map(|f| f.code), Some("deploy_failed"));
 }
 
+
+#[tokio::test]
+async fn a_destination_that_upper_cases_names_is_synced_by_its_own_spelling() {
+    let log = new_log();
+    let mut dest = Memory::new(&log).seed("APP_OLD", "x").seed("OTHER", "x");
+    dest.fold_upper = true;
+    let audit = Audit::new(&log);
+    let report = sync(&dest, &audit, &Fingerprinter::new(KEY), &request("app_{{secretKey}}", false, 2), &values(&[("a", "one"), ("b", "two")])).await.unwrap();
+    assert_eq!((report.put, report.deleted), (2, 1));
+    let keys: Vec<String> = dest.store.lock().unwrap().keys().cloned().collect();
+    assert_eq!(keys, ["APP_A", "APP_B", "OTHER"], "written in the destination's spelling; its own old name deleted; an unrelated name left alone");
+    let again = sync(&dest, &audit, &Fingerprinter::new(KEY), &request("app_{{secretKey}}", false, 2), &values(&[("a", "one"), ("b", "two")])).await.unwrap();
+    assert_eq!((again.put, again.unchanged), (0, 2), "a lower-case name is recognised as already present, not rewritten every time");
+}
+
+#[tokio::test]
+async fn two_names_that_would_become_one_are_refused_before_anything_changes() {
+    let log = new_log();
+    let mut dest = Memory::new(&log).seed("APP_OLD", "x");
+    dest.fold_upper = true;
+    let audit = Audit::new(&log);
+    let error = sync(&dest, &audit, &Fingerprinter::new(KEY), &request("app_{{secretKey}}", false, 2), &values(&[("db", "one"), ("DB", "two"), ("ok", "three")])).await.unwrap_err();
+    match error {
+        SyncError::NameCollision(names) => assert_eq!(names, ["APP_DB"]),
+        other => panic!("expected NameCollision, got {other}"),
+    }
+    assert_eq!(dest.calls("put:"), 0);
+    assert_eq!(dest.calls("delete:"), 0);
+    assert!(audit.events.lock().unwrap().is_empty());
+    assert_eq!(dest.store.lock().unwrap().keys().collect::<Vec<_>>(), ["APP_OLD"]);
+}
+
+#[tokio::test]
+async fn a_rate_limit_that_says_how_long_to_wait_is_waited_for() {
+    let log = new_log();
+    let dest = Memory::new(&log).fail("A", &[ConnectorError::new(ErrorKind::Transient, "rate_limited").retry_after(1)]);
+    let started = std::time::Instant::now();
+    let report = sync(&dest, &Audit::new(&log), &Fingerprinter::new(KEY), &request("{{secretKey}}", false, 3), &values(&[("A", "one")])).await.unwrap();
+    assert_eq!(report.put, 1);
+    assert!(started.elapsed() >= std::time::Duration::from_secs(1), "the engine ignored Retry-After (base backoff here is zero)");
+    assert!(started.elapsed() < std::time::Duration::from_secs(10));
+}
+
+#[tokio::test]
+async fn a_transient_failure_while_listing_the_destination_is_retried_and_a_permanent_one_stops_the_sync() {
+    let log = new_log();
+    let dest = Memory::new(&log);
+    dest.list_failures.lock().unwrap().extend([TRANSIENT, TRANSIENT]);
+    let report = sync(&dest, &Audit::new(&log), &Fingerprinter::new(KEY), &request("{{secretKey}}", false, 3), &values(&[("A", "one")])).await.unwrap();
+    assert_eq!(report.put, 1);
+    assert_eq!(dest.calls("list"), 3, "two transient failures, then success");
+
+    let log = new_log();
+    let dest = Memory::new(&log);
+    dest.list_failures.lock().unwrap().push_back(ConnectorError::new(ErrorKind::Auth, "bad_credentials"));
+    let audit = Audit::new(&log);
+    let error = sync(&dest, &audit, &Fingerprinter::new(KEY), &request("{{secretKey}}", false, 3), &values(&[("A", "one")])).await.unwrap_err();
+    assert!(matches!(error, SyncError::List(e) if e.code == "bad_credentials"));
+    assert_eq!(dest.calls("list"), 1, "an auth failure is not retried");
+    assert_eq!(dest.calls("put:"), 0);
+    assert!(audit.events.lock().unwrap().is_empty());
+}

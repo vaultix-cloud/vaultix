@@ -109,11 +109,52 @@ values from the secrets domain, so it belongs in the server, because domains mee
 the `/api/vx/v1/connectors` routes in the contract; the screens. Nothing in the old backend has been deleted and
 `scripts/lineage-ceiling.json` is unchanged.
 
+### The GitHub connector (`domains/connectors/github`, crate `vx-connector-github`)
+
+Actions secrets for a **repository**, a **repository environment** or an **organisation** (visibility `all`, `private` or
+`selected` with repository ids, the same three scopes and rules as the inherited sync), authenticated by a **personal access
+token** or a **GitHub App**. The credential document stored sealed in a connection is
+`{"method":"pat","token":"..."}` or `{"method":"app","appId":"...","installationId":"...","privateKey":"-----BEGIN RSA PRIVATE KEY-----..."}`.
+
+- **App auth:** the connector signs an RS256 JWT (issuer = app id, ten-minute window), asks for an installation token, caches
+  it until two minutes before it expires and reuses it, and mints a new one if GitHub revokes it (a 401 becomes a retry).
+- **Encryption:** each value is sealed to the destination's public key with libsodium's `crypto_box_seal` before it leaves the
+  process, so a request body never holds a value. Checked against the real libsodium both ways (`tests/interop.rs`).
+- **One host, no redirects:** requests go to `https://api.github.com`, an Enterprise Server host (`https://<host>/api/v3`), or a
+  loopback address for tests, fixed at construction. Redirects are not followed, so a credential cannot be sent elsewhere.
+- **Failures are a kind and a fixed code** (`bad_credentials`, `forbidden`, `rate_limited`, `target_not_found`,
+  `unprocessable`, `server_error`, `invalid_secret_name`, `value_too_large`, ...). A 403 with no quota left, or a 429, is a
+  rate limit and carries the wait GitHub asked for; a plain 403 is a permission error and is not retried.
+- **Names:** GitHub upper-cases them, so the connector reports its own spelling (`fold`). The engine now compares, writes and
+  decides ownership in that spelling, and refuses a sync in which two Vaultix names (`db_url`, `DB_URL`) would become one.
+  The inherited code upper-cased silently and let one overwrite the other. Names GitHub refuses (`GITHUB_` prefix, a leading
+  digit, characters other than letters, digits and underscores) fail that one item and not the rest.
+
+Proof (`cargo test -p vx-connector-github`, 28 tests) is against a fake GitHub on loopback that decrypts the sealed values with
+its own key, verifies the App's JWT signature, issuer and window, enforces upper-case names, paginates, and injects failures:
+secrets arrive decrypted and exact; the App flow mints one token for a whole sync and a second after revocation; all three
+scopes use their own paths and send visibility correctly; five secrets over three pages are all listed and only the
+schema-owned stale ones deleted; collisions are refused before any write; rate limits are waited out; redirects are not
+followed (a second server received nothing); and no value appears in any URL, request body, report, error or audit row.
+Mutation checks: following redirects, dropping the name folding and ignoring `Retry-After` each made tests fail (the first
+attempt at the last one did not change the file and showed no failure, which is why the diff is now checked).
+
+Found while writing it, and fixed in the engine: **the destination listing was not retried**, so a rate limit or an expired
+App token on the first request ended the whole sync. A connector error can now carry a wait time (a number, not text) and the
+engine honours it up to a minute.
+
+**What this does not prove: nothing was run against api.github.com or a real GitHub App.** The fake is built from GitHub's
+documented behaviour, and the encryption is checked against libsodium, but a first run against a real repository with a real
+token and a real App installation is still needed and must be done by the owner (it needs credentials that must not pass
+through chat). Also not done: the third inherited connection method (GitHub OAuth, which needs a web callback), Enterprise
+Server beyond host validation, Dependabot and Codespaces secrets (the inherited sync did not have them either), and
+`run_sync`, the routes and the screens.
+
 ## 4. Order
 
 1. **Done:** the trait and the engine against an in-memory destination (section 3).
 2. **Done:** differential test of the key schema against the inherited code (section 3). Still to do: the import check for stored schemas and escaped names.
-3. First real provider: GitHub (the largest connection, 968 lines, so it tests the trait hardest), then Fly.io (the hook),
+3. **GitHub done (section 3, fake server plus libsodium; not yet against real GitHub).** Next: Fly.io (the hook),
    then one pure key-value provider to prove the declarative tier.
 4. **Connection record, tables and `PgAudit` done (section 3).** Still to do: the `/api/vx/v1/connectors` routes
    in the contract, and the screen from Vaultix primitives.

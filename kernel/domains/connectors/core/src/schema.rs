@@ -99,7 +99,18 @@ impl KeySchema {
     /// The Vaultix secret name inside a destination name, or `None` if the destination name is not ours.
     /// When the schema uses `/` the secret part may not contain one: `/app/{{secretKey}}` owns `/app/A`, not `/app/x/A`.
     pub fn strip(&self, name: &str, environment: &str) -> Option<String> {
+        self.strip_folded(name, environment, &|text| text.to_string())
+    }
+
+    /// As `matches`, for a destination that rewrites names: the name and the schema's own text are compared after `fold`
+    /// (so a destination that upper-cases still recognises `app_` as the owner of `APP_X`).
+    pub fn matches_folded(&self, name: &str, environment: &str, fold: &dyn Fn(&str) -> String) -> bool {
+        self.strip_folded(name, environment, fold).is_some()
+    }
+
+    fn strip_folded(&self, name: &str, environment: &str, fold: &dyn Fn(&str) -> String) -> Option<String> {
         let (prefix, suffix) = self.affixes(environment);
+        let (prefix, suffix, name) = (fold(&prefix), fold(&suffix), fold(name));
         let inner = name.strip_prefix(prefix.as_str())?.strip_suffix(suffix.as_str())?;
         if inner.is_empty() {
             return None;
