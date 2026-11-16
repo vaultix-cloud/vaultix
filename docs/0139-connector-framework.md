@@ -150,12 +150,45 @@ through chat). Also not done: the third inherited connection method (GitHub OAut
 Server beyond host validation, Dependabot and Codespaces secrets (the inherited sync did not have them either), and
 `run_sync`, the routes and the screens.
 
+### The Fly.io connector (`domains/connectors/flyio`, crate `vx-connector-flyio`)
+
+An app's secrets through Fly's GraphQL API, with an optional redeploy of its machines. Credentials: `{"accessToken":"..."}`.
+It exercised three things the framework did not have, which are now in the core and tested there (18 engine tests):
+
+- **Batched writes** (`batches_writes`, `put_batch`, `delete_batch`). Fly makes a release per call, so the engine makes one
+  `setSecrets` call for all secrets and one `unsetSecrets` for all stale ones. A batch succeeds or fails as a whole: a failed
+  batch fails every name in it, and a transient failure is retried whole.
+- **A name check before anything is sent** (`accepts_name`). A name the destination will refuse fails by itself, in both
+  modes, and costs no request. GitHub uses it too.
+- **The release number.** Each write returns `release.version`; the connector keeps the newest and `after_sync` redeploys every
+  live machine with `min_secrets_version` set to it, waits for each to start, and skips destroyed or destroying machines.
+  One stuck machine is reported (`redeploy_partial`) and the others are still updated (the inherited code stopped at the
+  first failure). With nothing changed there is no redeploy: the hook runs only after a sync that wrote or deleted something.
+
+Fly specifics: GraphQL failures arrive as HTTP 200 with an `errors` array; the text is read only to choose a code (`forbidden`,
+`rate_limited`, `target_not_found`, `graphql_error`) and then dropped, so an error that quotes a value cannot reach a log or an
+audit row (tested with a message that contains the value). An unknown token is a null `viewer`, which `check` reports as
+`bad_credentials`. Names are environment-variable names and are case-sensitive (no folding). Fly has no way to send a value
+sealed: it travels in the `setSecrets` request body over TLS and nowhere else, and the test asserts that, rather than
+claiming more than Fly allows.
+
+Proof (`cargo test -p vx-connector-flyio`, 15 tests) is against a fake Fly with GraphQL, the Machines API and release numbers.
+Mutation checks, each confirmed to change the file: one call per secret, dropping `min_secrets_version`, ignoring GraphQL
+errors, and following redirects each made tests fail. Whole workspace: 127 tests pass against Postgres, clippy clean.
+
+Not proven: **nothing ran against api.fly.io**; the fake is built from the inherited code's calls and Fly's documented
+behaviour. A first run with a real token against a scratch app is the owner's, and needs a credential that must not pass
+through chat. Known weakness, shared with GitHub: neither destination returns values, so every sync rewrites every secret
+(and on Fly, with redeploy on, restarts the machines). The fix is to remember the fingerprints of what the last successful
+sync wrote and skip names whose value is unchanged; it needs a table for them and a decision on out-of-band edits (the
+destination could differ and we would not notice), so it is recorded here as the next improvement, not built.
+
 ## 4. Order
 
 1. **Done:** the trait and the engine against an in-memory destination (section 3).
 2. **Done:** differential test of the key schema against the inherited code (section 3). Still to do: the import check for stored schemas and escaped names.
-3. **GitHub done (section 3, fake server plus libsodium; not yet against real GitHub).** Next: Fly.io (the hook),
-   then one pure key-value provider to prove the declarative tier.
+3. **GitHub and Fly.io done (section 3; fake servers, GitHub also checked against libsodium; neither run against the real service).**
+   Next: one pure key-value provider to prove the declarative tier, and the remembered-fingerprints improvement.
 4. **Connection record, tables and `PgAudit` done (section 3).** Still to do: the `/api/vx/v1/connectors` routes
    in the contract, and the screen from Vaultix primitives.
 5. Port the rest; delete each inherited provider as its replacement passes, lowering the lineage ceiling each time.

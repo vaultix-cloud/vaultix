@@ -278,6 +278,10 @@ impl Connector for GitHub {
         name.to_ascii_uppercase()
     }
 
+    fn accepts_name(&self, name: &str) -> Result<(), ConnectorError> {
+        if valid_secret_name(name) { Ok(()) } else { Err(ConnectorError::new(ErrorKind::Rejected, "invalid_secret_name")) }
+    }
+
     async fn list(&self, _: &Fingerprinter) -> Result<Vec<Entry>, ConnectorError> {
         let mut entries = Vec::new();
         for page in 1..=MAX_PAGES {

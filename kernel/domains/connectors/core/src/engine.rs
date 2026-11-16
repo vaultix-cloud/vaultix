@@ -137,18 +137,43 @@ pub async fn sync<C: Connector, A: AuditSink>(
     let schema = &request.options.schema;
     let environment = &request.options.environment;
 
-    for name in &plan.delete {
-        match with_retry(request.retry, || connector.delete(name)).await {
-            Ok(()) => report.deleted += 1,
-            Err(error) => report.failed.push(Failure { name: name.clone(), kind: error.kind, code: error.code }),
-        }
-    }
+    // A name the destination will not accept fails by itself and is never sent.
+    let mut puts: Vec<(String, String, &Secret)> = Vec::new();
     for name in &plan.put {
         let Some((_, value)) = desired.iter().find(|(n, _)| n == name) else { continue };
         let destination_name = connector.fold(&schema.apply(name, environment));
-        match with_retry(request.retry, || connector.put(&destination_name, value)).await {
-            Ok(()) => report.put += 1,
+        match connector.accepts_name(&destination_name) {
+            Ok(()) => puts.push((name.clone(), destination_name, value)),
             Err(error) => report.failed.push(Failure { name: name.clone(), kind: error.kind, code: error.code }),
+        }
+    }
+
+    if connector.batches_writes() {
+        if !plan.delete.is_empty() {
+            match with_retry(request.retry, || connector.delete_batch(&plan.delete)).await {
+                Ok(()) => report.deleted += plan.delete.len(),
+                Err(error) => report.failed.extend(plan.delete.iter().map(|name| Failure { name: name.clone(), kind: error.kind, code: error.code })),
+            }
+        }
+        if !puts.is_empty() {
+            let items: Vec<(String, &Secret)> = puts.iter().map(|(_, destination_name, value)| (destination_name.clone(), *value)).collect();
+            match with_retry(request.retry, || connector.put_batch(&items)).await {
+                Ok(()) => report.put += puts.len(),
+                Err(error) => report.failed.extend(puts.iter().map(|(name, _, _)| Failure { name: name.clone(), kind: error.kind, code: error.code })),
+            }
+        }
+    } else {
+        for name in &plan.delete {
+            match with_retry(request.retry, || connector.delete(name)).await {
+                Ok(()) => report.deleted += 1,
+                Err(error) => report.failed.push(Failure { name: name.clone(), kind: error.kind, code: error.code }),
+            }
+        }
+        for (name, destination_name, value) in &puts {
+            match with_retry(request.retry, || connector.put(destination_name, value)).await {
+                Ok(()) => report.put += 1,
+                Err(error) => report.failed.push(Failure { name: name.clone(), kind: error.kind, code: error.code }),
+            }
         }
     }
 

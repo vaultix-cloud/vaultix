@@ -27,13 +27,15 @@ pub struct Memory {
     pub failures: Mutex<BTreeMap<String, VecDeque<ConnectorError>>>,
     pub after_sync_error: Option<ConnectorError>,
     pub fold_upper: bool,
+    pub batch: bool,
+    pub batch_failures: Mutex<VecDeque<ConnectorError>>,
     pub list_failures: Mutex<VecDeque<ConnectorError>>,
     pub log: Log,
 }
 
 impl Memory {
     pub fn new(log: &Log) -> Self {
-        Self { store: Mutex::default(), readable: true, fingerprints: Fingerprinter::new(KEY), failures: Mutex::default(), after_sync_error: None, fold_upper: false, list_failures: Mutex::default(), log: log.clone() }
+        Self { store: Mutex::default(), readable: true, fingerprints: Fingerprinter::new(KEY), failures: Mutex::default(), after_sync_error: None, fold_upper: false, batch: false, batch_failures: Mutex::default(), list_failures: Mutex::default(), log: log.clone() }
     }
     pub fn fail(self, name: &str, errors: &[ConnectorError]) -> Self {
         self.failures.lock().unwrap().insert(name.into(), errors.iter().copied().collect());
@@ -49,6 +51,29 @@ impl Memory {
 }
 
 impl Connector for Memory {
+    fn accepts_name(&self, name: &str) -> Result<(), ConnectorError> {
+        if name.starts_with("BAD") { Err(ConnectorError::new(ErrorKind::Rejected, "invalid_name")) } else { Ok(()) }
+    }
+    fn batches_writes(&self) -> bool {
+        self.batch
+    }
+    async fn put_batch(&self, items: &[(String, &Secret)]) -> Result<(), ConnectorError> {
+        self.log.lock().unwrap().push(format!("put_batch:{}", items.len()));
+        if let Some(error) = self.batch_failures.lock().unwrap().pop_front() {
+            return Err(error);
+        }
+        for (name, value) in items {
+            self.store.lock().unwrap().insert(name.clone(), self.fingerprints.of(value));
+        }
+        Ok(())
+    }
+    async fn delete_batch(&self, names: &[String]) -> Result<(), ConnectorError> {
+        self.log.lock().unwrap().push(format!("delete_batch:{}", names.len()));
+        for name in names {
+            self.store.lock().unwrap().remove(name);
+        }
+        Ok(())
+    }
     fn fold(&self, name: &str) -> String {
         if self.fold_upper { name.to_ascii_uppercase() } else { name.to_string() }
     }

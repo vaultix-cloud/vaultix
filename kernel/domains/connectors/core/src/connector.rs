@@ -87,6 +87,37 @@ pub trait Connector: Send + Sync {
 
     fn delete(&self, name: &str) -> impl Future<Output = Result<(), ConnectorError>> + Send;
 
+    /// Refuse a name before anything is sent, in the destination's spelling (after `fold`). The engine reports that one name as
+    /// failed and carries on with the rest, so one bad name costs no request and hides no other secret.
+    fn accepts_name(&self, _name: &str) -> Result<(), ConnectorError> {
+        Ok(())
+    }
+
+    /// True if the destination takes all writes in one call, so the engine uses `put_batch` and `delete_batch` once each. Fly.io
+    /// makes one release per call, so writing secrets one at a time would be a release per secret.
+    fn batches_writes(&self) -> bool {
+        false
+    }
+
+    /// Write all of these in one call. A batch succeeds or fails as a whole. The default writes them one at a time.
+    fn put_batch(&self, items: &[(String, &Secret)]) -> impl Future<Output = Result<(), ConnectorError>> + Send {
+        async move {
+            for (name, value) in items {
+                self.put(name, value).await?;
+            }
+            Ok(())
+        }
+    }
+
+    fn delete_batch(&self, names: &[String]) -> impl Future<Output = Result<(), ConnectorError>> + Send {
+        async move {
+            for name in names {
+                self.delete(name).await?;
+            }
+            Ok(())
+        }
+    }
+
     /// Runs once after a sync that changed something (for example, redeploy the machines that read the secrets).
     fn after_sync(&self) -> impl Future<Output = Result<(), ConnectorError>> + Send {
         async { Ok(()) }

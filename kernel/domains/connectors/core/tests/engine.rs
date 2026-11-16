@@ -195,3 +195,45 @@ async fn a_transient_failure_while_listing_the_destination_is_retried_and_a_perm
     assert_eq!(dest.calls("put:"), 0);
     assert!(audit.events.lock().unwrap().is_empty());
 }
+
+#[tokio::test]
+async fn a_destination_that_batches_gets_one_call_for_all_writes_and_one_for_all_deletes() {
+    let log = new_log();
+    let mut dest = Memory::new(&log).seed("prod_OLD1", "x").seed("prod_OLD2", "x").seed("OTHER", "x");
+    dest.batch = true;
+    let report = sync(&dest, &Audit::new(&log), &Fingerprinter::new(KEY), &request("{{environment}}_{{secretKey}}", false, 2), &values(&[("A", "1"), ("B", "2"), ("C", "3")])).await.unwrap();
+    assert_eq!((report.put, report.deleted), (3, 2));
+    assert_eq!(dest.calls("put_batch:3"), 1, "three secrets, one call (one release on Fly.io)");
+    assert_eq!(dest.calls("delete_batch:2"), 1);
+    assert_eq!(dest.calls("put:") + dest.calls("delete:"), 0, "no per-secret calls were made");
+    assert_eq!(dest.store.lock().unwrap().keys().collect::<Vec<_>>(), ["OTHER", "prod_A", "prod_B", "prod_C"]);
+}
+
+#[tokio::test]
+async fn a_failed_batch_fails_every_name_in_it_and_a_transient_one_is_retried_whole() {
+    let log = new_log();
+    let mut dest = Memory::new(&log);
+    dest.batch = true;
+    dest.batch_failures.lock().unwrap().extend([TRANSIENT, REJECTED]);
+    let report = sync(&dest, &Audit::new(&log), &Fingerprinter::new(KEY), &request("{{secretKey}}", false, 3), &values(&[("A", "1"), ("B", "2")])).await.unwrap();
+    assert_eq!(dest.calls("put_batch:2"), 2, "retried once after the transient failure, then refused for good");
+    assert_eq!(report.put, 0);
+    let mut names: Vec<_> = report.failed.iter().map(|f| (f.name.as_str(), f.code)).collect();
+    names.sort_unstable();
+    assert_eq!(names, [("A", "name_not_allowed"), ("B", "name_not_allowed")]);
+    assert!(dest.store.lock().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn a_name_the_destination_refuses_fails_alone_in_both_modes_and_is_never_sent() {
+    for batch in [false, true] {
+        let log = new_log();
+        let mut dest = Memory::new(&log);
+        dest.batch = batch;
+        let report = sync(&dest, &Audit::new(&log), &Fingerprinter::new(KEY), &request("{{secretKey}}", false, 2), &values(&[("BAD_ONE", "1"), ("good", "2")])).await.unwrap();
+        assert_eq!(report.put, 1, "batch={batch}");
+        assert_eq!(report.failed.len(), 1);
+        assert_eq!((report.failed[0].name.as_str(), report.failed[0].code), ("BAD_ONE", "invalid_name"));
+        assert_eq!(dest.store.lock().unwrap().keys().collect::<Vec<_>>(), ["good"]);
+    }
+}

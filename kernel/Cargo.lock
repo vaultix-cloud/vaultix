@@ -2631,6 +2631,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "vx-connector-flyio"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "vx-audit",
+ "vx-connectors",
+ "vx-secret",
+ "zeroize",
+]
+
+[[package]]
 name = "vx-connector-github"
 version = "0.1.0"
 dependencies = [
