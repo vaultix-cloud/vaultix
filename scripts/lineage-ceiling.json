@@ -1,5 +1,5 @@
 {
   "baseline": "1da705e0",
-  "identical": 9387,
+  "identical": 9386,
   "note": "Inherited files byte-identical to the import. Lower it in the commit that rewrites or deletes files; never raise it. node scripts/lineage-census.mjs --check"
 }

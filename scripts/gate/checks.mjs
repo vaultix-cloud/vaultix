@@ -38,7 +38,7 @@ export const checks = [
 
 export const gaps = [
   { id: "rustfmt", why: "46 kernel files differ from default rustfmt; a width has to be chosen (rustfmt.toml) before it can gate" },
-  { id: "authorship-audit", why: "scripts/audit-codebase.mjs fails: 7 reviewed files changed since their review; a reviewer has to re-read them" },
+  { id: "authorship-audit", why: "scripts/audit-codebase.mjs fails: reviewed files (15 on 2026-11-17, most from ordinary edits) changed since their review; a reviewer has to re-read them" },
   { id: "owned-tree", why: "scripts/check-owned.sh is a shell script and a flow or check may not be one; it needs a Node port" },
   { id: "standalone-image", why: "Dockerfile.standalone-vaultix has to build as part of the full tier; its time is not measured yet" },
   { id: "frontend", why: "the frontend build, Storybook and accessibility tests are not in the gate; the frontend is being rebuilt in Svelte" },
