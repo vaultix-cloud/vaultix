@@ -27,3 +27,6 @@ leftover/api-inventory/__pycache__/
 /cloudflare-dns-api.token
 /vm152-vaultix.env
 /zitadel-vaultix-app.json
+
+# scratch from mutation runs
+kernel/.mutation-backup/

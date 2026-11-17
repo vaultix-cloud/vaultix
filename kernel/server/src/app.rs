@@ -107,7 +107,7 @@ async fn readyz(AxumState(state): AxumState<State>) -> (StatusCode, Json<serde_j
             if (database_seconds - host_seconds).abs() > allowed {
                 reasons.push("clock_skew");
             }
-            if false {
+            if sqlx::query("SELECT 1 FROM vx_operate_audit_heads LIMIT 1").execute(&state.pool).await.is_err() {
                 reasons.push("audit_unavailable");
             }
             let applied: Result<i64, _> = sqlx::query_scalar("SELECT count(*) FROM vx_operate_migrations").fetch_one(&state.pool).await;
