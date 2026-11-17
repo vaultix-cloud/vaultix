@@ -207,6 +207,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | Task | Read |
 | --- | --- |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
+| Single point of failure, scale ladder, failure drills, roadmap from one node to a fleet | `docs/0140-roadmap-single-instance-to-fleet.md` + `docs/0134-foundation-rewrite.md` |
 | The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
 | Retiring Zod (what it does here, ArkType equivalence, the method) | `docs/0137-zod-retirement.md` + `node scripts/zod-census.mjs` + `scripts/zod-migration/` |
 | Versioned documents (AI connection and persona in ArkType, version registry, JSON Schema export) | `kernel/contracts/documents/README.md` + `node scripts/test-documents.mjs` |
