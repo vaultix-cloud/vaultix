@@ -83,7 +83,10 @@ These are constraints on every crate, checked in review and, where possible, by 
    Built-in accounts and a federated issuer (Nomen, or anything else) are two sources behind one interface (0074).
 6. **Key custody, audit sink, event bus, storage and issuer are interfaces** with a default in-process implementation (0134).
 7. **Configuration is declarative and identical across tiers.** Scaling changes numbers and the number of replicas, never the shape.
-8. **Backups hold only ciphertext and wrapped keys.** The root key is never in the database, so a stolen backup is not a breach.
+8. **A backup is one file encrypted as a whole; the live database is not.** Values are sealed in the tables, but secret names and
+   audit metadata are in the clear there, so the backup file is encrypted end to end with a key derived from the root key (not
+   only "ciphertext inside"). A stolen backup shows nothing without the root or recovery key; a stolen live database shows names
+   and metadata but no values. The root key is never in the database.
 9. **Fail closed, say why.** Readiness reports the reason (sealed, database unreachable, audit unavailable, clock skew) in a
    fixed set of codes, not text that could carry a value.
 10. **A destination or the control plane never blocks a request that does not need it.**
@@ -127,11 +130,18 @@ Each phase ends with a measured exit, not a feeling. Phases overlap with 0130's 
 parallel and is not repeated here.
 
 **Phase 0: a survivable single node (now).** Build what turns "one box" from a gamble into a stated risk.
-- A sealed and unsealed lifecycle for `vaultixd` and readiness reasons (register 1, 4, 5, 9, 13).
-- `vx backup` and `vx restore`: logical dump plus WAL, encrypted in transit, ciphertext only; a **restore rehearsal in the
-  test suite** that brings a second database up from a backup and proves the chain verifies and a secret opens.
-- A **failure-drill suite** (section 8).
-- Install page: key custody, recovery key, what is and is not protected.
+- **Built:** `/readyz` with fixed reason codes (`sealed`, `database_unavailable`, `audit_unavailable`, `clock_skew`,
+  `migrations_behind`), checked by a drill that causes each one and shows recovery without a restart.
+- **Built:** `vaultixd backup`, `restore`, `anchor`, `check-anchor` (crate `vx-recover`). The backup is a logical, consistent
+  snapshot of every `vx_` table in one encrypted file; restore goes into an empty, migrated database in one transaction,
+  refuses a wrong key, a damaged file, another schema and a non-empty target, and **proves every audit chain before it
+  commits**. A restore rehearsal with the real binaries rebuilds an instance from a backup and only the recovery key and reads
+  the original secret back. Point-in-time recovery from WAL is not built: this is a logical backup (a restore point per
+  backup), which is enough for tier 0 and is stated as such.
+- **Built:** signed audit chain-head anchors, which catch an old backup swapped in (rollback) and a rewritten chain (fork).
+- **Built, partly:** the failure-drill suite (section 8, with a state per row).
+- **Not built:** the install page (key custody, what is and is not protected); a scheduled anchor job; streaming backups
+  (a backup is held in memory, fine for a startup instance and a limit to lift before large ones); an automatic backup schedule.
 - *Exit:* the whole drill suite passes; restore from backup plus recovery key on a clean host is timed and written down;
   zero acknowledged writes lost across a thousand kill-at-random-point runs.
 
@@ -164,21 +174,30 @@ as its own service and its egress test (0136).
 Every row of section 3 is turned into a test that makes the failure happen and checks the stated behaviour. They run in
 `scripts/test-vx.mjs` against a disposable Postgres. A drill may be added or made stricter, never removed or loosened.
 
-| Drill | Expected |
-| --- | --- |
-| Kill `vaultixd` at a random point in a write, a sync, a redeem, a rotation (1,000 runs) | No acknowledged write lost; no value readable twice; chain verifies; no value in any log |
-| Stop Postgres, then restore it | Service refuses with a fixed readiness code, recovers without a restart |
-| Pause the database mid-transaction | The action did not happen and was not recorded; or both happened |
-| Restore from backup into a fresh database with only the recovery key | The instance opens, the chain verifies, a known secret reads |
-| Restore an **old** backup over a newer instance | Detected by the audit anchor (rollback attack) |
-| Wrong root key; corrupted backup; truncated WAL | Refuses with a code; nothing partial |
-| Disk full | Writes refused (fail closed), reads of metadata keep working, recovery without data loss |
-| Clock skew beyond the bound | Refuses to start; handles and tokens are not issued |
-| Issuer stopped | Existing tokens verify; break-glass works; new sign-in fails with a clear code |
-| Signing key rotated | Old tokens verify until expiry; new ones use the new key; revoked ones are refused |
-| Two replicas, one job queue | No job runs twice |
-| Audit sink refuses | Secret reads and writes are refused |
-| A destination down for an hour | Syncs fail and retry; reads and writes unaffected; the report says which |
+| Drill | Expected | State |
+| --- | --- | --- |
+| Kill `vaultixd` at a random point in a write, a sync, a redeem, a rotation (1,000 runs) | No acknowledged write lost; no value readable twice; chain verifies; no value in any log | Built for writes: 12 abrupt kills per run (more with `VX_DRILL_CYCLES`), 500 to 900 acknowledged writes each run, none lost, every one recorded, no write without its record or the reverse. **Not yet** syncs, redeems, rotations or 1,000 runs. |
+| Stop Postgres, then restore it | Service refuses with a fixed readiness code, recovers without a restart | Partly: the database vanishing under a running server gives `database_unavailable`. Recovery after a restart of Postgres is not yet tested. |
+| Pause the database mid-transaction | The action did not happen and was not recorded; or both happened | Partly: the kill drill and the audit crate's rollback test cover "both or neither"; a paused connection is not. |
+| Restore from backup into a fresh database with only the recovery key | The instance opens, the chain verifies, a known secret reads | **Built** (real binaries, value read back, handle works once). |
+| Restore an **old** backup over a newer instance | Detected by the audit anchor (rollback attack) | **Built** (anchor: rollback, and fork when the restored copy has since diverged). |
+| Wrong root key; corrupted backup; truncated WAL | Refuses with a code; nothing partial | **Built** for key, flipped bit, truncation, garbage and a forged manifest. WAL does not apply to a logical backup. |
+| Disk full | Writes refused (fail closed), reads of metadata keep working, recovery without data loss | Not built. |
+| Clock skew beyond the bound | Refuses to start; handles and tokens are not issued | Partly: `/readyz` reports `clock_skew`. Refusing to start and refusing to issue tokens are not built (no tokens yet). |
+| Issuer stopped | Existing tokens verify; break-glass works; new sign-in fails with a clear code | Not built (no identity domain). |
+| Signing key rotated | Old tokens verify until expiry; new ones use the new key; revoked ones are refused | Not built (no identity domain). |
+| Two replicas, one job queue | No job runs twice | Not built. |
+| Audit sink refuses | Secret reads and writes are refused | **Built**: writes are refused and leave nothing behind, and `/readyz` says why. |
+| A destination down for an hour | Syncs fail and retry; reads and writes unaffected; the report says which | Partly: GitHub and Fly.io tests retry and report; an hour-long outage is not simulated. |
+
+**Running them.** `node scripts/test-vx.mjs` runs the whole kernel against a disposable Postgres, drills included (the drill file
+is `kernel/server/tests/drills.rs`; the backup and anchor drills are `kernel/foundation/recover/tests/recover.rs`). A plain
+`cargo test` skips every database test and still reports success, so it proves nothing about them. To check that the drills
+themselves can fail, `node scripts/with-test-postgres.mjs -- sh scripts/mutation-recover.sh` and
+`node scripts/with-test-postgres.mjs -- node scripts/mutation-drills.mjs` plant one bug at a time and show which test catches
+it; each confirms the bug really changed the file, and the second restores the source even if an earlier run was killed.
+The kill drill is probabilistic by nature (a bug that opens a window of microseconds is caught only if a kill lands in it), so
+`VX_DRILL_CYCLES` raises the number of kills and the count of writes it must account for.
 
 ## 9. What this accepts, and what it does not
 

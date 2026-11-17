@@ -25,6 +25,11 @@ pub enum StoreError {
     Database(#[from] sqlx::Error),
 }
 
+/// How many migrations this build knows. A database with fewer applied is behind and not ready.
+pub fn migration_count() -> usize {
+    MIGRATIONS.len()
+}
+
 /// Every migration, in order. Forward only: a released migration is never edited.
 const MIGRATIONS: &[(i32, &str, &str)] = &[
     (1, "0001_operate", include_str!("../migrations/0001_operate.sql")),

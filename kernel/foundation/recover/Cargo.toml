@@ -1,0 +1,26 @@
+[package]
+name = "vx-recover"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+futures-util = "0.3"
+hex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+vx-audit = { path = "../audit" }
+vx-keys = { path = "../keys" }
+vx-secret = { path = "../secret" }
+
+[dev-dependencies]
+tokio = { workspace = true }
+vx-store = { path = "../store", features = ["testing"] }
+
+[lints]
+workspace = true

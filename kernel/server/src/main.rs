@@ -9,6 +9,7 @@
 
 mod app;
 mod extract;
+mod ops;
 mod openapi;
 mod secrets;
 
@@ -50,6 +51,16 @@ async fn main() {
             #[allow(clippy::print_stderr)]
             {
                 eprintln!("vaultixd init: {error}");
+            }
+            std::process::exit(1);
+        }
+        return;
+    }
+    if let Some(command) = args.first().filter(|c| matches!(c.as_str(), "backup" | "restore" | "anchor" | "check-anchor")) {
+        if let Err(error) = ops::run(command, &args[1..]).await {
+            #[allow(clippy::print_stderr)]
+            {
+                eprintln!("vaultixd {command}: {error}");
             }
             std::process::exit(1);
         }

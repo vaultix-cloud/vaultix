@@ -148,13 +148,19 @@ pub async fn append(conn: &mut PgConnection, event: Event) -> Result<i64, AuditE
 
 /// Re-compute a whole chain and return how many events it holds, or the first altered event.
 pub async fn verify(pool: &PgPool, chain: &str) -> Result<i64, AuditError> {
+    let mut conn = pool.acquire().await?;
+    verify_on(&mut conn, chain).await
+}
+
+/// As `verify`, on a connection the caller holds, so a restore can check a chain inside its own transaction before committing.
+pub async fn verify_on(conn: &mut PgConnection, chain: &str) -> Result<i64, AuditError> {
     type Stored = (i64, DateTime<Utc>, String, String, String, String, Value, Option<Vec<u8>>, Vec<u8>, Vec<u8>);
     let rows: Vec<Stored> = sqlx::query_as(
         "SELECT seq, at, actor, action, object_ref, outcome, detail, value_hmac, prev_hash, hash
          FROM vx_operate_audit_events WHERE chain = $1 ORDER BY seq",
     )
     .bind(chain)
-    .fetch_all(pool)
+    .fetch_all(&mut *conn)
     .await?;
     let mut previous: Vec<u8> = Vec::new();
     let mut expected = 1;
@@ -172,7 +178,7 @@ pub async fn verify(pool: &PgPool, chain: &str) -> Result<i64, AuditError> {
     }
     let head: Option<(i64, Vec<u8>)> = sqlx::query_as("SELECT last_seq, last_hash FROM vx_operate_audit_heads WHERE chain = $1")
         .bind(chain)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *conn)
         .await?;
     match head {
         Some((last_seq, last_hash)) if last_seq != expected - 1 || last_hash != previous => {

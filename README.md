@@ -7,9 +7,14 @@
 > [pre-release rules](docs/0118-pre-release.md). AI agents deploying Vaultix follow
 > [INSTALL-FOR-AI.md](INSTALL-FOR-AI.md), including what may and may not be pasted in chat.
 
-Vaultix is developed in place in `platform/engine/`: the secrets engine, its UI, and its
-API ship together in the locally built Vaultix image. Owner: AngryVibes LLC.
-Host: shippin.ai.
+Vaultix is being rewritten as a Rust engine in `kernel/`, under the
+[kernel/platform/control architecture](docs/0136-kernel-platform-control-and-schemas.md).
+The locally built image still ships the inherited engine in `platform/engine/`, which
+shrinks as complete workflows move. Owner: AngryVibes LLC. Host: shippin.ai.
+
+Start with the [owned rewrite path](docs/0141-owned-rewrite-path.md): break runtime
+dependence on the inherited engine, turn lessons and complaints into acceptance cases,
+and deliver Auth → Secrets workflows before retiring each replaced domain.
 
 **Vaultix.cloud** is the primary product; **DevSCIF.com** is the enterprise and
 government-tailored suite. Every existing product-code module is subject to
@@ -17,12 +22,12 @@ the [methodical authorship review](docs/0021-product-authorship-review.md).
 These destinations and the review program do not establish hosted readiness
 or government certification.
 
-The [native React/Go/Rust migration plan](docs/0027-native-stack-and-ai-migration.md)
-defines domain ownership, AI-managed lifecycle boundaries, migration order and
-rollback gates. The [module map](docs/migration/README.md) tracks source coverage
-without counting discovery as completed rewriting.
+The earlier [React/Go/Rust migration plan](docs/0027-native-stack-and-ai-migration.md)
+records migration and recovery obligations; its target stack is superseded by 0136.
+The [module map](docs/migration/README.md) tracks source coverage without counting
+discovery as completed rewriting.
 
-The [current execution goal and queue](docs/0069-execution-goal.md) starts with
+The [earlier execution queue](docs/0069-execution-goal.md) records
 [built-in identity and optional federation](docs/0074-built-in-and-federated-identity.md),
 including native remote sign-in, then carries the same
 acceptance method through core/UI/AI migration and owned-infrastructure release.

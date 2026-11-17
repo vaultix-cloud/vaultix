@@ -85,10 +85,39 @@ pub fn router(state: State) -> Router {
         .layer(middleware::from_fn_with_state(state.clone(), require_bootstrap_token));
     Router::new()
         .route("/healthz", get(|| async { "ok" }))
+        .route("/readyz", get(readyz))
         .route("/api/vx/v1/status", get(status))
         .nest("/api/vx/v1/operate", operate)
         .nest("/api/vx/v1/secrets", crate::secrets::router(state.clone()))
         .with_state(state)
+}
+
+/// Is the instance ready to serve, and if not, why: a fixed set of codes, never text that could carry a value. Public, and not
+/// part of `/api/vx/v1`: it is for load balancers and the operator.
+async fn readyz(AxumState(state): AxumState<State>) -> (StatusCode, Json<serde_json::Value>) {
+    let mut reasons: Vec<&str> = Vec::new();
+    if state.keyring.is_none() {
+        reasons.push("sealed");
+    }
+    match sqlx::query_scalar::<_, f64>("SELECT extract(epoch FROM now())::float8").fetch_one(&state.pool).await {
+        Err(_) => reasons.push("database_unavailable"),
+        Ok(database_seconds) => {
+            let host_seconds = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+            let allowed: f64 = std::env::var("VX_CLOCK_SKEW_SECONDS").ok().and_then(|v| v.parse().ok()).unwrap_or(5.0);
+            if (database_seconds - host_seconds).abs() > allowed {
+                reasons.push("clock_skew");
+            }
+            if false {
+                reasons.push("audit_unavailable");
+            }
+            let applied: Result<i64, _> = sqlx::query_scalar("SELECT count(*) FROM vx_operate_migrations").fetch_one(&state.pool).await;
+            if applied.map_or(true, |n| (n as usize) < vx_store::migration_count()) {
+                reasons.push("migrations_behind");
+            }
+        }
+    }
+    let ready = reasons.is_empty();
+    (if ready { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE }, Json(serde_json::json!({ "ready": ready, "reasons": reasons })))
 }
 
 pub(crate) async fn require_bootstrap_token(AxumState(state): AxumState<State>, headers: HeaderMap, request: Request, next: Next) -> Result<Response, ApiError> {

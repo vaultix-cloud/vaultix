@@ -28,6 +28,7 @@ vx-contract = { path = "../foundation/contract" }
 vx-gate = { path = "../foundation/gate" }
 vx-jobs = { path = "../foundation/jobs" }
 vx-keys = { path = "../foundation/keys" }
+vx-recover = { path = "../foundation/recover" }
 vx-secret = { path = "../foundation/secret" }
 vx-secrets = { path = "../domains/secrets/core" }
 vx-store = { path = "../foundation/store" }
