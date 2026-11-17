@@ -206,6 +206,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 
 | Task | Read |
 | --- | --- |
+| Vocabulary: the one term for a thing, and what the owner calls it | `docs/lexicon.json` |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
 | Single point of failure, scale ladder, failure drills, roadmap from one node to a fleet | `docs/0140-roadmap-single-instance-to-fleet.md` + `docs/0134-foundation-rewrite.md` |
 | The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
