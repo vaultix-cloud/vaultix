@@ -83,6 +83,7 @@ try {
   step("ai-migration", process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/test-ai-migration.mjs"]);
   step("ui-command-compatibility", process.execPath, ["--experimental-strip-types", "scripts/test-reference-commands.mjs"]);
   step("login-failure-policy", process.execPath, ["--experimental-strip-types", "scripts/test-login-failure.mjs"]);
+  step("save-secret-handoff", process.execPath, ["--experimental-strip-types", "scripts/test-save-secret-handoff.mjs"]);
   step("owned-source", bash, ["scripts/check-owned.sh"]);
   node("table-namespace-map", "scripts/map-table-namespaces.mjs", "--check");
   node("table-namespace-references", "scripts/check-table-namespaces.mjs");
