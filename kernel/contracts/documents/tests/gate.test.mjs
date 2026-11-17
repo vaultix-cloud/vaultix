@@ -142,6 +142,11 @@ test("a receipt's statuses carry what they should: a skip says why, only a failu
   rejects(subjects.receipt, { ...valid.receipt, clean: "yes" }, "clean must be a boolean");
   rejects(subjects.receipt, { ...valid.receipt, commit: "HEAD" }, "a commit must be the full id");
   rejects(subjects.receipt, { ...valid.receipt, commit: commitOf(valid.receipt).toUpperCase() }, "a commit id is lowercase");
+  // The short form `git log --oneline` prints is not an identity: two commits can share it. Only the full 40 characters will do.
+  for (const bad of [commitOf(valid.receipt).slice(0, 7), commitOf(valid.receipt).slice(0, 8), commitOf(valid.receipt).slice(0, 39), `${commitOf(valid.receipt)}0`, `${commitOf(valid.receipt).slice(0, 39)}g`, ""]) {
+    rejects(subjects.receipt, { ...valid.receipt, commit: bad }, `receipt commit ${JSON.stringify(bad)}`);
+    rejects(subjects.failure, { ...failures.check_failed, commit: bad }, `failure commit ${JSON.stringify(bad)}`);
+  }
   for (const bad of ["2026-11-17", "2026-11-17T18:00:00", "2026-11-17T18:00:00.123", "2026-11-17T18:00:00+01:00", "2026-11-17T18:00Z", "2026-13-17T18:00:00Z", "2026-11-17 18:00:00Z", "2026-11-17T18:00:00z", "yesterday"]) rejects(subjects.receipt, { ...valid.receipt, startedAt: bad }, `startedAt ${bad}`);
 });
 

@@ -1,0 +1,288 @@
+// Tests for the delivery gate (scripts/gate.mjs and scripts/gate/). The point of the gate is what it refuses, so these tests are
+// mostly about refusals, and they drive the real command line against a temporary repository with fake checks wherever the whole
+// path matters (VX_GATE_TEST=1 allows that and nothing else does):
+//   - a check that hangs is stopped with everything it started, and is a timeout, not a failure;
+//   - what a check prints is in its log and in no failure record and no message (a canary proves it);
+//   - a receipt only stands for a merge when it is valid, passing, complete, clean, and about this commit and tier;
+//   - a skipped check is not a pass; the registry is validated; checks never overlap when they must not.
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import test, { after } from "node:test";
+import { fileURLToPath } from "node:url";
+import { failureFor, messageFor } from "./failure.mjs";
+import { buildReceipt, verifyReceipt } from "./receipt.mjs";
+import { runCheck, runChecks } from "./run.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const gate = resolve(here, "../gate.mjs");
+const CANARY = "CANARY-5c2e77-a-secret-in-a-check's-output";
+const made = [];
+after(() => { for (const dir of made) rmSync(dir, { recursive: true, force: true }); });
+
+const sleep = ms => new Promise(done => setTimeout(done, ms));
+const scripts = {
+  "ok.mjs": "process.exit(0);",
+  "fail.mjs": `console.log(${JSON.stringify(CANARY)}); console.error(${JSON.stringify(CANARY)}); process.exit(3);`,
+  "hang.mjs": `
+    import { spawn } from "node:child_process";
+    import { writeFileSync } from "node:fs";
+    // On Windows a plain grandchild dies with its parent, so it cannot show whether the whole tree was stopped; a detached one outlives
+    // it unless it is killed itself. (On POSIX a detached process leaves the check's process group, which the real kill uses, so it stays plain.)
+    const grandchild = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore", detached: process.platform === "win32" });
+    writeFileSync("grandchild.pid", String(grandchild.pid));
+    console.log(${JSON.stringify(CANARY)});
+    setInterval(() => {}, 1000);`,
+  "span.mjs": `
+    import { appendFileSync } from "node:fs";
+    const name = process.argv[2];
+    appendFileSync("spans.log", "start " + name + " " + Date.now() + "\\n");
+    await new Promise(done => setTimeout(done, 700));
+    appendFileSync("spans.log", "end " + name + " " + Date.now() + "\\n");`,
+  "side-effect.mjs": `import { writeFileSync } from "node:fs"; writeFileSync("ran.txt", "it ran");`
+};
+const node = (...args) => ({ program: "node", args });
+
+/** A temporary git repository with the fixture scripts and a check list, so the real CLI can be run against it. */
+function repository(list) {
+  const dir = mkdtempSync(join(tmpdir(), "vx-gate-test-"));
+  made.push(dir);
+  for (const [name, body] of Object.entries(scripts)) writeFileSync(join(dir, name), body);
+  writeFileSync(join(dir, ".gitignore"), ".gate/\nspans.log\ngrandchild.pid\nran.txt\n");
+  const source = `export const checks = ${JSON.stringify(list)};\n`;
+  writeFileSync(join(dir, "checks.mjs"), source);
+  const git = (...args) => spawnSync("git", args, { cwd: dir, encoding: "utf8" });
+  git("init", "-q");
+  git("config", "user.email", "gate@test.invalid");
+  git("config", "user.name", "gate test");
+  git("add", "-A");
+  git("commit", "-q", "-m", "fixture");
+  return { dir, head: git("rev-parse", "HEAD").stdout.trim(), git };
+}
+const check = (id, script, extra = {}) => ({ id, tier: "fast", title: id, command: node(script, ...(extra.args ?? [])), timeoutSeconds: 30, expect: `${id} passes`, ...extra, args: undefined });
+const cli = (repo, ...args) => spawnSync(process.execPath, [gate, ...args], { cwd: repo.dir, encoding: "utf8", env: { ...process.env, VX_GATE_TEST: "1", VX_GATE_ROOT: repo.dir, VX_GATE_CHECKS: join(repo.dir, "checks.mjs") } });
+const receiptOf = (repo, tier = "fast") => JSON.parse(readFileSync(join(repo.dir, ".gate/receipts", `${repo.head}.${tier}.json`), "utf8"));
+const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
+
+// ---- the runner ----
+
+test("a check that passes, and one that fails with its exit code, are told apart, and their output goes to a log", async () => {
+  const { dir } = repository([]);
+  const options = { root: dir, logDirectory: join(dir, ".gate/logs") };
+  assert.deepEqual(Object.keys(await runCheck(check("ok", "ok.mjs"), options)).sort(), ["id", "seconds", "status"]);
+  const failed = await runCheck(check("bad", "fail.mjs"), options);
+  assert.deepEqual([failed.status, failed.exitCode], ["fail", 3]);
+  assert.ok(readFileSync(join(dir, ".gate/logs/bad.log"), "utf8").includes(CANARY), "the output is in the log");
+  assert.ok(!JSON.stringify(failed).includes(CANARY), "and in nothing the runner returns");
+});
+
+test("a program that does not exist is a failure with the not-found code, not a crash and not a pass", async () => {
+  const { dir } = repository([]);
+  const result = await runCheck({ id: "ghost", tier: "fast", title: "ghost", command: { program: "vx-no-such-program", args: [] }, timeoutSeconds: 5, expect: "x" }, { root: dir, logDirectory: join(dir, ".gate/logs") });
+  assert.deepEqual([result.status, result.exitCode], ["fail", 127]);
+});
+
+test("a check that hangs is stopped with everything it started, and is a timeout and not a failure", async () => {
+  const { dir } = repository([]);
+  const result = await runCheck(check("hang", "hang.mjs", { timeoutSeconds: 1 }), { root: dir, logDirectory: join(dir, ".gate/logs") });
+  assert.deepEqual([result.status, result.seconds], ["timeout", 1]);
+  assert.equal(result.exitCode, undefined, "a timeout has no exit code to read as a disagreement");
+  const grandchild = Number(readFileSync(join(dir, "grandchild.pid"), "utf8"));
+  for (let wait = 0; wait < 40 && alive(grandchild); wait += 1) await sleep(100);
+  assert.equal(alive(grandchild), false, "the process the check started is gone too");
+});
+
+test("a check that needs Postgres when none was provided is skipped, with the reason, and does not run", async () => {
+  const { dir } = repository([]);
+  const results = await runChecks([check("needs-db", "side-effect.mjs", { needs: ["postgres"] })], { root: dir, jobs: 2, provided: {}, logDirectory: join(dir, ".gate/logs") });
+  assert.equal(results[0].status, "skipped");
+  assert.match(results[0].reason, /postgres/);
+  assert.equal(existsSync(join(dir, "ran.txt")), false, "a skipped check did not run");
+});
+
+test("checks run in parallel up to the limit, never two with the same serial key, and results keep the order given", async () => {
+  const overlap = log => {
+    const events = readFileSync(log, "utf8").trim().split("\n").map(line => line.split(" "));
+    let running = 0; let most = 0;
+    for (const [kind] of events.sort((a, b) => Number(a[2]) - Number(b[2]) || (a[0] === "end" ? -1 : 1))) { running += kind === "start" ? 1 : -1; most = Math.max(most, running); }
+    return most;
+  };
+  const four = ["a", "b", "c", "d"].map(name => check(name, "span.mjs", { args: [name] }));
+  for (const [label, list, jobs, verdict] of [["parallel", four, 4, most => most >= 2], ["one at a time", four, 1, most => most === 1], ["serial key", four.map(item => ({ ...item, serial: "k" })), 4, most => most === 1]]) {
+    const { dir } = repository([]);
+    const results = await runChecks(list, { root: dir, jobs, provided: {}, logDirectory: join(dir, ".gate/logs") });
+    assert.deepEqual(results.map(result => result.id), ["a", "b", "c", "d"], `${label}: order`);
+    assert.ok(results.every(result => result.status === "pass"), label);
+    assert.ok(verdict(overlap(join(dir, "spans.log"))), `${label}: overlap was ${overlap(join(dir, "spans.log"))}`);
+  }
+});
+
+// ---- failure records and messages ----
+
+test("a failure record and its message hold the gate's own words and never what the check printed", async () => {
+  const { dir, head } = repository([]);
+  const bad = check("bad", "fail.mjs");
+  const hung = check("hung", "hang.mjs", { timeoutSeconds: 1 });
+  const options = { root: dir, logDirectory: join(dir, ".gate/logs") };
+  const results = [await runCheck(bad, options), await runCheck(hung, options)];
+  assert.ok(readFileSync(join(dir, ".gate/logs/bad.log"), "utf8").includes(CANARY));
+  for (const [item, result, kind] of [[bad, results[0], "check_failed"], [hung, results[1], "check_timed_out"]]) {
+    const record = failureFor(item, result, { commit: head, tier: "fast" });
+    assert.equal(record.kind, kind);
+    assert.equal(record.logPath, `.gate/logs/${item.id}.log`);
+    const message = messageFor(record, { from: "notify@example.invalid", to: "owner@example.invalid" });
+    assert.ok(!JSON.stringify(record).includes(CANARY) && !message.includes(CANARY), `${kind}: no output in the record or the message`);
+    // On its own line, where a reader sees it first: the record below also holds it, so a mere substring match would pass without it.
+    assert.ok(message.split("\n").includes("fix the source; do not change the expectation, ceiling, baseline or snapshot to match."), `${kind}: the message says the rule on its own line`);
+    assert.ok(message.includes("Subject: Vaultix gate failed:"));
+  }
+  assert.equal(failureFor(bad, { id: "bad", status: "pass", seconds: 1 }, { commit: head, tier: "fast" }), null, "a pass has no failure record");
+  assert.equal(failureFor(bad, { id: "bad", status: "skipped", seconds: 0, reason: "x" }, { commit: head, tier: "fast" }), null, "a skip is reported as a skip, not as a failure");
+});
+
+test("a message with no mail address configured says so instead of inventing one", () => {
+  const record = failureFor({ id: "x", expect: "x passes", timeoutSeconds: 5 }, { id: "x", status: "fail", seconds: 1, exitCode: 1 }, { commit: "a".repeat(40), tier: "fast" });
+  const message = messageFor(record, {});
+  assert.match(message, /From: \(VX_GATE_NOTIFY_FROM is not set\)/);
+  assert.match(message, /To: \(VX_GATE_NOTIFY_TO is not set\)/);
+});
+
+// ---- receipts ----
+
+const commit = "0123456789abcdef0123456789abcdef01234567";
+const base = { commit, tier: "full", startedAt: new Date("2026-11-17T18:00:00Z"), finishedAt: new Date("2026-11-17T18:01:00Z"), clean: true };
+const passing = [{ id: "a", status: "pass", seconds: 1 }, { id: "b", status: "pass", seconds: 2 }];
+const verify = (receipt, extra = {}) => verifyReceipt(receipt, { commit, tier: "full", expectedIds: ["a", "b"], ...extra });
+
+test("a receipt is a pass only when every check passed: a failure, a timeout and a skip each make it a fail", () => {
+  assert.equal(buildReceipt({ ...base, results: passing }).result, "pass");
+  for (const result of [{ id: "b", status: "fail", seconds: 1, exitCode: 1 }, { id: "b", status: "timeout", seconds: 600 }, { id: "b", status: "skipped", seconds: 0, reason: "no docker" }]) {
+    assert.equal(buildReceipt({ ...base, results: [passing[0], result] }).result, "fail", result.status);
+  }
+});
+
+test("a receipt stands for a merge only if it is valid, passing, complete, clean and about this commit and tier", () => {
+  const good = buildReceipt({ ...base, results: passing });
+  assert.deepEqual(verify(good), []);
+  const contains = (problems, text) => assert.ok(problems.some(problem => problem.includes(text)), `${JSON.stringify(problems)} should mention "${text}"`);
+  contains(verify(good, { commit: "f".repeat(40) }), "different commit");
+  contains(verify({ ...good, tier: "fast" }), "fast-tier receipt");
+  contains(verify({ ...good, result: "fail" }), "its result is fail but its checks say pass");
+  contains(verify({ ...good, checks: [...passing, passing[0]] }), "more than once");
+  contains(verify({ ...good, startedAt: "2026-11-17T19:00:00.000Z" }), "before it started");
+  contains(verify(good, { expectedIds: ["a", "b", "c"] }), "check c did not run");
+  contains(verify({ ...good, clean: false }), "uncommitted changes");
+  contains(verify(buildReceipt({ ...base, results: [passing[0], { id: "b", status: "fail", seconds: 1, exitCode: 1 }] })), "did not pass");
+  assert.ok(verify({ ...good, surprise: 1 }).length > 0, "an undeclared key makes it not a receipt");
+  assert.ok(verify("not a receipt").length > 0);
+  assert.deepEqual(verify({ ...good, tier: "full" }, { tier: "fast" }), [], "a full receipt can stand in for a fast one");
+});
+
+// ---- the command line, end to end ----
+
+test("every check passing: exit 0, a valid receipt, and the merge guard accepts it", () => {
+  const repo = repository([check("one", "ok.mjs"), check("two", "ok.mjs")]);
+  const run = cli(repo);
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  const receipt = receiptOf(repo);
+  assert.deepEqual([receipt.result, receipt.clean, receipt.checks.map(item => item.status)], ["pass", true, ["pass", "pass"]]);
+  assert.equal(cli(repo, "--verify-receipt", "fast").status, 0);
+  assert.equal(cli(repo, "--verify-receipt", "full").status, 1, "a fast receipt is not enough for a merge");
+});
+
+test("a failing check: exit 1, a failing receipt, a record and an outbox message without the check's output, and the guard refuses", () => {
+  const repo = repository([check("fine", "ok.mjs"), check("bad", "fail.mjs", { expect: "bad passes" })]);
+  const run = cli(repo);
+  assert.equal(run.status, 1);
+  assert.equal(receiptOf(repo).result, "fail");
+  const record = JSON.parse(readFileSync(join(repo.dir, ".gate/failures", repo.head, "bad.json"), "utf8"));
+  assert.deepEqual([record.kind, record.exitCode, record.expected], ["check_failed", 3, "bad passes"]);
+  const outbox = readdirSync(join(repo.dir, ".gate/outbox"));
+  assert.equal(outbox.length, 1, "one failure, one message");
+  const everything = [readFileSync(join(repo.dir, ".gate/outbox", outbox[0]), "utf8"), JSON.stringify(record), run.stdout, run.stderr].join("\n");
+  assert.ok(!everything.includes(CANARY), "the check's output is in none of the record, the message or the gate's own output");
+  assert.ok(readFileSync(join(repo.dir, ".gate/logs/bad.log"), "utf8").includes(CANARY), "it is in the log");
+  const guard = cli(repo, "--verify-receipt", "fast");
+  assert.equal(guard.status, 1);
+  assert.match(guard.stderr, /did not pass/);
+});
+
+test("a check that hangs is a timeout on the command line, with a record that says so", () => {
+  const repo = repository([check("hung", "hang.mjs", { timeoutSeconds: 1 })]);
+  const run = cli(repo);
+  assert.equal(run.status, 1);
+  assert.equal(receiptOf(repo).checks[0].status, "timeout");
+  assert.equal(JSON.parse(readFileSync(join(repo.dir, ".gate/failures", repo.head, "hung.json"), "utf8")).kind, "check_timed_out");
+});
+
+test("uncommitted changes: the receipt says so and the merge guard refuses it", () => {
+  const repo = repository([check("one", "ok.mjs")]);
+  writeFileSync(join(repo.dir, "untracked-change.txt"), "not committed");
+  assert.equal(cli(repo).status, 0, "the checks pass");
+  assert.equal(receiptOf(repo).clean, false);
+  const guard = cli(repo, "--verify-receipt", "fast");
+  assert.equal(guard.status, 1);
+  assert.match(guard.stderr, /uncommitted changes/);
+});
+
+test("no receipt at all: the merge guard refuses and says what to run", () => {
+  const repo = repository([check("one", "ok.mjs")]);
+  const guard = cli(repo, "--verify-receipt", "full");
+  assert.equal(guard.status, 1);
+  assert.match(guard.stderr, /no full-tier receipt/);
+});
+
+test("a receipt for another commit does not stand for this one", () => {
+  const repo = repository([check("one", "ok.mjs")]);
+  assert.equal(cli(repo).status, 0);
+  writeFileSync(join(repo.dir, "next.txt"), "next");
+  repo.git("add", "-A");
+  repo.git("commit", "-q", "-m", "next");
+  const guard = cli(repo, "--verify-receipt", "fast");
+  assert.equal(guard.status, 1, "the new head has no receipt");
+  assert.match(guard.stderr, /no fast-tier receipt/);
+});
+
+test("--only runs part of a tier and writes no receipt, because a part is not a pass", () => {
+  const repo = repository([check("one", "ok.mjs"), check("two", "ok.mjs")]);
+  const run = cli(repo, "--only", "one");
+  assert.equal(run.status, 0);
+  assert.equal(existsSync(join(repo.dir, ".gate/receipts")), false);
+  assert.match(run.stdout, /no receipt is written for part of a tier/);
+  assert.equal(cli(repo, "--only", "missing").status, 2, "an unknown check is an error, not a skipped one");
+});
+
+test("the registry is validated: a duplicate id, a shell, no time limit and a multi-line expectation each stop the gate", () => {
+  for (const [label, list, message] of [
+    ["duplicate", [check("one", "ok.mjs"), check("one", "ok.mjs")], /listed twice/],
+    ["shell", [{ ...check("one", "ok.mjs"), command: { program: "sh", args: ["-c", "true"] } }], /command is not a program/],
+    ["no limit", [{ ...check("one", "ok.mjs"), timeoutSeconds: 0 }], /time limit/],
+    ["two lines", [{ ...check("one", "ok.mjs"), expect: "a\nb" }], /one line of printable text/],
+    ["bad id", [check("Not A Slug", "ok.mjs")], /not a slug/]
+  ]) {
+    const run = cli(repository(list));
+    assert.equal(run.status, 2, label);
+    assert.match(run.stderr, message, label);
+  }
+});
+
+test("the gate's test hooks do nothing without VX_GATE_TEST=1: the real registry is used", () => {
+  const repo = repository([check("fixture-only-check", "ok.mjs")]);
+  const run = spawnSync(process.execPath, [gate, "--list"], { cwd: repo.dir, encoding: "utf8", env: { ...process.env, VX_GATE_TEST: "", VX_GATE_CHECKS: join(repo.dir, "checks.mjs"), VX_GATE_ROOT: repo.dir } });
+  assert.equal(run.status, 0);
+  assert.match(run.stdout, /kernel-clippy/, "the real checks, not the fixture's");
+  assert.doesNotMatch(run.stdout, /fixture-only-check/);
+});
+
+test("every real check is valid and names a script that exists", async () => {
+  const { checks } = await import("./checks.mjs");
+  const root = resolve(here, "../..");
+  assert.ok(checks.length >= 14);
+  for (const item of checks) {
+    const script = item.command.args.find(argument => /^scripts\/.*\.mjs$/.test(argument));
+    if (script) assert.ok(existsSync(resolve(root, script)), `${item.id}: ${script} exists`);
+    if (item.cwd) assert.ok(existsSync(resolve(root, item.cwd)), `${item.id}: ${item.cwd} exists`);
+  }
+});

@@ -63,3 +63,6 @@ export const location = type({ file: repoPath, "line?": type("number.integer").a
 
 /** One thing a feature can do, named as the gate and the failure record name it. */
 export const capabilityRef = type({ feature: slug, capability: slug }).onUndeclaredKey("reject").narrow(notArray);
+
+/** Whether a value fits one of these parts. The gate's own registry is code, and is validated with the same parts as a document. */
+export const fits = (schema: (data: unknown) => unknown, value: unknown): boolean => !(schema(value) instanceof type.errors);

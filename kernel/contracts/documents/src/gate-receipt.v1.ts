@@ -8,7 +8,7 @@
 // from a failed one (it says the check hung, not that it disagreed).
 //
 // What the shape cannot say, scripts/gate/receipt.mjs checks and tests: `result` is "pass" only when no check failed or
-// timed out and, for a full run, none was skipped; check ids are unique; `finishedAt` is not before `startedAt`; and the
+// timed out or was skipped (a check that did not run is not a pass, in either tier); check ids are unique; `finishedAt` is not before `startedAt`; and the
 // receipt belongs to a clean worktree (`clean`) at the commit it names.
 import { type } from "arktype";
 import { notArray } from "./rules.ts";
