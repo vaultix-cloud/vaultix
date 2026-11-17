@@ -7,13 +7,14 @@
 //   - a skipped check is not a pass; the registry is validated; checks never overlap when they must not.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test, { after } from "node:test";
 import { fileURLToPath } from "node:url";
 import { failureFor, messageFor } from "./failure.mjs";
 import { buildReceipt, verifyReceipt } from "./receipt.mjs";
+import { removeCopy } from "../lib/mutation-copy.mjs";
 import { runCheck, runChecks } from "./run.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -285,4 +286,107 @@ test("every real check is valid and names a script that exists", async () => {
     if (script) assert.ok(existsSync(resolve(root, script)), `${item.id}: ${script} exists`);
     if (item.cwd) assert.ok(existsSync(resolve(root, item.cwd)), `${item.id}: ${item.cwd} exists`);
   }
+});
+
+// ---- prerequisites (`after`) ----
+
+test("a check waits for its prerequisites, and runs once they pass", async () => {
+  const { dir } = repository([]);
+  const list = [check("second", "span.mjs", { args: ["second"], after: ["first"] }), check("first", "span.mjs", { args: ["first"] })];
+  const results = await runChecks(list, { root: dir, jobs: 4, provided: {}, logDirectory: join(dir, ".gate/logs") });
+  assert.deepEqual(results.map(result => [result.id, result.status]), [["second", "pass"], ["first", "pass"]], "results keep the order given");
+  const spans = readFileSync(join(dir, "spans.log"), "utf8").trim().split("\n").map(line => line.split(" "));
+  const at = (kind, name) => Number(spans.find(span => span[0] === kind && span[1] === name)[2]);
+  assert.ok(at("start", "second") >= at("end", "first"), "the dependent started only after its prerequisite had ended, with room to run in parallel");
+});
+
+test("a check whose prerequisite did not pass is skipped with the reason, does not run, and is not a pass", async () => {
+  const { dir } = repository([]);
+  const list = [check("deps", "fail.mjs"), check("needs-deps", "side-effect.mjs", { after: ["deps"] }), check("independent", "ok.mjs")];
+  const results = await runChecks(list, { root: dir, jobs: 4, provided: {}, logDirectory: join(dir, ".gate/logs") });
+  assert.deepEqual(results.map(result => result.status), ["fail", "skipped", "pass"]);
+  assert.match(results[1].reason, /deps did not pass first/);
+  assert.equal(existsSync(join(dir, "ran.txt")), false);
+});
+
+test("a prerequisite that is not part of the run cannot leave a check waiting forever", async () => {
+  const { dir } = repository([]);
+  const results = await runChecks([check("orphan", "side-effect.mjs", { after: ["not-in-this-run"] })], { root: dir, jobs: 2, provided: {}, logDirectory: join(dir, ".gate/logs") });
+  assert.equal(results[0].status, "skipped");
+  assert.match(results[0].reason, /not part of this run/);
+});
+
+test("--only runs a check's prerequisites with it, and the registry refuses an unknown prerequisite, a cycle, and a fast check waiting on a full one", () => {
+  const repo = repository([check("base", "span.mjs", { args: ["base"] }), check("top", "span.mjs", { args: ["top"], after: ["base"] }), check("other", "ok.mjs")]);
+  const run = cli(repo, "--only", "top");
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  assert.match(run.stdout, /PASS\s+base/, "the prerequisite ran too");
+  assert.doesNotMatch(run.stdout, /other/, "and nothing else did");
+  for (const [label, list, message] of [
+    ["unknown", [check("a", "ok.mjs", { after: ["ghost"] })], /ghost, which is not a check/],
+    ["cycle", [check("a", "ok.mjs", { after: ["b"] }), check("b", "ok.mjs", { after: ["a"] })], /form a cycle/],
+    ["self", [check("a", "ok.mjs", { after: ["a"] })], /form a cycle/],
+    ["fast waits for full", [check("a", "ok.mjs", { after: ["b"] }), check("b", "ok.mjs", { tier: "full" })], /cannot wait for b, which is in the full tier/]
+  ]) {
+    const refused = cli(repository(list));
+    assert.equal(refused.status, 2, label);
+    assert.match(refused.stderr, message, label);
+  }
+});
+
+// ---- the dependency installer ----
+
+test("ensure-deps installs only when the lockfile changed, and refuses a directory with no lockfile", () => {
+  const dir = mkdtempSync(join(tmpdir(), "vx-deps-test-"));
+  made.push(dir);
+  const lock = description => JSON.stringify({ name: "fixture", version: "1.0.0", description, lockfileVersion: 3, requires: true, packages: { "": { name: "fixture", version: "1.0.0" } } });
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "fixture", version: "1.0.0" }));
+  writeFileSync(join(dir, "package-lock.json"), lock("one"));
+  const ensure = (...directories) => spawnSync(process.execPath, [resolve(here, "ensure-deps.mjs"), ...directories], { encoding: "utf8" });
+  const first = ensure(dir);
+  assert.equal(first.status, 0, first.stdout + first.stderr);
+  assert.match(first.stdout, /npm ci/);
+  // npm prints "up to date" itself when it reinstalls nothing new, so match the installer's own sentence and the absence of `npm ci`.
+  const second = ensure(dir).stdout;
+  assert.match(second, /dependencies are up to date/, "a second run says it did nothing");
+  assert.doesNotMatch(second, /npm ci/, "and did not run npm");
+  writeFileSync(join(dir, "package-lock.json"), lock("two"));
+  assert.match(ensure(dir).stdout, /npm ci/, "a changed lockfile installs again");
+  const empty = mkdtempSync(join(tmpdir(), "vx-deps-empty-"));
+  made.push(empty);
+  const none = ensure(empty);
+  assert.equal(none.status, 1);
+  assert.match(none.stderr, /no package-lock\.json/);
+  assert.equal(ensure().status, 2, "no directory is a usage error");
+});
+
+// ---- the mutation runner's cleanup ----
+
+test("removing a mutation copy never deletes through a link to the real files, and refuses when a link is left", () => {
+  const base = mkdtempSync(join(tmpdir(), "vx-removecopy-"));
+  made.push(base);
+  const precious = join(base, "precious");
+  mkdirSync(join(precious, "nested"), { recursive: true });
+  writeFileSync(join(precious, "nested/keep.txt"), "the real node_modules");
+  const copy = (name, linkNames) => {
+    const dir = join(base, name);
+    mkdirSync(join(dir, "inside"), { recursive: true });
+    writeFileSync(join(dir, "inside/file.txt"), "a copied file");
+    for (const link of linkNames) symlinkSync(precious, join(dir, link), "junction");
+    return dir;
+  };
+  // a listed link is removed as a link, and the copy goes with it
+  const listed = copy("listed", ["linked"]);
+  removeCopy(listed, ["linked"]);
+  assert.equal(existsSync(listed), false, "the copy is gone");
+  assert.equal(readFileSync(join(precious, "nested/keep.txt"), "utf8"), "the real node_modules", "and what it linked to is untouched");
+  // a link nobody listed: refuse, delete nothing, and the target is still whole
+  const forgotten = copy("forgotten", ["linked"]);
+  assert.throws(() => removeCopy(forgotten, []), /refusing to delete .* still contains a link/);
+  assert.equal(existsSync(join(forgotten, "inside/file.txt")), true, "nothing was deleted");
+  assert.equal(readFileSync(join(precious, "nested/keep.txt"), "utf8"), "the real node_modules");
+  unlinkSync(join(forgotten, "linked"));
+  removeCopy(forgotten, []);
+  assert.equal(existsSync(forgotten), false);
+  removeCopy(join(base, "never-existed"), []);
 });

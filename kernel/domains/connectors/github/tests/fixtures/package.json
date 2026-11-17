@@ -1,0 +1,9 @@
+{
+  "name": "@vaultix/github-interop-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Real libsodium, so tests/interop.rs can check the Rust sealed box against it in both directions. Owned by the kernel: it does not borrow node_modules from the legacy backend.",
+  "dependencies": {
+    "libsodium-wrappers": "0.7.13"
+  }
+}

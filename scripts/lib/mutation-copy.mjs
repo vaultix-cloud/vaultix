@@ -5,12 +5,43 @@
 // report whether they failed. A mutation the tests do not fail on SURVIVED, and the run fails: a test that cannot fail proves
 // nothing (docs/0142, section 3). Copies live under `.gate/mutants/` (ignored by git) and are removed afterwards.
 import { spawn } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-/** Copy `entries` (paths relative to root) into `dir`, keeping their layout, and link `links` (large, read-only: node_modules). */
-function makeCopy({ root, dir, entries, links }) {
+/** Every link (symlink or junction) under a directory. */
+function linksUnder(dir) {
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = resolve(dir, entry.name);
+    if (entry.isSymbolicLink()) found.push(path);
+    else if (entry.isDirectory()) found.push(...linksUnder(path));
+  }
+  return found;
+}
+
+/**
+ * Delete a copy WITHOUT following a link out of it. A recursive delete follows a junction on Windows, and the copy holds links to the
+ * real node_modules: an earlier version of this function emptied the real directory. So the known links are removed as links first,
+ * and if any link is still left anywhere in the copy nothing is deleted at all.
+ */
+export function removeCopy(dir, links = []) {
+  try { lstatSync(dir); } catch { return; }
+  for (const link of links) {
+    const path = resolve(dir, link);
+    try { if (lstatSync(path).isSymbolicLink()) unlinkSync(path); } catch { /* not there */ }
+  }
+  const left = linksUnder(dir);
+  if (left.length > 0) throw new Error(`refusing to delete ${dir}: it still contains a link (${left[0]}), and deleting would follow it`);
   rmSync(dir, { recursive: true, force: true });
+}
+
+/**
+ * Copy `entries` (paths relative to root) into `dir`, keeping their layout, and link `links`. A link is for large things the code under
+ * test only READS. Never link something that code might delete or rewrite (an installer, a build): through the link it would change the
+ * real one. That emptied the real node_modules once; copy it instead.
+ */
+function makeCopy({ root, dir, entries, links }) {
+  removeCopy(dir, links);
   mkdirSync(dir, { recursive: true });
   for (const entry of entries) {
     mkdirSync(dirname(resolve(dir, entry)), { recursive: true });
@@ -37,7 +68,7 @@ function runTests({ dir, cwd, args, timeoutSeconds }) {
     child.on("close", status => {
       clearTimeout(timer);
       const clean = text.replace(/\r/g, "");
-      done({ status: timedOut ? null : status, timedOut, failed: [...clean.matchAll(/^not ok \d+ - (.*)$/gm)].map(match => match[1]) });
+      done({ status: timedOut ? null : status, timedOut, tail: clean.split("\n").filter(line => line.trim()).slice(-45).join("\n"), failed: [...clean.matchAll(/^not ok \d+ - (.*)$/gm)].map(match => match[1]) });
     });
   });
 }
@@ -58,9 +89,10 @@ export async function runMutations({ root, entries, links = [], cwd, testArgs, m
   const options = { root, entries, links };
   makeCopy({ ...options, dir: dirOf("baseline") });
   const baseline = await runTests({ dir: dirOf("baseline"), cwd, args: testArgs, timeoutSeconds: timeoutSeconds * 2 });
-  rmSync(dirOf("baseline"), { recursive: true, force: true });
+  removeCopy(dirOf("baseline"), links);
   console.log(`baseline: ${baseline.status === 0 ? "pass" : `FAIL ${baseline.timedOut ? "(timed out)" : baseline.failed.join("; ")}`}`);
-  if (baseline.status !== 0) return false;
+  if (baseline.status !== 0) { console.log(`the tests fail without any planted bug, so no mutation result would mean anything. Last output:
+${baseline.tail}`); return false; }
 
   const outcomes = new Array(mutations.length);
   let next = 0;
@@ -75,12 +107,12 @@ export async function runMutations({ root, entries, links = [], cwd, testArgs, m
       const before = readFileSync(path, "utf8");
       // A string replacement is literal (so a $ in it is a $); a function replacement may use the pattern's groups.
       const after = before.replace(pattern, typeof replacement === "function" ? replacement : () => replacement);
-      if (after === before) { outcomes[index] = { label, verdict: "unchanged" }; rmSync(dir, { recursive: true, force: true }); continue; }
+      if (after === before) { outcomes[index] = { label, verdict: "unchanged" }; removeCopy(dir, links); continue; }
       writeFileSync(path, after);
       const result = await runTests({ dir, cwd, args: testArgs, timeoutSeconds });
       const caught = result.status !== 0;
       outcomes[index] = { label, verdict: caught ? "caught" : "survived", detail: result.timedOut ? "the tests hung" : result.failed[0]?.slice(0, 90) ?? "the module no longer loads" };
-      rmSync(dir, { recursive: true, force: true });
+      removeCopy(dir, links);
     }
   };
   await Promise.all(Array.from({ length: Math.min(parallel, mutations.length) }, worker));
@@ -89,7 +121,8 @@ export async function runMutations({ root, entries, links = [], cwd, testArgs, m
     if (outcome.verdict === "caught") console.log(`caught      ${outcome.label}  ->  ${outcome.detail}`);
     else { missed += 1; console.log(`!! ${outcome.verdict === "unchanged" ? "NO CHANGE " : "SURVIVED  "}${outcome.label}${outcome.verdict === "unchanged" ? "  (the pattern did not match, so nothing was planted)" : ""}`); }
   }
-  rmSync(resolve(root, ".gate/mutants"), { recursive: true, force: true });
+  // every copy is already removed; what is left is empty directories, and nothing here may contain a link
+  removeCopy(resolve(root, ".gate/mutants"), []);
   console.log(missed === 0 ? `\nall ${mutations.length} planted bugs were caught` : `\n${missed} of ${mutations.length} planted bugs were NOT caught`);
   return missed === 0;
 }

@@ -1,8 +1,9 @@
 #![allow(clippy::unwrap_used)] // test code
 //! GitHub requires secrets sealed with libsodium's `crypto_box_seal`. The other tests use the same Rust library on both
 //! sides, which only proves it agrees with itself. This one checks both directions against real libsodium
-//! (`libsodium-wrappers`, which the inherited backend ships): a box Rust seals, libsodium opens; a box libsodium seals,
-//! Rust opens. It needs Node and the backend's `node_modules`, and FAILS (does not skip) when they are missing.
+//! (`libsodium-wrappers`, pinned in `tests/fixtures/package.json`, which the kernel owns): a box Rust seals, libsodium opens; a box
+//! libsodium seals, Rust opens. It needs Node and `npm ci` in `tests/fixtures` (the gate does that first), and FAILS (does not skip)
+//! when they are missing.
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -15,7 +16,7 @@ use std::process::{Command, Stdio};
 #[test]
 fn a_box_sealed_here_opens_in_libsodium_and_one_sealed_by_libsodium_opens_here() {
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let module = manifest.join("../../../../platform/engine/backend/node_modules/libsodium-wrappers").canonicalize().expect("the backend's libsodium-wrappers is installed (npm ci in platform/engine/backend)");
+    let module = manifest.join("tests/fixtures/node_modules/libsodium-wrappers").canonicalize().expect("libsodium-wrappers is installed (npm ci in kernel/domains/connectors/github/tests/fixtures; node scripts/gate.mjs does it)");
     let script = manifest.join("tests/fixtures/libsodium-interop.cjs");
 
     let secret = SecretKey::generate(&mut OsRng);

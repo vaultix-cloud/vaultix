@@ -57,24 +57,32 @@ export function runCheck(check, { root, logDirectory, env = process.env }) {
 }
 
 /**
- * Run checks with at most `jobs` at a time, and never two checks with the same `serial` key together. `provided` says what the gate
- * could provide (`{ postgres: url }`); a check that needs more is skipped with the reason. `onFinish` is called as each one ends.
+ * Run checks with at most `jobs` at a time, and never two checks with the same `serial` key together. A check with `after` starts
+ * only once those checks have finished, and is skipped (not run, and not a pass) if one of them did not pass. `provided` says what
+ * the gate could provide (`{ postgres: url }`); a check that needs more is skipped with the reason. `onFinish` is called as each one
+ * ends. Resolves to one result per check, in the order given, whatever order they finished in.
  */
 export async function runChecks(checks, { root, logDirectory, jobs, provided = {}, onFinish = () => {} }) {
   const results = new Map();
   const pending = [...checks];
   const running = new Set();
   const serialBusy = new Set();
+  const skip = (check, reason) => {
+    const result = { id: check.id, status: "skipped", seconds: 0, reason };
+    results.set(check.id, result);
+    onFinish(check, result);
+  };
   await new Promise(resolveAll => {
     const launch = () => {
       for (let index = 0; index < pending.length && running.size < jobs;) {
         const check = pending[index];
+        const waiting = (check.after ?? []).filter(id => !results.has(id));
+        if (waiting.length > 0) { index += 1; continue; }
+        const notPassed = (check.after ?? []).filter(id => results.get(id).status !== "pass");
         const missing = (check.needs ?? []).filter(need => !provided[need]);
-        if (missing.length > 0) {
+        if (notPassed.length > 0 || missing.length > 0) {
           pending.splice(index, 1);
-          const result = { id: check.id, status: "skipped", seconds: 0, reason: `needs ${missing.join(" and ")}, which the gate could not provide` };
-          results.set(check.id, result);
-          onFinish(check, result);
+          skip(check, notPassed.length > 0 ? `${notPassed.join(" and ")} did not pass first` : `needs ${missing.join(" and ")}, which the gate could not provide`);
           continue;
         }
         if (check.serial && serialBusy.has(check.serial)) { index += 1; continue; }
@@ -91,10 +99,13 @@ export async function runChecks(checks, { root, logDirectory, jobs, provided = {
         });
         running.add(promise);
       }
+      // Nothing is running and what is left is waiting on a check that is not in this run: it can never start, so say so.
+      if (running.size === 0 && pending.length > 0 && pending.every(check => (check.after ?? []).some(id => !results.has(id)))) {
+        for (const check of pending.splice(0)) skip(check, `its prerequisite ${(check.after ?? []).filter(id => !results.has(id)).join(" and ")} is not part of this run`);
+      }
       if (pending.length === 0 && running.size === 0) resolveAll();
     };
     launch();
   });
-  // In the order the checks were given, whatever order they finished in.
   return checks.map(check => results.get(check.id));
 }

@@ -31,3 +31,6 @@ leftover/api-inventory/__pycache__/
 # scratch from mutation runs
 kernel/.mutation-backup/
 kernel/contracts/documents-mutant/
+
+# the gate: receipts, failure records, the outbox, logs and mutation copies (scripts/gate.mjs)
+.gate/

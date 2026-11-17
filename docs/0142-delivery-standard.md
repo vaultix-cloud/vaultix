@@ -68,10 +68,32 @@ exists the gate writes the same message to `.gate/outbox/` and prints it, and th
 - A capability counted as done because a unit test passes.
 - Leaving a merged branch or worktree behind.
 
-## 7. Build order
+## 7. State
 
-1. Absorb the three open remote branches and delete merged branches and worktrees.
-2. `scripts/gate.mjs`, receipts, the ArkType manifest and failure-record schemas, the pre-push hook. Time every check.
-3. Answer-edit guard and the unowned-source check.
-4. The notification sender, against the owner's address once it exists.
-5. First feature authored whole under this standard: the secrets domain (kernel) with its Svelte screens.
+Built and proven (2026-11-17):
+
+- **The three documents** (`vaultix.feature.v1`, `vaultix.gate-receipt.v1`, `vaultix.gate-failure.v1`), in ArkType in
+  `kernel/contracts/documents/`, with exported JSON Schema, tests that judge each two ways over mechanically broken variants, and
+  `node scripts/mutation-gate-documents.mjs` (12 planted bugs, all caught).
+- **`node scripts/gate.mjs`**: the fast tier, `--full`, `--only`, `--list`, `--verify-receipt`, `--install-hook`; receipts, failure
+  records, the outbox, per-check time limits and timing, prerequisites (`after`), a dependency installer, a disposable Postgres.
+  `node scripts/mutation-gate.mjs` plants bugs in the gate itself (all caught). A failure is never built from a check's output.
+- **Time limits on every database and process test** (`vx_store::testing::budget`, `within`, a watchdog that stops the servers a test
+  started). A drill can no longer wait forever.
+
+Not built:
+
+- **Feature flows.** No feature manifest exists yet, so the "source change triggers the flow" rule and the unowned-source check have
+  nothing to run on. The secrets domain is the first feature to be authored whole.
+- **The answer-edit guard** (section 4): the failure kind exists, nothing produces it yet.
+- **Sending the email** (section 5): the message is built and written to `.gate/outbox/`; there is no mail host or credential yet.
+  The address is set by `VX_GATE_NOTIFY_FROM` and `VX_GATE_NOTIFY_TO`.
+- **Known gaps**, listed on every run (`node scripts/gate.mjs --list`): rustfmt, the authorship audit, the owned-tree check, the
+  standalone image build, the frontend, feature flows.
+
+## 8. Next, in order
+
+1. The answer-edit guard and the unowned-source check, which need the first feature manifest.
+2. The secrets feature authored whole: manifest, flows, mutations, then its Svelte screens.
+3. The notification sender, once a mail host and credential exist (the credential goes in a Vaultix secret, never in chat).
+4. Close the known gaps, each as a check.

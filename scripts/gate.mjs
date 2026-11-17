@@ -16,16 +16,22 @@ import { cpus } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { checks as realChecks, gaps } from "./gate/checks.mjs";
-import { failureFor, writeFailure } from "./gate/failure.mjs";
-import { assertValidReceipt, buildReceipt, readReceipt, verifyReceipt, writeReceipt } from "./gate/receipt.mjs";
 import { runChecks } from "./gate/run.mjs";
 import { dockerAvailable, startTestPostgres } from "./lib/test-postgres.mjs";
-import { command, fits, slug } from "../kernel/contracts/documents/src/gate-parts.ts";
+
+// The gate validates its own documents with the documents package, which needs its dependencies. On a fresh checkout they are not
+// installed, so the gate installs them first (a no-op when they are current) and only then loads the code that needs them.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const bootstrap = spawnSync(process.execPath, [resolve(repoRoot, "scripts/gate/ensure-deps.mjs"), "kernel/contracts/documents"], { stdio: ["ignore", "ignore", "inherit"], windowsHide: true });
+if (bootstrap.status !== 0) { console.error("gate: the documents package's dependencies could not be installed, and the gate needs them"); process.exit(2); }
+const { failureFor, writeFailure } = await import("./gate/failure.mjs");
+const { assertValidReceipt, buildReceipt, readReceipt, verifyReceipt, writeReceipt } = await import("./gate/receipt.mjs");
+const { command, fits, slug } = await import("../kernel/contracts/documents/src/gate-parts.ts");
 
 // The gate's own tests run it against a temporary repository with fake checks. That is only possible with VX_GATE_TEST=1, and a
 // receipt from such a run is in that temporary directory, so it can never stand for a real commit.
 const testMode = process.env.VX_GATE_TEST === "1";
-const root = testMode && process.env.VX_GATE_ROOT ? resolve(process.env.VX_GATE_ROOT) : resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = testMode && process.env.VX_GATE_ROOT ? resolve(process.env.VX_GATE_ROOT) : repoRoot;
 const checks = testMode && process.env.VX_GATE_CHECKS ? (await import(pathToFileURL(resolve(process.env.VX_GATE_CHECKS)).href)).checks : realChecks;
 const args = process.argv.slice(2);
 const flag = name => args.includes(name);
@@ -45,7 +51,36 @@ function validateRegistry(list) {
     if (!Number.isInteger(check.timeoutSeconds) || check.timeoutSeconds < 1 || check.timeoutSeconds > 86400) problems.push(`check ${check.id}: it needs a time limit of 1 to 86400 seconds`);
     if (typeof check.expect !== "string" || !/^[\x20-\x7e]{1,300}$/.test(check.expect)) problems.push(`check ${check.id}: expect is one line of printable text, 300 characters at most`);
   }
+  const byId = new Map(list.map(check => [check.id, check]));
+  for (const check of list) {
+    for (const id of check.after ?? []) {
+      const earlier = byId.get(id);
+      if (!earlier) problems.push(`check ${check.id}: it runs after ${id}, which is not a check`);
+      else if (earlier.tier === "full" && check.tier === "fast") problems.push(`check ${check.id}: a fast check cannot wait for ${id}, which is in the full tier`);
+    }
+  }
+  // A prerequisite cycle would leave its checks waiting for each other, so it is refused here.
+  const visiting = new Set();
+  const done = new Set();
+  const cyclic = id => {
+    if (done.has(id)) return false;
+    if (visiting.has(id)) return true;
+    visiting.add(id);
+    const found = (byId.get(id)?.after ?? []).some(cyclic);
+    visiting.delete(id);
+    done.add(id);
+    return found;
+  };
+  for (const check of list) if (cyclic(check.id)) { problems.push(`check ${check.id}: its prerequisites form a cycle`); break; }
   return problems;
+}
+
+/** The checks a run of `ids` needs: those, and everything they wait for, so `--only` never runs a check without what it relies on. */
+function withPrerequisites(ids) {
+  const wanted = new Set();
+  const add = id => { if (wanted.has(id)) return; wanted.add(id); for (const earlier of checks.find(check => check.id === id)?.after ?? []) add(earlier); };
+  ids.forEach(add);
+  return checks.filter(check => wanted.has(check.id));
 }
 
 function install() {
@@ -81,8 +116,8 @@ if (flag("--verify-receipt")) {
 }
 
 const only = option("--only")?.split(",");
-const toRun = only ? selected.filter(check => only.includes(check.id)) : selected;
 if (only) for (const id of only) if (!checks.some(check => check.id === id)) { console.error(`gate: there is no check "${id}"; see --list`); process.exit(2); }
+const toRun = only ? withPrerequisites(only) : selected;
 
 const clean = git("status", "--porcelain").length === 0;
 const startedAt = new Date();
