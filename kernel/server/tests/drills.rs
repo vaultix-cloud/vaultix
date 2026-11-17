@@ -13,7 +13,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use vx_store::testing::{database, TestDb};
 
-const TOKEN: &str = "drill-bootstrap-token";
+mod support;
+use support::TOKEN;
 const CANARY: &str = "CANARY-drill-value-9d41-do-not-leak";
 
 macro_rules! db_or_skip {
@@ -65,10 +66,13 @@ async fn database_url(db: &TestDb) -> String {
 }
 
 async fn start(url: &str, key: Option<&std::path::Path>, extra: &[(&str, &str)]) -> Server {
+    let pool=vx_store::open(url,2).await.unwrap();
+    support::seed(&pool,"drill","prod").await;
+    pool.close().await;
     let port = free_port();
     let log = temp(&format!("server-{port}.log"));
     let mut command = Command::new(env!("CARGO_BIN_EXE_vaultixd"));
-    command.env("VX_DATABASE_URL", url).env("VX_LISTEN", format!("127.0.0.1:{port}")).env("VX_BOOTSTRAP_TOKEN", TOKEN).stdout(Stdio::null()).stderr(Stdio::from(std::fs::File::create(&log).unwrap()));
+    command.env("VX_DATABASE_URL", url).env("VX_LISTEN", format!("127.0.0.1:{port}")).stdout(Stdio::null()).stderr(Stdio::from(std::fs::File::create(&log).unwrap()));
     if let Some(key) = key {
         command.env("VX_ROOT_KEY_FILE", key);
     }

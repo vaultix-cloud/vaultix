@@ -10,9 +10,9 @@ import { operations } from "../generated/operations.ts";
 import * as schemas from "../generated/schemas.ts";
 
 const base = process.env.VX_BASE;
-const token = process.env.VX_TOKEN;
+let token,otherToken,userId;
 const container = process.env.VX_PSQL_CONTAINER;
-if (!base || !token) throw new Error("run this through scripts/test-contract-v1.mjs");
+if (!base || !process.env.VX_TEST_SETUP_CODE) throw new Error("run this through scripts/test-contract-v1.mjs");
 const document = JSON.parse(readFileSync(new URL("../openapi.json", import.meta.url), "utf8"));
 const psql = sql => spawnSync("docker", ["exec", container, "psql", "-U", "postgres", "-At", "-c", sql], { encoding: "utf8" });
 
@@ -53,6 +53,16 @@ async function call(id, { path = {}, query = {}, headers = {}, body, authorized 
 
 const address = (name = "API_TOKEN", extra = {}) => ({ project: "payments", environment: "prod", name, ...extra });
 
+test("owner setup and separate short-lived sessions use the real contract",async()=>{
+  const credentials={email:"owner@example.test",password:process.env.VX_TEST_AUTH_PASSWORD};
+  const setup={...credentials,setupCode:process.env.VX_TEST_SETUP_CODE,organizationName:"Contract test",project:"payments",environment:"prod"};
+  const owner=await call("setupOwner",{authorized:false,body:setup,expect:200});userId=owner.body.userId;
+  await call("setupOwner",{authorized:false,body:setup,expect:409});
+  await call("createSession",{authorized:false,body:{...credentials,password:"wrong-password-for-test"},expect:401});
+  token=(await call("createSession",{authorized:false,body:credentials,expect:200})).body.bearer;
+  otherToken=(await call("createSession",{authorized:false,body:credentials,expect:200})).body.bearer;
+});
+
 test("status is public and matches the contract", async () => {
   const { body } = await call("getStatus", { authorized: false, expect: 200 });
   assert.equal(body.sealed, false);
@@ -77,7 +87,7 @@ test("secrets: write, list, request, inject and redeem", async () => {
   await call("putSecret", { body: { ...address(), value: CANARY }, expect: 200 });
 
   const list = await call("listSecrets", { query: { project: "payments", environment: "prod" }, expect: 200 });
-  assert.deepEqual(list.body.secrets.map(s => [s.name, s.version, s.updatedBy]), [["API_TOKEN", 3, "operator"]]);
+  assert.deepEqual(list.body.secrets.map(s => [s.name, s.version, s.updatedBy]), [["API_TOKEN", 3, `user:${userId}`]]);
   assert.ok(!list.text.includes(CANARY), "a list never carries a value");
 
   const requested = await call("requestSecretValue", { body: { ...address("DB_PASSWORD"), purpose: "the migration check" }, expect: 200 });
@@ -88,7 +98,7 @@ test("secrets: write, list, request, inject and redeem", async () => {
   assert.equal(made.headers.get("cache-control"), "no-store");
   assert.ok(made.body.handle.startsWith("vxh_"));
 
-  assert.equal((await call("redeemInjection", { path: { handle: made.body.handle }, headers: { "X-Vx-Actor": "mcp:other" }, expect: 410 })).body.code, "handle_invalid");
+  assert.equal((await call("redeemInjection", { path: { handle: made.body.handle }, headers: { Authorization:`Bearer ${otherToken}` }, expect: 410 })).body.code, "handle_invalid");
   const redeemed = await call("redeemInjection", { path: { handle: made.body.handle }, headers: { "X-Vx-Actor": "mcp:contract" }, expect: 200 });
   assert.equal(redeemed.headers.get("cache-control"), "no-store");
   assert.deepEqual(redeemed.body.values.map(v => [v.name, v.value, v.encoding]), [["API_TOKEN", CANARY, "utf8"]], "the contract carries the right value, once");
@@ -173,6 +183,13 @@ const corrupt = schema => {
   if (schema.format === "uuid") return "nope";
   return { string: 12345, integer: "text", number: "text", boolean: "true", array: "nope", object: 12345 }[schema.type];
 };
+
+test("logout revokes only that session and denies its next request",async()=>{
+  await call("revokeSession",{expect:200});
+  await call("listSecrets",{query:{project:"payments",environment:"prod"},expect:401});
+  token=otherToken;
+  await call("listSecrets",{query:{project:"payments",environment:"prod"},expect:200});
+});
 
 test("validators reject drift: every field, removed or corrupted, behaves exactly as the contract says", () => {
   let rejected = 0;
