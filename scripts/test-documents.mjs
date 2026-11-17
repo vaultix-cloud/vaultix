@@ -1,6 +1,6 @@
 // The versioned-documents gate (kernel/contracts/documents, docs/0136): the ArkType documents type-check, the
 // committed JSON Schema files match what the registry exports and released versions are unchanged, and the
-// tests pass: the 77 existing fixtures, the differential fuzz against the hand-written schemas, and the
+// tests pass: the delivery-gate documents (kernel/contracts/documents/tests/gate.test.mjs), the 77 existing fixtures, the differential fuzz against the hand-written schemas, and the
 // version mechanics.
 //
 // Usage: node scripts/test-documents.mjs [--export]   (--export rewrites kernel/contracts/documents/schemas first)
@@ -17,5 +17,5 @@ const run = (label, command, args) => {
 if (process.argv.includes("--export")) run("Export", process.execPath, ["scripts/export.mjs"]);
 run("Type-check", "npx", ["tsc", "--noEmit", "-p", "tsconfig.json"]);
 run("Exported schemas and released locks", process.execPath, ["scripts/export.mjs", "--check"]);
-run("Tests", process.execPath, ["--test", "tests/fixtures.test.mjs", "tests/differential.test.mjs", "tests/versions.test.mjs"]);
+run("Tests", process.execPath, ["--test", "tests/fixtures.test.mjs", "tests/differential.test.mjs", "tests/versions.test.mjs", "tests/gate.test.mjs"]);
 console.log("\ndocuments: the versioned documents are consistent");

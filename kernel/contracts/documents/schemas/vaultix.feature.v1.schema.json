@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaultix.cloud/schemas/vaultix.feature.v1.schema.json",
+  "title": "Vaultix feature manifest",
+  "description": "A feature as the delivery standard defines it (docs/0142): its capabilities, the source it owns, and for each capability the flow that proves it by driving the real thing. A flow lists the planted bugs it must fail on. Every length is in characters.",
+  "type": "object",
+  "properties": {
+    "capabilities": {
+      "type": "array",
+      "maxItems": 64,
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "flows": {
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "object",
+                  "properties": {
+                    "args": {
+                      "type": "array",
+                      "maxItems": 32,
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[\\x20-\\x7e]+$",
+                        "minLength": 1,
+                        "maxLength": 200
+                      }
+                    },
+                    "program": {
+                      "enum": [
+                        "cargo",
+                        "node",
+                        "npm",
+                        "npx"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "args",
+                    "program"
+                  ],
+                  "additionalProperties": false
+                },
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                  "minLength": 1,
+                  "maxLength": 63
+                },
+                "kind": {
+                  "enum": [
+                    "browser",
+                    "cli",
+                    "process"
+                  ]
+                },
+                "mutations": {
+                  "type": "array",
+                  "maxItems": 16,
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                    "minLength": 1,
+                    "maxLength": 63
+                  },
+                  "uniqueItems": true
+                },
+                "timeoutSeconds": {
+                  "type": "integer",
+                  "maximum": 1800,
+                  "minimum": 5
+                }
+              },
+              "required": [
+                "command",
+                "id",
+                "kind",
+                "mutations",
+                "timeoutSeconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^[\\x20-\\x7e]+$",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "flows",
+          "id",
+          "summary"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "owns": {
+      "type": "array",
+      "maxItems": 64,
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/*?\\[\\]{},]+$",
+        "minLength": 1,
+        "maxLength": 300
+      },
+      "uniqueItems": true
+    },
+    "schemaVersion": {
+      "const": "vaultix.feature.v1"
+    },
+    "title": {
+      "type": "string",
+      "pattern": "^[\\x20-\\x7e]+$",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "parity": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "properties": {
+          "capability": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "claim": {
+            "type": "string",
+            "pattern": "^[\\x20-\\x7e]+$",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "proof": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "upstream": {
+            "type": "string",
+            "pattern": "^[\\x20-\\x7e]+$",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "capability",
+          "claim",
+          "proof",
+          "upstream"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "capabilities",
+    "name",
+    "owns",
+    "schemaVersion",
+    "title"
+  ],
+  "additionalProperties": false
+}

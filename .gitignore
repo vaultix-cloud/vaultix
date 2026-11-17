@@ -30,3 +30,4 @@ leftover/api-inventory/__pycache__/
 
 # scratch from mutation runs
 kernel/.mutation-backup/
+kernel/contracts/documents-mutant/

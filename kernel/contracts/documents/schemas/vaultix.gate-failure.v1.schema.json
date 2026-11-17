@@ -1,0 +1,896 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaultix.cloud/schemas/vaultix.gate-failure.v1.schema.json",
+  "title": "Vaultix gate failure",
+  "description": "Why one delivery-gate check failed (docs/0142): the check, what was expected, what was observed, and the rule that the source is fixed, not the answer. Holds only text the gate wrote; a check's own output stays in a local log.",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "object",
+          "properties": {
+            "capability": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "minLength": 1,
+              "maxLength": 63
+            },
+            "feature": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "minLength": 1,
+              "maxLength": 63
+            }
+          },
+          "required": [
+            "capability",
+            "feature"
+          ],
+          "additionalProperties": false
+        },
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "flow": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "kind": {
+          "const": "flow_stale"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "capability",
+        "check",
+        "commit",
+        "expected",
+        "flow",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "object",
+          "properties": {
+            "capability": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "minLength": 1,
+              "maxLength": 63
+            },
+            "feature": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "minLength": 1,
+              "maxLength": 63
+            }
+          },
+          "required": [
+            "capability",
+            "feature"
+          ],
+          "additionalProperties": false
+        },
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "const": "flow_missing"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "capability",
+        "check",
+        "commit",
+        "expected",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "edits": {
+          "type": "array",
+          "maxItems": 50,
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "what": {
+                "enum": [
+                  "assertion",
+                  "baseline",
+                  "ceiling",
+                  "expectation",
+                  "golden",
+                  "snapshot"
+                ]
+              }
+            },
+            "required": [
+              "file",
+              "what"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "const": "answer_edit"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "edits",
+        "expected",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "exitCode": {
+          "type": "integer",
+          "maximum": 4294967295,
+          "minimum": -2147483648
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "const": "check_failed"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "exitCode",
+        "expected",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "feature": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "kind": {
+          "const": "manifest_invalid"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "problems": {
+          "type": "array",
+          "maxItems": 20,
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "expected": {
+                "type": "string",
+                "pattern": "^[\\x20-\\x7e]+$",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^[\\x20-\\x7e]+$",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "expected",
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "expected",
+        "feature",
+        "kind",
+        "observed",
+        "problems",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "files": {
+          "type": "array",
+          "maxItems": 50,
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "uniqueItems": true
+        },
+        "kind": {
+          "const": "unowned_source"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "expected",
+        "files",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "flow": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "kind": {
+          "const": "mutation_survived"
+        },
+        "mutation": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "expected",
+        "flow",
+        "kind",
+        "mutation",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "const": "check_timed_out"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "maximum": 86400,
+          "minimum": 1
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "expected",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier",
+        "timeoutSeconds"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "expected": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "const": "receipt_missing"
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^[\\x20-\\x7e]+$",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rule": {
+          "const": "fix the source; do not change the expectation, ceiling, baseline or snapshot to match"
+        },
+        "schemaVersion": {
+          "const": "vaultix.gate-failure.v1"
+        },
+        "tier": {
+          "enum": [
+            "fast",
+            "full"
+          ]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[A-Za-z0-9._@+\\-/]+$",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "line": {
+              "type": "integer",
+              "maximum": 10000000,
+              "minimum": 1
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        },
+        "logPath": {
+          "type": "string",
+          "pattern": "^\\.gate\\/logs\\/[A-Za-z0-9._\\-]+$",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "check",
+        "commit",
+        "expected",
+        "kind",
+        "observed",
+        "rule",
+        "schemaVersion",
+        "tier"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

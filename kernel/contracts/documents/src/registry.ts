@@ -9,6 +9,9 @@ import { type } from "arktype";
 import type { Type } from "arktype";
 import { connection, connectionMeta } from "./ai-connection.v1.ts";
 import { persona, personaMeta } from "./ai-persona.v1.ts";
+import { feature, featureMeta } from "./feature.v1.ts";
+import { failure, failureMeta } from "./gate-failure.v1.ts";
+import { receipt, receiptMeta } from "./gate-receipt.v1.ts";
 import { exportJsonSchema } from "./rules.ts";
 
 export type Status = "draft" | "released";
@@ -20,10 +23,13 @@ export interface DocumentFamily {
 }
 export type Registry = Record<string, DocumentFamily>;
 
-/** Both documents are drafts: nothing is released before the first public release. */
+/** Every document is a draft: nothing is released before the first public release. */
 export const documents: Registry = {
   "vaultix.ai-connection": { versions: { v1: { id: "vaultix.ai-connection.v1", status: "draft", schema: connection, ...connectionMeta } } },
-  "vaultix.ai-persona": { versions: { v1: { id: "vaultix.ai-persona.v1", status: "draft", schema: persona, ...personaMeta } } }
+  "vaultix.ai-persona": { versions: { v1: { id: "vaultix.ai-persona.v1", status: "draft", schema: persona, ...personaMeta } } },
+  "vaultix.feature": { versions: { v1: { id: "vaultix.feature.v1", status: "draft", schema: feature, ...featureMeta } } },
+  "vaultix.gate-failure": { versions: { v1: { id: "vaultix.gate-failure.v1", status: "draft", schema: failure, ...failureMeta } } },
+  "vaultix.gate-receipt": { versions: { v1: { id: "vaultix.gate-receipt.v1", status: "draft", schema: receipt, ...receiptMeta } } }
 };
 
 export type Problem = { path: string; expected: string };
