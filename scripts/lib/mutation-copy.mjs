@@ -5,7 +5,7 @@
 // report whether they failed. A mutation the tests do not fail on SURVIVED, and the run fails: a test that cannot fail proves
 // nothing (docs/0142, section 3). Copies live under `.gate/mutants/` (ignored by git) and are removed afterwards.
 import { spawn } from "node:child_process";
-import { cpSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { cpSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 /** Every link (symlink or junction) under a directory. */
@@ -85,7 +85,7 @@ function runTests({ dir, cwd, args, timeoutSeconds }) {
  */
 export async function runMutations({ root, entries, links = [], cwd, testArgs, mutations, parallel = 4, timeoutSeconds = 120, name }) {
   const base = resolve(root, ".gate/mutants", name);
-  const dirOf = index => `${base}-${index}`;
+  const dirOf = index => resolve(base, String(index));
   const options = { root, entries, links };
   makeCopy({ ...options, dir: dirOf("baseline") });
   const baseline = await runTests({ dir: dirOf("baseline"), cwd, args: testArgs, timeoutSeconds: timeoutSeconds * 2 });
@@ -121,8 +121,10 @@ ${baseline.tail}`); return false; }
     if (outcome.verdict === "caught") console.log(`caught      ${outcome.label}  ->  ${outcome.detail}`);
     else { missed += 1; console.log(`!! ${outcome.verdict === "unchanged" ? "NO CHANGE " : "SURVIVED  "}${outcome.label}${outcome.verdict === "unchanged" ? "  (the pattern did not match, so nothing was planted)" : ""}`); }
   }
-  // every copy is already removed; what is left is empty directories, and nothing here may contain a link
-  removeCopy(resolve(root, ".gate/mutants"), []);
+  // Every copy is already removed. Remove only THIS run's directory: another run (the gate runs two mutation checks at once) has
+  // copies under .gate/mutants too, and deleting the shared directory took theirs away mid-test. The shared parent goes only if empty.
+  removeCopy(base, []);
+  try { rmdirSync(resolve(root, ".gate/mutants")); } catch { /* another run is still using it */ }
   console.log(missed === 0 ? `\nall ${mutations.length} planted bugs were caught` : `\n${missed} of ${mutations.length} planted bugs were NOT caught`);
   return missed === 0;
 }

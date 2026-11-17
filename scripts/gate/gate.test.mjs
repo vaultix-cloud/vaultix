@@ -14,7 +14,7 @@ import test, { after } from "node:test";
 import { fileURLToPath } from "node:url";
 import { failureFor, messageFor } from "./failure.mjs";
 import { buildReceipt, verifyReceipt } from "./receipt.mjs";
-import { removeCopy } from "../lib/mutation-copy.mjs";
+import { removeCopy, runMutations } from "../lib/mutation-copy.mjs";
 import { runCheck, runChecks } from "./run.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -389,4 +389,29 @@ test("removing a mutation copy never deletes through a link to the real files, a
   removeCopy(forgotten, []);
   assert.equal(existsSync(forgotten), false);
   removeCopy(join(base, "never-existed"), []);
+});
+
+test("two mutation runs at once do not disturb each other: one finishing leaves the other's copies alone", async () => {
+  // The gate runs two mutation checks together. Each used to delete the shared .gate/mutants when it finished, which took the other's
+  // copies away mid-test (EBUSY on Windows, a vanished file elsewhere). The slow run here checks its own copy is still there after it
+  // has slept past the fast run's finish.
+  const root = mkdtempSync(join(tmpdir(), "vx-mutation-race-"));
+  made.push(root);
+  writeFileSync(join(root, "value.txt"), "good");
+  const tests = (name, sleepMs) => ["-e", `
+    const fs = require("fs");
+    setTimeout(() => {
+      const ok = fs.existsSync("value.txt") && fs.readFileSync("value.txt", "utf8") === "good";
+      console.log(ok ? "ok 1 - ${name}" : "not ok 1 - ${name}");
+      process.exit(ok ? 0 : 1);
+    }, ${sleepMs});`];
+  const options = { root, entries: ["value.txt"], cwd: ".", parallel: 1, timeoutSeconds: 30, mutations: [["good becomes bad", "value.txt", /good/, "bad"]] };
+  const originalLog = console.log;
+  console.log = () => {};
+  let slow; let fast;
+  try { [slow, fast] = await Promise.all([runMutations({ ...options, name: "slow", testArgs: tests("slow", 2500) }), runMutations({ ...options, name: "fast", testArgs: tests("fast", 100) })]); }
+  finally { console.log = originalLog; }
+  assert.deepEqual([slow, fast], [true, true], "both runs caught their planted bug and neither was disturbed");
+  assert.equal(readFileSync(join(root, "value.txt"), "utf8"), "good", "the real file was never touched");
+  assert.equal(existsSync(join(root, ".gate/mutants")), false, "and nothing is left behind");
 });

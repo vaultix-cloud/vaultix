@@ -56,13 +56,19 @@ const mutations = [
   ["the test hooks work without VX_GATE_TEST=1", cli, /const testMode = process\.env\.VX_GATE_TEST === "1";/, "const testMode = true;"],
   ["--only runs a check without its prerequisites", cli, /const toRun = only \? withPrerequisites\(only\) : selected;/, "const toRun = only ? selected.filter(check => only.includes(check.id)) : selected;"],
   ["a prerequisite cycle is accepted", cli, /if \(cyclic\(check\.id\)\) \{/, "if (false) {"],
+  ["a mutation run deletes the directory other runs are using", "scripts/lib/mutation-copy.mjs", /removeCopy\(base, \[\]\);\n  try \{ rmdirSync\(resolve\(root, "\.gate\/mutants"\)\); \} catch \{ \/\* another run is still using it \*\/ \}/, 'removeCopy(resolve(root, ".gate/mutants"), []);'],
   ["the dependency installer ignores a changed lockfile", "scripts/gate/ensure-deps.mjs", /readFileSync\(marker, "utf8"\)\.trim\(\) === hash/, "true"],
   ["the dependency installer reinstalls every time", "scripts/gate/ensure-deps.mjs", /if \(existsSync\(marker\) && /, "if (false && "],
   ["the merge guard passes when there is no receipt", cli, /: \[`there is no \$\{wanted\}-tier receipt[^\n]*`\];/, ": [];"]
 ];
 
+// `node scripts/mutation-gate.mjs <text>` runs only the mutations whose label contains <text>.
+const filter = process.argv[2];
+const selected = filter ? mutations.filter(mutation => mutation[0].includes(filter)) : mutations;
+if (selected.length === 0) { console.error(`no mutation matches "${filter}"`); process.exit(2); }
+
 const ok = await runMutations({
-  root, name: "gate", mutations, parallel: 4, timeoutSeconds: 100,
+  root, name: "gate", mutations: selected, parallel: 4, timeoutSeconds: 100,
   // The gate imports the documents' schemas, and its tests check that every real check names a script that exists.
   // node_modules is COPIED (arktype and its two packages, 1.5 MB) and never linked: some of these mutations make the dependency
   // installer run `npm ci`, which deletes node_modules, and through a link that emptied the real one.
