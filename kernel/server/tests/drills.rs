@@ -1,3 +1,4 @@
+#![allow(clippy::print_stdout, clippy::print_stderr)] // test output: skip notices and the drill summary
 #![allow(clippy::unwrap_used, clippy::disallowed_methods)] // test code; the drills read values to compare them
 //! Failure drills against the real `vaultixd` process (docs/0140, section 8). Run them with `node scripts/test-vx.mjs`; without
 //! `VX_TEST_DATABASE_URL` each prints "skipped" and passes, so a plain `cargo test` proves nothing about them.
@@ -37,6 +38,7 @@ impl Drop for Server {
     fn drop(&mut self) {
         let _ = self.child.kill();
         let _ = self.child.wait();
+        vx_store::testing::untrack(self.child.id());
     }
 }
 
@@ -75,7 +77,9 @@ async fn start(url: &str, key: Option<&std::path::Path>, extra: &[(&str, &str)])
     for (k, v) in extra {
         command.env(k, v);
     }
-    let server = Server { child: command.spawn().unwrap(), base: format!("127.0.0.1:{port}"), log };
+    let child = command.spawn().unwrap();
+    vx_store::testing::track(child.id()); // so the watchdog can stop it if the test blocks where a timeout cannot reach
+    let server = Server { child, base: format!("127.0.0.1:{port}"), log };
     for _ in 0..150 {
         if tokio::net::TcpStream::connect(&server.base).await.is_ok() {
             return server;
@@ -89,10 +93,15 @@ async fn call(base: &str, method: &str, path: &str, body: Option<&Value>, actor:
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     let payload = body.map(Value::to_string).unwrap_or_default();
     let request = format!("{method} {path} HTTP/1.1\r\nHost: {base}\r\nConnection: close\r\nAuthorization: Bearer {TOKEN}\r\nX-Vx-Actor: {actor}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{payload}", payload.len());
-    let mut stream = tokio::net::TcpStream::connect(base).await?;
-    stream.write_all(request.as_bytes()).await?;
-    let mut buffer = String::new();
-    stream.read_to_string(&mut buffer).await?;
+    // A server that accepts and then says nothing must fail this call, not wait: the whole exchange has a limit.
+    let exchange = async {
+        let mut stream = tokio::net::TcpStream::connect(base).await?;
+        stream.write_all(request.as_bytes()).await?;
+        let mut buffer = String::new();
+        stream.read_to_string(&mut buffer).await?;
+        Ok::<String, std::io::Error>(buffer)
+    };
+    let buffer = tokio::time::timeout(Duration::from_secs(20), exchange).await.map_err(|_| std::io::Error::new(std::io::ErrorKind::TimedOut, format!("{method} {path}: no answer within 20s")))??;
     let status: u16 = buffer.split_whitespace().nth(1).and_then(|s| s.parse().ok()).ok_or_else(|| std::io::Error::other("no status"))?;
     let text = buffer.split("\r\n\r\n").nth(1).unwrap_or("");
     Ok((status, serde_json::from_str(text).unwrap_or(Value::Null)))
@@ -109,14 +118,35 @@ async fn ready(base: &str) -> (u16, Vec<String>) {
 
 /// Run `vaultixd <args>` with the given database and key, and return (exit success, stdout + stderr).
 fn command(url: &str, key: &std::path::Path, args: &[&str]) -> (bool, String) {
-    let output = Command::new(env!("CARGO_BIN_EXE_vaultixd")).args(args).env("VX_DATABASE_URL", url).env("VX_ROOT_KEY_FILE", key).output().unwrap();
-    (output.status.success(), format!("{}{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr)))
+    // Polled against a deadline, so a command that stalls (a lock it never gets) is stopped and fails the test.
+    let mut child = Command::new(env!("CARGO_BIN_EXE_vaultixd")).args(args).env("VX_DATABASE_URL", url).env("VX_ROOT_KEY_FILE", key).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
+    vx_store::testing::track(child.id());
+    let deadline = std::time::Instant::now() + Duration::from_secs(120);
+    let status = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break status;
+        }
+        if std::time::Instant::now() > deadline {
+            let _ = child.kill();
+            let _ = child.wait();
+            vx_store::testing::untrack(child.id());
+            panic!("`vaultixd {}` did not finish within 120s", args.first().copied().unwrap_or(""));
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    };
+    vx_store::testing::untrack(child.id());
+    let output = child.wait_with_output().unwrap();
+    (status.success(), format!("{}{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr)))
 }
 
 // ---- readiness ----
 
 #[tokio::test]
 async fn readiness_names_each_reason_and_recovers_when_it_is_fixed() {
+    vx_store::testing::budget("readiness_names_each_reason_and_recovers_when_it_is_fixed", 300, readiness_names_each_reason_and_recovers_when_it_is_fixed_body()).await
+}
+
+async fn readiness_names_each_reason_and_recovers_when_it_is_fixed_body() {
     let db = db_or_skip!();
     let url = database_url(&db).await;
     let key = key_file("ready.key");
@@ -134,10 +164,10 @@ async fn readiness_names_each_reason_and_recovers_when_it_is_fixed() {
     drop(skewed);
 
     let server = start(&url, Some(&key), &[]).await;
-    sqlx::query("ALTER TABLE vx_operate_audit_heads RENAME TO vx_operate_audit_heads_off").execute(&db.pool).await.unwrap();
+    vx_store::testing::within("rename the audit table away", 30, sqlx::query("ALTER TABLE vx_operate_audit_heads RENAME TO vx_operate_audit_heads_off").execute(&db.pool)).await.unwrap();
     assert_eq!(ready(&server.base).await, (503, vec!["audit_unavailable".to_string()]), "audit cannot record, so the instance says it is not ready");
     assert_eq!(put(&server.base, "BLOCKED").await.unwrap(), 500, "and a write is refused, not made without a record");
-    sqlx::query("ALTER TABLE vx_operate_audit_heads_off RENAME TO vx_operate_audit_heads").execute(&db.pool).await.unwrap();
+    vx_store::testing::within("rename the audit table back", 30, sqlx::query("ALTER TABLE vx_operate_audit_heads_off RENAME TO vx_operate_audit_heads").execute(&db.pool)).await.unwrap();
     assert_eq!(ready(&server.base).await, (200, vec![]), "fixing the cause is enough: no restart");
     let leftover: i64 = sqlx::query_scalar("SELECT count(*) FROM vx_secrets_secrets WHERE name = 'BLOCKED'").fetch_one(&db.pool).await.unwrap();
     assert_eq!(leftover, 0, "the refused write left nothing behind");
@@ -145,7 +175,7 @@ async fn readiness_names_each_reason_and_recovers_when_it_is_fixed() {
     // the database disappears under a running server
     let admin = vx_store::open(&std::env::var("VX_TEST_DATABASE_URL").unwrap(), 2).await.unwrap();
     let name: String = sqlx::query_scalar("SELECT current_database()").fetch_one(&db.pool).await.unwrap();
-    sqlx::query(&format!("DROP DATABASE {name} WITH (FORCE)")).execute(&admin).await.unwrap();
+    vx_store::testing::within("drop the database under the running server", 30, sqlx::query(&format!("DROP DATABASE {name} WITH (FORCE)")).execute(&admin)).await.unwrap();
     assert_eq!(ready(&server.base).await, (503, vec!["database_unavailable".to_string()]));
     db.finish().await;
 }
@@ -158,6 +188,10 @@ fn jitter(range_ms: u64) -> u64 {
 
 #[tokio::test]
 async fn killing_the_server_at_random_moments_never_loses_an_acknowledged_write() {
+    vx_store::testing::budget("killing_the_server_at_random_moments_never_loses_an_acknowledged_write", 120 + 25 * std::env::var("VX_DRILL_CYCLES").ok().and_then(|v| v.parse::<u64>().ok()).unwrap_or(12), killing_the_server_at_random_moments_never_loses_an_acknowledged_write_body()).await
+}
+
+async fn killing_the_server_at_random_moments_never_loses_an_acknowledged_write_body() {
     let db = db_or_skip!();
     let url = database_url(&db).await;
     let key = key_file("kill.key");
@@ -179,6 +213,15 @@ async fn killing_the_server_at_random_moments_never_loses_an_acknowledged_write(
                     }
                 }
             }));
+        }
+        // Do not kill until this cycle has an acknowledged write. A fixed pause is a guess about how fast the machine is: on a busy one
+        // the server has answered nothing yet, the kill lands on an idle server, and the cycle proves nothing. Waiting for the first
+        // acknowledgement means every kill lands while writes are in flight, whatever the load.
+        let started_with = acknowledged.lock().unwrap().len();
+        let deadline = std::time::Instant::now() + Duration::from_secs(30);
+        while acknowledged.lock().unwrap().len() == started_with {
+            assert!(std::time::Instant::now() < deadline, "cycle {cycle}: no write was acknowledged within 30s of the server starting");
+            tokio::time::sleep(Duration::from_millis(25)).await;
         }
         tokio::time::sleep(Duration::from_millis(120 + jitter(500))).await;
         let mut server = server;
@@ -222,6 +265,10 @@ async fn killing_the_server_at_random_moments_never_loses_an_acknowledged_write(
 
 #[tokio::test]
 async fn a_whole_instance_is_rebuilt_from_a_backup_and_the_recovery_key_alone() {
+    vx_store::testing::budget("a_whole_instance_is_rebuilt_from_a_backup_and_the_recovery_key_alone", 300, a_whole_instance_is_rebuilt_from_a_backup_and_the_recovery_key_alone_body()).await
+}
+
+async fn a_whole_instance_is_rebuilt_from_a_backup_and_the_recovery_key_alone_body() {
     let (old, fresh, other) = (db_or_skip!(), db_or_skip!(), db_or_skip!());
     let (old_url, fresh_url, other_url) = (database_url(&old).await, database_url(&fresh).await, database_url(&other).await);
     let key = key_file("rebuild-old.key");

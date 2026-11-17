@@ -1,3 +1,4 @@
+#![allow(clippy::print_stdout, clippy::print_stderr)] // test output: skip notices and the drill summary
 #![allow(clippy::unwrap_used)] // test helpers
 //! The HTTP surface against a real database. The router is private to the binary crate, so these
 //! tests start the compiled binary and talk to it over a socket.
@@ -60,6 +61,10 @@ async fn database_url(pool: &sqlx::PgPool) -> String {
 
 #[tokio::test]
 async fn the_core_starts_sealed_and_guards_its_operate_routes() {
+    vx_store::testing::budget("the_core_starts_sealed_and_guards_its_operate_routes", 300, the_core_starts_sealed_and_guards_its_operate_routes_body()).await
+}
+
+async fn the_core_starts_sealed_and_guards_its_operate_routes_body() {
     let Some(db) = database().await else {
         eprintln!("skipped: VX_TEST_DATABASE_URL is not set");
         return;
@@ -87,6 +92,10 @@ async fn the_core_starts_sealed_and_guards_its_operate_routes() {
 
 #[tokio::test]
 async fn without_a_bootstrap_token_the_operate_routes_are_off() {
+    vx_store::testing::budget("without_a_bootstrap_token_the_operate_routes_are_off", 300, without_a_bootstrap_token_the_operate_routes_are_off_body()).await
+}
+
+async fn without_a_bootstrap_token_the_operate_routes_are_off_body() {
     let Some(db) = database().await else {
         eprintln!("skipped: VX_TEST_DATABASE_URL is not set");
         return;

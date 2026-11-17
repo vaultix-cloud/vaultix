@@ -53,6 +53,10 @@ async fn count(pool: &PgPool, table: &str) -> i64 {
 
 #[tokio::test]
 async fn a_backup_restores_into_a_fresh_database_with_everything_intact() {
+    vx_store::testing::budget("a_backup_restores_into_a_fresh_database_with_everything_intact", 300, a_backup_restores_into_a_fresh_database_with_everything_intact_body()).await
+}
+
+async fn a_backup_restores_into_a_fresh_database_with_everything_intact_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -83,6 +87,10 @@ async fn a_backup_restores_into_a_fresh_database_with_everything_intact() {
 
 #[tokio::test]
 async fn the_file_shows_nothing_without_the_key_and_a_wrong_key_or_damage_is_refused_the_same_way() {
+    vx_store::testing::budget("the_file_shows_nothing_without_the_key_and_a_wrong_key_or_damage_is_refused_the_same_way", 300, the_file_shows_nothing_without_the_key_and_a_wrong_key_or_damage_is_refused_the_same_way_body()).await
+}
+
+async fn the_file_shows_nothing_without_the_key_and_a_wrong_key_or_damage_is_refused_the_same_way_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -107,6 +115,10 @@ async fn the_file_shows_nothing_without_the_key_and_a_wrong_key_or_damage_is_ref
 
 #[tokio::test]
 async fn a_target_that_already_holds_data_is_refused_and_left_exactly_as_it_was() {
+    vx_store::testing::budget("a_target_that_already_holds_data_is_refused_and_left_exactly_as_it_was", 300, a_target_that_already_holds_data_is_refused_and_left_exactly_as_it_was_body()).await
+}
+
+async fn a_target_that_already_holds_data_is_refused_and_left_exactly_as_it_was_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -122,6 +134,10 @@ async fn a_target_that_already_holds_data_is_refused_and_left_exactly_as_it_was(
 
 #[tokio::test]
 async fn a_backup_from_a_different_schema_is_refused() {
+    vx_store::testing::budget("a_backup_from_a_different_schema_is_refused", 300, a_backup_from_a_different_schema_is_refused_body()).await
+}
+
+async fn a_backup_from_a_different_schema_is_refused_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -135,6 +151,10 @@ async fn a_backup_from_a_different_schema_is_refused() {
 
 #[tokio::test]
 async fn a_backup_of_a_tampered_chain_is_refused_and_nothing_is_restored() {
+    vx_store::testing::budget("a_backup_of_a_tampered_chain_is_refused_and_nothing_is_restored", 300, a_backup_of_a_tampered_chain_is_refused_and_nothing_is_restored_body()).await
+}
+
+async fn a_backup_of_a_tampered_chain_is_refused_and_nothing_is_restored_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -150,6 +170,10 @@ async fn a_backup_of_a_tampered_chain_is_refused_and_nothing_is_restored() {
 
 #[tokio::test]
 async fn a_backup_taken_while_writes_are_happening_is_one_consistent_moment() {
+    vx_store::testing::budget("a_backup_taken_while_writes_are_happening_is_one_consistent_moment", 300, a_backup_taken_while_writes_are_happening_is_one_consistent_moment_body()).await
+}
+
+async fn a_backup_taken_while_writes_are_happening_is_one_consistent_moment_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -190,6 +214,10 @@ async fn a_backup_taken_while_writes_are_happening_is_one_consistent_moment() {
 
 #[tokio::test]
 async fn an_anchor_accepts_the_same_database_and_one_that_has_moved_on() {
+    vx_store::testing::budget("an_anchor_accepts_the_same_database_and_one_that_has_moved_on", 300, an_anchor_accepts_the_same_database_and_one_that_has_moved_on_body()).await
+}
+
+async fn an_anchor_accepts_the_same_database_and_one_that_has_moved_on_body() {
     let db = db_or_skip!();
     let ring = ring();
     seed(&db.pool, &ring).await;
@@ -205,6 +233,10 @@ async fn an_anchor_accepts_the_same_database_and_one_that_has_moved_on() {
 
 #[tokio::test]
 async fn an_old_backup_restored_over_a_newer_instance_is_caught_by_the_newest_anchor() {
+    vx_store::testing::budget("an_old_backup_restored_over_a_newer_instance_is_caught_by_the_newest_anchor", 300, an_old_backup_restored_over_a_newer_instance_is_caught_by_the_newest_anchor_body()).await
+}
+
+async fn an_old_backup_restored_over_a_newer_instance_is_caught_by_the_newest_anchor_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -225,6 +257,10 @@ async fn an_old_backup_restored_over_a_newer_instance_is_caught_by_the_newest_an
 
 #[tokio::test]
 async fn a_rewritten_chain_is_caught_even_when_it_is_internally_valid_and_as_long() {
+    vx_store::testing::budget("a_rewritten_chain_is_caught_even_when_it_is_internally_valid_and_as_long", 300, a_rewritten_chain_is_caught_even_when_it_is_internally_valid_and_as_long_body()).await
+}
+
+async fn a_rewritten_chain_is_caught_even_when_it_is_internally_valid_and_as_long_body() {
     let (source, other) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;
@@ -245,6 +281,10 @@ async fn a_rewritten_chain_is_caught_even_when_it_is_internally_valid_and_as_lon
 
 #[tokio::test]
 async fn an_anchor_that_was_altered_or_signed_by_another_instance_is_refused() {
+    vx_store::testing::budget("an_anchor_that_was_altered_or_signed_by_another_instance_is_refused", 300, an_anchor_that_was_altered_or_signed_by_another_instance_is_refused_body()).await
+}
+
+async fn an_anchor_that_was_altered_or_signed_by_another_instance_is_refused_body() {
     let db = db_or_skip!();
     let ring = ring();
     seed(&db.pool, &ring).await;
@@ -279,6 +319,10 @@ fn forge(file: &[u8], ring: &Keyring, edit: impl Fn(&mut serde_json::Value)) -> 
 
 #[tokio::test]
 async fn a_backup_whose_manifest_disagrees_with_its_data_is_refused_before_anything_is_committed() {
+    vx_store::testing::budget("a_backup_whose_manifest_disagrees_with_its_data_is_refused_before_anything_is_committed", 300, a_backup_whose_manifest_disagrees_with_its_data_is_refused_before_anything_is_committed_body()).await
+}
+
+async fn a_backup_whose_manifest_disagrees_with_its_data_is_refused_before_anything_is_committed_body() {
     let (source, target) = (db_or_skip!(), db_or_skip!());
     let ring = ring();
     seed(&source.pool, &ring).await;

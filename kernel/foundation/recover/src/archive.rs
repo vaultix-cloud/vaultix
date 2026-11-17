@@ -156,7 +156,7 @@ pub async fn restore(pool: &PgPool, ring: &Keyring, file: &[u8]) -> Result<Manif
     for entry in &manifest.tables {
         let data = body.get(offset..offset + entry.bytes).ok_or(RecoverError::WrongKeyOrCorrupt)?;
         offset += entry.bytes;
-        let mut copy = (&mut *tx).copy_in_raw(&format!("COPY \"{}\" FROM STDIN (FORMAT binary)", entry.name)).await?;
+        let mut copy = tx.copy_in_raw(&format!("COPY \"{}\" FROM STDIN (FORMAT binary)", entry.name)).await?;
         copy.send(data).await?;
         copy.finish().await?;
     }
