@@ -57,6 +57,15 @@ const manifestInvalid = type({ ...common, kind: "'manifest_invalid'", feature: s
   .narrow(notArray);
 const receiptMissing = type({ ...common, kind: "'receipt_missing'" }).onUndeclaredKey("reject").narrow(notArray);
 
+/** The stages of landing a branch on main (scripts/absorb.mjs), so a failure says which one stopped. */
+const absorbStage = type("'preflight' | 'update' | 'gate' | 'push' | 'cleanup' | 'verify'");
+/** A branch that could not be landed on main. Nothing is deleted when this is recorded: a failed absorb leaves the branch intact. */
+const absorbFailed = type({ ...common, kind: "'absorb_failed'", stage: absorbStage, branch: line(1, 100) }).onUndeclaredKey("reject").narrow(notArray);
+/** A ref or worktree that should be gone and is not, or a local main that has fallen behind: found by the hygiene check. */
+const leftoverRef = type({ ...common, kind: "'leftover_ref'", problem: "'merged_branch' | 'merged_worktree' | 'local_main_behind'", ref: line(1, 100) })
+  .onUndeclaredKey("reject")
+  .narrow(notArray);
+
 /** Structural validation of one gate failure record. */
 export const failure = checkFailed
   .or(checkTimedOut)
@@ -66,7 +75,9 @@ export const failure = checkFailed
   .or(unownedSource)
   .or(answerEdit)
   .or(manifestInvalid)
-  .or(receiptMissing);
+  .or(receiptMissing)
+  .or(absorbFailed)
+  .or(leftoverRef);
 export type Failure = typeof failure.infer;
 
 export const failureMeta = {

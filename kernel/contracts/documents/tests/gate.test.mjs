@@ -108,6 +108,24 @@ test("an answer edit cannot be recorded without saying what was edited, and a fa
   rejects(subjects.failure, { ...failures.check_failed, kind: "something_else" }, "an unknown kind");
 });
 
+test("a failed absorb says which stage stopped and which branch, and a leftover says what is left over: from the lists, never free text", () => {
+  for (const stage of ["preflight", "update", "gate", "push", "cleanup", "verify"]) {
+    assert.deepEqual(judges(subjects.failure, { ...failures.absorb_failed, stage }), { arktype: true, exported: true }, `stage ${stage}`);
+  }
+  for (const bad of ["teleport", "", "Gate", "gate ", "push\n"]) rejects(subjects.failure, { ...failures.absorb_failed, stage: bad }, `stage ${JSON.stringify(bad)}`);
+  rejects(subjects.failure, (({ stage, ...rest }) => rest)(failures.absorb_failed), "no stage");
+  rejects(subjects.failure, (({ branch, ...rest }) => rest)(failures.absorb_failed), "no branch");
+  rejects(subjects.failure, { ...failures.absorb_failed, branch: "a".repeat(101) }, "a branch name too long");
+  for (const problem of ["merged_branch", "merged_worktree", "local_main_behind"]) {
+    assert.deepEqual(judges(subjects.failure, { ...failures.leftover_ref, problem }), { arktype: true, exported: true }, `problem ${problem}`);
+  }
+  for (const bad of ["stale", "", "merged branch", "MERGED_BRANCH"]) rejects(subjects.failure, { ...failures.leftover_ref, problem: bad }, `problem ${JSON.stringify(bad)}`);
+  rejects(subjects.failure, (({ problem, ...rest }) => rest)(failures.leftover_ref), "no problem");
+  rejects(subjects.failure, (({ ref, ...rest }) => rest)(failures.leftover_ref), "no ref");
+  rejects(subjects.failure, { ...failures.leftover_ref, stage: "gate" }, "another kind's field");
+  rejects(subjects.failure, { ...failures.absorb_failed, problem: "merged_branch" }, "another kind's field");
+});
+
 test("paths and globs cannot be absolute or climb out of the repository, on any field that takes one", () => {
   for (const bad of ["/etc/passwd", "../outside", "a/../../b", "a/..", "C:\\windows", "a\\b", "a b", "a\nb", ""]) {
     rejects(subjects.failure, { ...failures.unowned_source, files: [bad] }, `unowned file ${JSON.stringify(bad)}`);

@@ -207,6 +207,7 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 | Task | Read |
 | --- | --- |
 | Delivering anything: whole features, flow-proof tests, the gate, receipts, failure records, the merge guard | `docs/0142-delivery-standard.md` + `node scripts/gate.mjs --list` |
+| Landing a branch on main, deleting it, loud failures that reach the agent (alerts, hooks, webhook) | `docs/0145-absorb-and-alerts.md` + `node scripts/absorb.mjs --status` |
 | Vocabulary: the one term for a thing, and what the owner calls it | `docs/lexicon.json` |
 | What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
 | Single point of failure, scale ladder, failure drills, roadmap from one node to a fleet | `docs/0140-roadmap-single-instance-to-fleet.md` + `docs/0134-foundation-rewrite.md` |
@@ -247,6 +248,8 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 node scripts/gate.mjs            # the fast tier: the definition of green before a push (docs/0142)
 node scripts/gate.mjs --full     # plus drills and mutation checks: before a merge to main
 node scripts/gate.mjs --verify-receipt full   # the merge guard: a passing full receipt for HEAD must exist
+node scripts/absorb.mjs <branch> [--update]   # land a branch on main and leave nothing behind; a failure is an alert that stays until fixed (docs/0145)
+node scripts/absorb.mjs --status | --hygiene   # unresolved alerts; leftover branches and worktrees
 cd panel && go test ./...
 scripts/check-owned.sh
 # engine (native): scripts/run-core.sh   (runs platform/engine)

@@ -48,7 +48,9 @@ export const failures = {
   unowned_source: { ...common, kind: "unowned_source", files: ["kernel/server/src/new.rs"] },
   answer_edit: { ...common, kind: "answer_edit", edits: [{ file: "scripts/lineage-ceiling.json", what: "ceiling" }] },
   manifest_invalid: { ...common, kind: "manifest_invalid", feature: "secrets", problems: [{ path: "capabilities.0.flows", expected: "non-empty" }] },
-  receipt_missing: { ...common, kind: "receipt_missing" }
+  receipt_missing: { ...common, kind: "receipt_missing" },
+  absorb_failed: { ...common, kind: "absorb_failed", stage: "gate", branch: "feat/delivery-gate" },
+  leftover_ref: { ...common, kind: "leftover_ref", problem: "merged_branch", ref: "origin/feat/old-work" }
 };
 
 const clone = value => JSON.parse(JSON.stringify(value));

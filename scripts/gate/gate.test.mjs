@@ -210,6 +210,23 @@ test("a failing check: exit 1, a failing receipt, a record and an outbox message
   assert.match(guard.stderr, /did not pass/);
 });
 
+test("a failing check raises an alert in the shared git directory, and only that check passing clears it", () => {
+  const repo = repository([check("bad", "fail.mjs"), check("also-bad", "fail.mjs")]);
+  const alertFiles = () => { try { return readdirSync(join(repo.dir, ".git/vx-alerts")).sort(); } catch { return []; } };
+  const run = cli(repo);
+  assert.equal(run.status, 1);
+  assert.deepEqual(alertFiles(), ["check_failed-also-bad.json", "check_failed-bad.json"]);
+  assert.ok(!readFileSync(join(repo.dir, ".git/vx-alerts/check_failed-bad.json"), "utf8").includes(CANARY), "an alert holds what the gate wrote, never what the check printed");
+  assert.match(run.stdout, /alert check_failed-bad/);
+  // Fix one check's source. The other is still failing, so its alert must stay: nothing clears an alert but the check passing.
+  writeFileSync(join(repo.dir, "checks.mjs"), `export const checks = ${JSON.stringify([check("bad", "ok.mjs"), check("also-bad", "fail.mjs")])};\n`);
+  assert.equal(cli(repo).status, 1);
+  assert.deepEqual(alertFiles(), ["check_failed-also-bad.json"]);
+  writeFileSync(join(repo.dir, "checks.mjs"), `export const checks = ${JSON.stringify([check("bad", "ok.mjs"), check("also-bad", "ok.mjs")])};\n`);
+  assert.equal(cli(repo).status, 0);
+  assert.deepEqual(alertFiles(), []);
+});
+
 test("a check that hangs is a timeout on the command line, with a record that says so", () => {
   const repo = repository([check("hung", "hang.mjs", { timeoutSeconds: 1 })]);
   const run = cli(repo);

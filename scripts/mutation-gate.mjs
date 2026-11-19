@@ -59,7 +59,11 @@ const mutations = [
   ["a mutation run deletes the directory other runs are using", "scripts/lib/mutation-copy.mjs", /removeCopy\(base, \[\]\);\n  try \{ rmdirSync\(resolve\(root, "\.gate\/mutants"\)\); \} catch \{ \/\* another run is still using it \*\/ \}/, 'removeCopy(resolve(root, ".gate/mutants"), []);'],
   ["the dependency installer ignores a changed lockfile", "scripts/gate/ensure-deps.mjs", /readFileSync\(marker, "utf8"\)\.trim\(\) === hash/, "true"],
   ["the dependency installer reinstalls every time", "scripts/gate/ensure-deps.mjs", /if \(existsSync\(marker\) && /, "if (false && "],
-  ["the merge guard passes when there is no receipt", cli, /: \[`there is no \$\{wanted\}-tier receipt[^\n]*`\];/, ": [];"]
+  ["the merge guard passes when there is no receipt", cli, /: \[`there is no \$\{wanted\}-tier receipt[^\n]*`\];/, ": [];"],
+
+  // alerts: a failure the next session must see (docs/0145)
+  ["a failing check raises no alert", cli, /const announced = await announce\(root, record\);/, () => 'const announced = { record: "", key: "none", webhook: { sent: false } };'],
+  ["a passing check does not clear the alert it raised", cli, /if \(results\[index\]\.status === "pass"\) \{ clearCheck\(root, check\.id\); continue; \}/, () => 'if (results[index].status === "pass") { continue; }']
 ];
 
 // `node scripts/mutation-gate.mjs <text>` runs only the mutations whose label contains <text>.

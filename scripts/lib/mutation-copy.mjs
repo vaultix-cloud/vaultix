@@ -80,7 +80,7 @@ function runTests({ dir, cwd, args, timeoutSeconds }) {
  * @param {string[]} options.links         paths to link instead of copy (relative to root)
  * @param {string} options.cwd             where, inside a copy, the test command runs
  * @param {string[]} options.testArgs      node arguments that run the tests, e.g. ["--test", "tests/x.test.mjs"]
- * @param {Array<[string, string, RegExp, string | ((...groups: string[]) => string)]>} options.mutations  [label, file (relative to root), pattern, replacement]
+ * @param {Array<[string, string, RegExp, string | ((...groups: string[]) => string), string[]?]>} options.mutations  [label, file (relative to root), pattern, replacement, test files that can catch it (default: all)]
  * @returns {Promise<boolean>} true when every mutation was caught
  */
 export async function runMutations({ root, entries, links = [], cwd, testArgs, mutations, parallel = 4, timeoutSeconds = 120, name }) {
@@ -100,7 +100,9 @@ ${baseline.tail}`); return false; }
     for (;;) {
       const index = next++;
       if (index >= mutations.length) return;
-      const [label, file, pattern, replacement] = mutations[index];
+      const [label, file, pattern, replacement, only] = mutations[index];
+      // A mutation may name the test files that can catch it; running every file for every bug is the slow way to say the same thing.
+      const args = only ? ["--test", ...only] : testArgs;
       const dir = dirOf(index);
       makeCopy({ ...options, dir });
       const path = resolve(dir, file);
@@ -109,7 +111,7 @@ ${baseline.tail}`); return false; }
       const after = before.replace(pattern, typeof replacement === "function" ? replacement : () => replacement);
       if (after === before) { outcomes[index] = { label, verdict: "unchanged" }; removeCopy(dir, links); continue; }
       writeFileSync(path, after);
-      const result = await runTests({ dir, cwd, args: testArgs, timeoutSeconds });
+      const result = await runTests({ dir, cwd, args, timeoutSeconds });
       const caught = result.status !== 0;
       outcomes[index] = { label, verdict: caught ? "caught" : "survived", detail: result.timedOut ? "the tests hung" : result.failed[0]?.slice(0, 90) ?? "the module no longer loads" };
       removeCopy(dir, links);

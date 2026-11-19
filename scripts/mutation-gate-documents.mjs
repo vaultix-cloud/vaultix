@@ -23,6 +23,9 @@ const mutations = [
   ["a commit may be a short id", "kernel/contracts/documents/src/gate-parts.ts", /characters\(40, 40\)\.and\(pattern\(String\.raw`\^\[0-9a-f\]\{40\}\$`\)\)/, "characters(7, 40).and(pattern(String.raw`^[0-9a-f]{7,40}$`))"],
   ["a timestamp may omit the zone", "kernel/contracts/documents/src/gate-parts.ts", /\(\?:\\\.\\d\{1,3\}\)\?Z\$/, "(?:\\.\\d{1,3})?Z?$"],
   ["an answer edit may name no edit", "kernel/contracts/documents/src/gate-failure.v1.ts", /edits: edit\.array\(\)\.atLeastLength\(1\)/, "edits: edit.array().atLeastLength(0)"],
+  ["an absorb failure may name any stage", "kernel/contracts/documents/src/gate-failure.v1.ts", /const absorbStage = type\("[^\n]*"\);/, () => "const absorbStage = line(1, 40);"],
+  ["a leftover ref may name any problem", "kernel/contracts/documents/src/gate-failure.v1.ts", /problem: "'merged_branch' \| 'merged_worktree' \| 'local_main_behind'"/, () => "problem: line(1, 40)"],
+  ["an absorb failure may name no branch", "kernel/contracts/documents/src/gate-failure.v1.ts", /stage: absorbStage, branch: line\(1, 100\)/, () => 'stage: absorbStage, "branch?": line(1, 100)'],
   ["a failure may carry a check's output", "kernel/contracts/documents/src/gate-failure.v1.ts", /"logPath\?": logPath\n/, '"logPath?": logPath,\n  "output?": "string"\n']
 ];
 

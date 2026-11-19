@@ -24,7 +24,8 @@ import { dockerAvailable, startTestPostgres } from "./lib/test-postgres.mjs";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const bootstrap = spawnSync(process.execPath, [resolve(repoRoot, "scripts/gate/ensure-deps.mjs"), "kernel/contracts/documents"], { stdio: ["ignore", "ignore", "inherit"], windowsHide: true });
 if (bootstrap.status !== 0) { console.error("gate: the documents package's dependencies could not be installed, and the gate needs them"); process.exit(2); }
-const { failureFor, writeFailure } = await import("./gate/failure.mjs");
+const { failureFor } = await import("./gate/failure.mjs");
+const { announce, clearCheck } = await import("./gate/alerts.mjs");
 const { assertValidReceipt, buildReceipt, readReceipt, verifyReceipt, writeReceipt } = await import("./gate/receipt.mjs");
 const { command, fits, slug } = await import("../kernel/contracts/documents/src/gate-parts.ts");
 
@@ -144,14 +145,14 @@ try {
 }
 const finishedAt = new Date();
 
-const notify = { from: process.env.VX_GATE_NOTIFY_FROM, to: process.env.VX_GATE_NOTIFY_TO };
-let failed = 0;
+// A failure is made loud (an alert every session sees, the outbox message, the webhook if configured). A check that passed clears the
+// alerts it raised earlier: that is the only way an alert goes away.
 for (const [index, check] of toRun.entries()) {
+  if (results[index].status === "pass") { clearCheck(root, check.id); continue; }
   const record = failureFor(check, results[index], { commit, tier });
   if (!record) continue;
-  failed += 1;
-  const written = writeFailure(root, record, notify);
-  console.log(`\n${check.id}: ${record.expected}\n  ${record.observed}; log ${record.logPath}\n  record ${written.record.replace(root, ".")}`);
+  const announced = await announce(root, record);
+  console.log(`\n${check.id}: ${record.expected}\n  ${record.observed}; log ${record.logPath}\n  record ${announced.record.replace(root, ".")}; alert ${announced.key}${announced.webhook.sent ? "; webhook sent" : ""}`);
 }
 const skipped = results.filter(result => result.status === "skipped").length;
 
