@@ -13,7 +13,7 @@ impl Modify for Bearer {
         if let Some(components) = openapi.components.as_mut() {
             components.add_security_scheme(
                 "bearer",
-                SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).description(Some("A short-lived, revocable session from /api/vx/v1/auth/sessions. Identity and scope are server-owned.")).build()),
+                SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).description(Some("A bootstrap token until the identity domain exists (docs/0136).")).build()),
             );
         }
     }
@@ -28,9 +28,6 @@ impl Modify for Bearer {
     ),
     servers((url = "/")),
     paths(
-        crate::auth::setup,
-        crate::auth::login,
-        crate::auth::logout,
         crate::app::status,
         crate::app::jobs,
         crate::app::schedules,
@@ -44,7 +41,6 @@ impl Modify for Bearer {
         crate::secrets::redeem,
     ),
     components(schemas(
-        c::SetupOwnerRequest,c::LoginRequest,c::OwnerResponse,c::SessionResponse,c::LogoutResponse,
         c::ErrorBody, c::DatabaseState, c::StatusResponse, c::SecretAddress, c::PutSecretRequest, c::PutOutcome, c::PutSecretResponse,
         c::SecretMeta, c::ListSecretsResponse, c::ValueRequest, c::RequestOutcome, c::ValueRequestResponse, c::InjectionRequest,
         c::InjectionResponse, c::ValueEncoding, c::RedeemedValue, c::RedeemResponse, c::JobStatus, c::JobRow, c::JobsResponse,
@@ -52,7 +48,6 @@ impl Modify for Bearer {
     )),
     modifiers(&Bearer),
     tags(
-        (name="auth",description="First-owner setup and built-in sessions"),
         (name = "status", description = "Whether the instance is up and unsealed"),
         (name = "secrets", description = "Store a secret, list metadata, and read a value only by redeeming a handle"),
         (name = "operate", description = "Background work and the audit trail")

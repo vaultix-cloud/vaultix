@@ -21,7 +21,7 @@ const freePort = () => new Promise((done, fail) => {
   server.on("error", fail);
 });
 
-export async function startStack({ profile = "release", unsealed = true, provision = true, project = "payments", environment = "prod" } = {}) {
+export async function startStack({ profile = "release", unsealed = true } = {}) {
   const work = mkdtempSync(resolve(tmpdir(), "vx-stack-"));
   const pgName = `vx-stack-pg-${randomBytes(4).toString("hex")}`;
   const password = randomBytes(12).toString("hex");
@@ -35,11 +35,7 @@ export async function startStack({ profile = "release", unsealed = true, provisi
     await sleep(1500);
     const pgPort = docker(["port", pgName, "5432/tcp"]).stdout.trim().split("\n")[0].split(":").pop();
 
-    const env = { ...process.env, VX_DATABASE_URL: `postgres://postgres:${password}@127.0.0.1:${pgPort}/postgres`, RUST_LOG: "info" };
-    const setup = spawnSync(kernelBinary("vaultixd",profile),["setup-code"],{env,encoding:"utf8",windowsHide:true});
-    if(setup.status!==0) throw new Error("setup-code failed");
-    const setupCode=setup.stdout.trim();
-    const credentials={email:"owner@example.test",password:randomBytes(24).toString("hex")};
+    const env = { ...process.env, VX_DATABASE_URL: `postgres://postgres:${password}@127.0.0.1:${pgPort}/postgres`, VX_BOOTSTRAP_TOKEN: randomBytes(24).toString("hex"), RUST_LOG: "info" };
     if (unsealed) {
       env.VX_ROOT_KEY_FILE = resolve(work, "root.key");
       if (spawnSync(kernelBinary("vaultixd", profile), ["init", "--key-file", env.VX_ROOT_KEY_FILE], { encoding: "utf8" }).status !== 0) throw new Error("init failed");
@@ -56,18 +52,8 @@ export async function startStack({ profile = "release", unsealed = true, provisi
       try { up = (await fetch(`${base}/healthz`)).ok; } catch { await sleep(100); }
     }
     if (!up) throw new Error(`vaultixd did not start:\n${logs.join("").slice(-1500)}`);
-    let session=null,otherSession=null;
-    const auth=async(path,body)=>{
-      const response=await fetch(`${base}/api/vx/v1/auth/${path}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-      if(!response.ok)throw new Error(`Auth fixture ${path} failed (${response.status})`);
-      return response.json();
-    };
-    if(provision){
-      await auth("setup",{...credentials,setupCode,organizationName:"Test organization",project,environment});
-      session=await auth("sessions",credentials);otherSession=await auth("sessions",credentials);
-    }
     return {
-      base, token:session?.bearer, otherToken:otherSession?.bearer, session, setupCode, credentials, pgName, logs, work, rootKeyText: unsealed ? readFileSync(env.VX_ROOT_KEY_FILE, "utf8").trim() : null,
+      base, token: env.VX_BOOTSTRAP_TOKEN, pgName, logs, work, rootKeyText: unsealed ? readFileSync(env.VX_ROOT_KEY_FILE, "utf8").trim() : null,
       psql: sql => docker(["exec", pgName, "psql", "-U", "postgres", "-At", "-c", sql]),
       stop
     };
