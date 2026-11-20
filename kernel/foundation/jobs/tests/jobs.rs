@@ -221,7 +221,10 @@ async fn two_workers_never_run_the_same_job_twice() {
     ran.sort();
     let total = ran.len();
     ran.dedup();
-    assert_eq!((total, ran.len()), (40, 40), "every job ran exactly once");
+    // A job runs twice only if its lease expired while it ran and another worker reclaimed it. Say so in the failure, so a double run
+    // is told apart from a broken claim.
+    let expired: i64 = sqlx::query_scalar("SELECT count(*) FROM vx_operate_job_runs WHERE outcome = 'lease_expired'").fetch_one(&db.pool).await.unwrap();
+    assert_eq!((total, ran.len()), (40, 40), "every job ran exactly once ({expired} leases expired during the run)");
     for handle in handles {
         stop(handle).await;
     }
