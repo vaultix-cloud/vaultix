@@ -10,12 +10,18 @@ stopped the pile from coming back. This document is the mechanism. It extends do
 
 | Stage | What must be true |
 | --- | --- |
-| preflight | The branch exists, has a worktree with no uncommitted changes, `origin` fetches, and no other absorb is running (one lock per repository). |
+| preflight | The branch exists, `origin` fetches, no other absorb is running (one lock per repository), and its worktree, if it has one, has no uncommitted changes. A branch that `origin/main` does not hold yet needs a worktree (the gate runs in it). |
 | update | Only with `--update`: `origin/main` is merged into the branch. A conflict aborts the merge and stops. The merged commit is a new commit and needs its own receipt. |
 | gate | A passing **full-tier** receipt exists for the exact head commit. If not, the full tier runs once, in the branch's own worktree (where its dependencies and build cache already are). |
 | push | `main` still sits inside the branch's history, then exactly the tested commit is pushed, fast-forward only. |
-| cleanup | Local `main` is fast-forwarded; the remote branch, the worktree and the local branch are deleted. |
-| verify | The remote branch, the local branch and the worktree are gone, and `origin/main` is the commit that was tested. Only then is it reported as done. |
+| cleanup | Local `main` is fast-forwarded; the passing full-tier receipt is copied into main's `.gate/receipts/` (the baseline is the receipt for the commit on `main`, and the worktree that held it is about to go); the remote branch, the worktree and the local branch are deleted. |
+| verify | The remote branch, the local branch and the worktree are gone, and `origin/main` holds the commit (holds, not equals: someone else pushing a moment later is not a failure). Only then is it reported as done. |
+
+**Finishing a landing that stopped.** A run can stop in the cleanup after `main` already holds the commit. On 2026-11-20 it did: a terminal
+sitting in the worktree stopped Windows removing the directory. Running absorb again for the same branch then finds that `origin/main`
+holds the commit, does not gate or push, and deletes what is left (a worktree with uncommitted changes is still refused, landed or not).
+Before this, the run refused with "the branch has no worktree" and the alert, which stays until the branch lands, could never clear.
+A worktree that cannot be removed is reported with the likely cause: a terminal or program using it as its working directory.
 
 Two rules shape it:
 
@@ -68,9 +74,11 @@ and not code. That belongs with the admin section, and nothing here assumes a pr
 - **Alerts are per machine.** They live in `.git/`. A second machine does not see them.
 - **Two layers are not tested on their own**: the fetch before the push and the client's refusal of a non-fast-forward each stop a stale
   push, so removing either alone changes nothing a test can observe; and the final verify stage re-checks what the stages before it
-  already checked. `scripts/mutation-absorb.mjs` lists them instead of pretending to cover them.
-- The first absorb of a branch that adds `absorb.mjs` itself has to run from inside that branch's worktree. It steps out of the
-  directory before deleting it, and a test proves that.
+  already checked. `scripts/mutation-absorb.mjs` lists them instead of pretending to cover them. Also untested: the hint printed when
+  a worktree cannot be removed (the cause, a terminal sitting in the directory, cannot be made on every machine a test runs on).
+- Absorb steps out of the worktree's directory before deleting it, and a test proves that. It can only move its own process: a
+  terminal or editor of yours that sits in the worktree still stops Windows removing it. Run absorb from the main checkout, not from
+  inside the branch's worktree, and if it stops there, close the terminal and run it again.
 
 ## Checks
 

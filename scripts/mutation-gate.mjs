@@ -67,7 +67,8 @@ const mutations = [
 
   // the registry: a test that nothing runs (docs/0142)
   ["a server test file that no check runs", "scripts/gate/checks.mjs", /"--test", "api", "--test", "auth"\)/, '"--test", "api")'],
-  ["the auth journeys do not wait for the client they run", "scripts/gate/checks.mjs", /after: \["kernel-client-build"\], /, ""]
+  ["the auth journeys do not wait for the client they run", "scripts/gate/checks.mjs", /after: \["kernel-client-build"\], /, ""],
+  ["a test file of the gate that no check runs", "scripts/gate/checks.mjs", /, "scripts\/gate\/absorb-resume\.test\.mjs"\), timeoutSeconds/, "), timeoutSeconds"]
 ];
 
 // `node scripts/mutation-gate.mjs <text>` runs only the mutations whose label contains <text>.

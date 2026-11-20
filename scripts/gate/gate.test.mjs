@@ -324,6 +324,16 @@ test("every integration test file of the server is run by a check, and the auth 
   assert.ok(checks.find(item => item.id === "kernel-client-build"), "the check that builds the vx client exists");
 });
 
+// The same rule for the gate's own tests: node runs the files a check names, so a new scripts/gate/*.test.mjs is run by nothing until it is
+// listed. (Most of the older scripts/*.test.mjs files are exactly that, and are listed as a known gap rather than hidden.)
+test("every test file of the gate itself is run by a check", async () => {
+  const { checks } = await import("./checks.mjs");
+  const files = readdirSync(here).filter(name => name.endsWith(".test.mjs")).map(name => `scripts/gate/${name}`);
+  assert.ok(files.length >= 5, "the gate's test files were found");
+  const named = new Set(checks.filter(item => item.command.program === "node").flatMap(item => item.command.args));
+  for (const file of files) assert.ok(named.has(file), `${file} is run by no check: add it to a check in scripts/gate/checks.mjs`);
+});
+
 // ---- prerequisites (`after`) ----
 
 test("a check waits for its prerequisites, and runs once they pass", async () => {

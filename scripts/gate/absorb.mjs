@@ -7,6 +7,10 @@
 //   cleanup    local main is fast-forwarded, the remote branch, the worktree and the local branch are deleted
 //   verify     everything above is checked to be true, and only then is it reported as done
 //
+// A run can stop in the cleanup, after main holds the commit (a terminal sitting in the worktree stops Windows removing it). Running it
+// again finishes the job: origin/main already holding the commit is the proof, so nothing is pushed and the gate is not run again, and
+// the leftovers are deleted. Without that the alert could never clear, because it stays until the branch lands.
+//
 // Two rules shape it:
 //  - NOTHING IS DELETED UNTIL main HOLDS THE COMMIT. A failure at any stage before the push leaves the branch, its remote branch and
 //    its worktree exactly as they were. There is no flag to skip the gate, push past a rejection or force anything.
@@ -16,11 +20,31 @@
 // Resource use: no polling and nothing runs unless asked. A branch that already has a passing full receipt for its head is not
 // gated again; the gate runs once per head commit, in the branch's own worktree, where its dependencies and build cache already are.
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { FIX_THE_SOURCE } from "../../kernel/contracts/documents/src/gate-failure.v1.ts";
 import { announce, clearBranch, commonDir } from "./alerts.mjs";
 import { worktrees } from "./hygiene.mjs";
+import { receiptPath } from "./receipt.mjs";
+
+/**
+ * The proof outlives the worktree. The passing full-tier receipt for the commit that landed is copied into main's `.gate/receipts/`
+ * (ignored by git), because the baseline is the receipt for the commit on main and the worktree that held it is about to be deleted.
+ * A receipt that cannot be kept is a note, not a failure: the commit is already safe on main.
+ */
+function keepReceipt(from, to, commit, notes) {
+  try {
+    if (resolve(from) === resolve(to)) return;
+    const source = receiptPath(from, commit, "full");
+    if (!existsSync(source)) { notes.push("no full-tier receipt file was found in the worktree to keep"); return; }
+    const target = receiptPath(to, commit, "full");
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(source, target);
+    notes.push("the full-tier receipt for this commit was kept in main's .gate/receipts");
+  } catch {
+    notes.push("the full-tier receipt for this commit could not be copied to main's .gate/receipts");
+  }
+}
 
 const inside = (child, parent) => { const a = resolve(child), b = resolve(parent); const [x, y] = process.platform === "win32" ? [a.toLowerCase(), b.toLowerCase()] : [a, b]; return x === y || x.startsWith(`${y}${process.platform === "win32" ? "\\" : "/"}`); };
 const alive = pid => { try { process.kill(pid, 0); return true; } catch (error) { return error?.code === "EPERM"; } };
@@ -107,11 +131,16 @@ export async function absorb({ root, branch, update = false, runGate = true, dep
     head = found.out;
     const all = worktrees(root);
     const branchTree = all.find(entry => entry.branch === `refs/heads/${branch}`);
-    if (!branchTree) return await fail("preflight", "the branch has no worktree, and the gate has to run in one");
-    if (git(branchTree.path, "status", "--porcelain").out.length > 0) return await fail("preflight", "the branch's worktree has uncommitted changes");
+    // An earlier run, or a person, may already have put this commit on main. origin/main holding it is the proof: nothing is pushed or
+    // gated again, and what is left is the cleanup. A worktree that still has uncommitted changes is never removed, landed or not.
+    const heldByMain = () => git(home, "merge-base", "--is-ancestor", head, "refs/remotes/origin/main").ok;
+    const resumed = heldByMain();
+    if (!resumed && !branchTree) return await fail("preflight", "the branch has no worktree, and the gate has to run in one");
+    if (branchTree && git(branchTree.path, "status", "--porcelain").out.length > 0) return await fail("preflight", "the branch's worktree has uncommitted changes");
+    if (resumed) notes.push("origin/main already holds this commit, so nothing was pushed and the gate was not run; only the cleanup was left");
 
     const contains = commit => git(home, "merge-base", "--is-ancestor", "refs/remotes/origin/main", commit).ok;
-    if (!contains(head)) {
+    if (!resumed && !contains(head)) {
       if (!update) return await fail("preflight", "origin/main has commits the branch does not contain; rerun with --update, or merge origin/main into the branch");
       const merged = git(branchTree.path, "merge", "--no-edit", "refs/remotes/origin/main");
       if (!merged.ok) {
@@ -123,23 +152,25 @@ export async function absorb({ root, branch, update = false, runGate = true, dep
       notes.push("origin/main was merged into the branch, so its commit changed and needs its own receipt");
     }
 
-    // The receipt is the proof. It is about the exact commit that will be pushed, in a clean worktree.
-    let receipt = deps.verifyReceipt(branchTree.path);
-    if (!receipt.ok) {
-      if (!runGate) return await fail("gate", "there is no passing full-tier receipt for this commit and the gate was not to be run");
-      const code = await deps.runGate(branchTree.path);
-      if (code !== 0) return await fail("gate", `the full tier did not pass (exit ${code}); each failing check has its own alert`);
-      receipt = deps.verifyReceipt(branchTree.path);
-      if (!receipt.ok) return await fail("gate", "the full tier finished but its receipt does not verify for this commit");
-    } else notes.push("a passing full-tier receipt already existed for this commit, so the gate was not run again");
-    if (git(branchTree.path, "status", "--porcelain").out.length > 0) return await fail("gate", "the gate left uncommitted changes in the worktree, so the receipt does not describe the commit");
-    if (git(branchTree.path, "rev-parse", "HEAD").out !== head) return await fail("gate", "the branch moved while the gate ran");
+    if (!resumed) {
+      // The receipt is the proof. It is about the exact commit that will be pushed, in a clean worktree.
+      let receipt = deps.verifyReceipt(branchTree.path);
+      if (!receipt.ok) {
+        if (!runGate) return await fail("gate", "there is no passing full-tier receipt for this commit and the gate was not to be run");
+        const code = await deps.runGate(branchTree.path);
+        if (code !== 0) return await fail("gate", `the full tier did not pass (exit ${code}); each failing check has its own alert`);
+        receipt = deps.verifyReceipt(branchTree.path);
+        if (!receipt.ok) return await fail("gate", "the full tier finished but its receipt does not verify for this commit");
+      } else notes.push("a passing full-tier receipt already existed for this commit, so the gate was not run again");
+      if (git(branchTree.path, "status", "--porcelain").out.length > 0) return await fail("gate", "the gate left uncommitted changes in the worktree, so the receipt does not describe the commit");
+      if (git(branchTree.path, "rev-parse", "HEAD").out !== head) return await fail("gate", "the branch moved while the gate ran");
 
-    // main may have moved while the gate ran; a commit that does not contain it cannot be pushed as it was tested.
-    if (!git(root, "fetch", "--prune", "origin").ok) return await fail("push", "origin could not be fetched before the push");
-    if (!contains(head)) return await fail("push", "origin/main moved while the gate ran; rerun with --update (the new commit needs its own receipt)");
-    if (!git(root, "push", "origin", `${head}:refs/heads/main`).ok) return await fail("push", "the push to main was rejected or failed; nothing was deleted");
-    git(root, "fetch", "--prune", "origin");
+      // main may have moved while the gate ran; a commit that does not contain it cannot be pushed as it was tested.
+      if (!git(root, "fetch", "--prune", "origin").ok) return await fail("push", "origin could not be fetched before the push");
+      if (!contains(head)) return await fail("push", "origin/main moved while the gate ran; rerun with --update (the new commit needs its own receipt)");
+      if (!git(root, "push", "origin", `${head}:refs/heads/main`).ok) return await fail("push", "the push to main was rejected or failed; nothing was deleted");
+      git(root, "fetch", "--prune", "origin");
+    }
 
     // main holds the commit. From here a failure is loud, but the work is safe.
     const mainTree = all.find(entry => entry.branch === "refs/heads/main");
@@ -151,11 +182,15 @@ export async function absorb({ root, branch, update = false, runGate = true, dep
       else if (!git(mainTree.path, "merge", "--ff-only", "refs/remotes/origin/main").ok) notes.push("local main could not be fast-forwarded");
     } else git(safe, "branch", "-f", "main", "refs/remotes/origin/main");
 
-    if (inside(process.cwd(), branchTree.path)) process.chdir(safe);
+    if (branchTree && inside(process.cwd(), branchTree.path)) process.chdir(safe);
     if (git(safe, "ls-remote", "--heads", "origin", branch).out) {
       if (!git(safe, "push", "origin", "--delete", branch).ok) return await fail("cleanup", "main holds the commit, but the remote branch could not be deleted");
     }
-    if (!git(safe, "worktree", "remove", branchTree.path).ok) return await fail("cleanup", "main holds the commit, but the branch's worktree could not be removed");
+    if (branchTree && existsSync(branchTree.path)) {
+      keepReceipt(branchTree.path, safe, head, notes);
+      // Another program can hold the directory (a terminal opened in it): this process can leave it, that one cannot.
+      if (!git(safe, "worktree", "remove", branchTree.path).ok) return await fail("cleanup", "main holds the commit, but the branch's worktree could not be removed; a terminal or program may be using it as its working directory: close it and run absorb again");
+    }
     git(safe, "worktree", "prune");
     if (!git(safe, "branch", "-d", branch).ok) {
       // -d judges against HEAD, and main's worktree may be dirty or elsewhere; the proof here is that origin/main contains the commit.
@@ -166,8 +201,9 @@ export async function absorb({ root, branch, update = false, runGate = true, dep
     const problems = [];
     if (git(safe, "ls-remote", "--heads", "origin", branch).out) problems.push("the remote branch still exists");
     if (git(safe, "rev-parse", "--verify", `refs/heads/${branch}`).ok) problems.push("the local branch still exists");
-    if (existsSync(branchTree.path)) problems.push("the worktree directory still exists");
-    if (git(safe, "rev-parse", "--verify", "refs/remotes/origin/main").out !== head) problems.push("origin/main is not the commit that was tested");
+    if (branchTree && existsSync(branchTree.path)) problems.push("the worktree directory still exists");
+    // Holds, not equals: a push by someone else right after this one must not turn a good landing into a failure.
+    if (!heldByMain()) problems.push("origin/main does not hold the commit");
     if (problems.length) return await fail("verify", problems.join("; "));
 
     clearBranch(safe, branch);
