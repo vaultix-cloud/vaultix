@@ -5,10 +5,9 @@
 //!   VX_LISTEN           default 127.0.0.1:8210
 //!   VX_ROOT_KEY_FILE    a file holding the root key as hex or as the recovery key; without it the
 //!                       instance starts sealed
-//!   First owner: run `vaultixd setup-code`, then use /api/vx/v1/auth/setup and /auth/sessions.
+//!   VX_BOOTSTRAP_TOKEN  guards the operate routes until the identity domain lands; without it they answer 503
 
 mod app;
-mod auth;
 mod extract;
 mod ops;
 mod openapi;
@@ -39,17 +38,6 @@ fn init(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.first().map(String::as_str)==Some("setup-code") {
-        let result = async {
-            let url=std::env::var("VX_DATABASE_URL").map_err(|_|vx_auth::AuthError::Unavailable)?;
-            let pool=vx_store::open(&url,2).await.map_err(|_|vx_auth::AuthError::Unavailable)?;
-            vx_store::migrate(&pool).await.map_err(|_|vx_auth::AuthError::Unavailable)?;
-            vx_auth::issue_setup(&pool).await
-        }.await;
-        #[allow(clippy::print_stdout,clippy::print_stderr)] // only the one-time first-owner setup code may be printed
-        match result { Ok(code)=>println!("{code}"),Err(error)=>{eprintln!("vaultixd setup-code: {error}");std::process::exit(1);} }
-        return;
-    }
     if args.first().map(String::as_str) == Some("openapi") {
         // The contract document, for the generator and the drift test. It needs no database.
         #[allow(clippy::print_stdout)]
@@ -125,7 +113,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         async move { worker.run(stop).await }
     });
 
-    let state = app::Inner::new(pool, keyring);
+    let state = app::Inner::new(pool, keyring, std::env::var("VX_BOOTSTRAP_TOKEN").ok());
     let listener = tokio::net::TcpListener::bind(&listen).await?;
     tracing::info!(%listen, "listening");
     axum::serve(listener, app::router(state))

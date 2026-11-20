@@ -47,45 +47,6 @@ pub struct ErrorBody {
     pub error: String,
 }
 
-// ---- built-in authentication ----------------------------------------------------------------
-#[derive(Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SetupOwnerRequest {
-    #[schema(write_only)]
-    pub setup_code: String,
-    pub email: String,
-    pub password: SecretText,
-    pub organization_name: String,
-    #[schema(pattern = "^[a-z0-9][a-z0-9-]{0,62}$")]
-    pub project: String,
-    #[schema(pattern = "^[a-z0-9][a-z0-9-]{0,62}$")]
-    pub environment: String,
-}
-
-#[derive(Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: SecretText,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct OwnerResponse { pub user_id: Uuid }
-
-#[derive(Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionResponse {
-    /// Credential returned only to the authenticating client. Never sent to a model or stored in logs.
-    pub bearer: String,
-    pub expires_at: DateTime<Utc>,
-    pub user_id: Uuid,
-    pub organization_id: Uuid,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub struct LogoutResponse { pub revoked: bool }
-
 // ---- status ---------------------------------------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]

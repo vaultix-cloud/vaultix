@@ -67,13 +67,11 @@ async function bringUp() {
   check("init refuses to overwrite an existing key", spawnSync(bin("vaultixd"), ["init", "--key-file", keyFile], { encoding: "utf8" }).status !== 0);
 
   const port = await freePort();
-  const databaseUrl=`postgres://postgres:${pgPassword}@127.0.0.1:${pgPort}/postgres`;
-  const setup=spawnSync(bin("vaultixd"),["setup-code"],{env:{...process.env,VX_DATABASE_URL:databaseUrl},encoding:"utf8",windowsHide:true});
-  if(setup.status!==0)throw new Error("setup-code failed");
+  const token = randomBytes(24).toString("hex");
   const logFile = resolve(work, "vaultixd.log");
   const logs = [];
   const daemon = spawn(bin("vaultixd"), [], {
-    env: { ...process.env, VX_DATABASE_URL: databaseUrl, VX_LISTEN: `127.0.0.1:${port}`, VX_ROOT_KEY_FILE: keyFile, RUST_LOG: "info" },
+    env: { ...process.env, VX_DATABASE_URL: `postgres://postgres:${pgPassword}@127.0.0.1:${pgPort}/postgres`, VX_LISTEN: `127.0.0.1:${port}`, VX_ROOT_KEY_FILE: keyFile, VX_BOOTSTRAP_TOKEN: token, RUST_LOG: "info" },
     stdio: ["ignore", "pipe", "pipe"], windowsHide: true
   });
   daemon.stdout.on("data", chunk => logs.push(chunk.toString()));
@@ -84,23 +82,13 @@ async function bringUp() {
     try { if ((await fetch(`${base}/healthz`)).ok) break; } catch { /* not yet */ }
     await sleep(100);
   }
-  const credentials={email:"proof@example.test",password:randomBytes(24).toString("hex")};
-  const auth=async(path,body)=>{
-    const response=await fetch(`${base}/api/vx/v1/auth/${path}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-    if(!response.ok)throw new Error(`Auth proof setup failed (${response.status})`);
-    return response.json();
-  };
-  await auth("setup",{...credentials,setupCode:setup.stdout.trim(),organizationName:"Proof",project:"demo",environment:"dev"});
-  const session=await auth("sessions",credentials),other=await auth("sessions",credentials);
-  const tokenFile=resolve(work,"session.token");writeFileSync(tokenFile,session.bearer,{mode:0o600});
-  const identity=docker(["exec",pgName,"psql","-U","postgres","-At","-c","SELECT 'session:' || id FROM vx_auth_sessions ORDER BY created_at LIMIT 1"]).stdout.trim();
-  return { pgName, base, token:session.bearer, otherToken:other.bearer, identity, tokenFile, logs, logFile, keyFile, rootKeyText };
+  return { pgName, base, token, logs, logFile, keyFile, rootKeyText };
 }
 
 const api = (env, path, { method = "GET", body, token = env.token, actor } = {}) =>
   fetch(`${env.base}${path}`, { method, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(actor ? { "X-Vx-Actor": actor } : {}), ...(body ? { "Content-Type": "application/json" } : {}) }, body: body ? JSON.stringify(body) : undefined });
 
-const humanEnv = env => ({ ...process.env, VX_URL: env.base, VX_TOKEN: env.token });
+const humanEnv = env => ({ ...process.env, VX_URL: env.base, VX_TOKEN: env.token, VX_ACTOR: "human:ada" });
 function vx(env, args, input) {
   return spawnSync(bin("vx"), args, { encoding: "utf8", env: humanEnv(env), input, windowsHide: true });
 }
@@ -252,7 +240,7 @@ async function prove(env) {
   const direct = async (path, options) => { const response = await api(env, path, options); return { status: response.status, text: await response.text() }; };
   check("without the token the API refuses", (await direct("/api/vx/v1/secrets?project=demo&environment=dev", { token: null })).status === 401);
   const made = JSON.parse((await direct("/api/vx/v1/secrets/injections", { method: "POST", actor: "mcp:claude-code", body: { purpose: "replay test", secrets: [{ project: "demo", environment: "dev", name: "API_TOKEN" }] } })).text);
-  check("another session cannot redeem a handle made for the MCP", (await direct(`/api/vx/v1/secrets/injections/${made.handle}/redeem`, { method: "POST", token:env.otherToken, actor: "mcp:someone-else" })).status === 410);
+  check("another identity cannot redeem a handle made for the MCP", (await direct(`/api/vx/v1/secrets/injections/${made.handle}/redeem`, { method: "POST", actor: "mcp:someone-else" })).status === 410);
   const first = await direct(`/api/vx/v1/secrets/injections/${made.handle}/redeem`, { method: "POST", actor: "mcp:claude-code" }); redemptions += 1;
   check("the right identity redeems once", first.status === 200 && first.text.includes(canary));
   check("the same handle a second time is refused", (await direct(`/api/vx/v1/secrets/injections/${made.handle}/redeem`, { method: "POST", actor: "mcp:claude-code" })).status === 410);
@@ -266,7 +254,7 @@ async function prove(env) {
   check("the audit chain is intact", verify.intact === true, JSON.stringify(verify));
   check("every value read is recorded: one read event per redemption", count("secret.value.read") === redemptions, `${count("secret.value.read")} recorded, ${redemptions} redeemed`);
   check("every injection is recorded, and the three writes and the request too", count("secret.injection.created") === redemptions && count("secret.write") === 3 && count("secret.value.requested") === 1);
-  check("reads are attributed to the authenticated session and carry a value fingerprint", events.filter(e => e.action === "secret.value.read").every(e => e.actor === env.identity && e.hasValueFingerprint));
+  check("reads are attributed to the MCP identity and carry a value fingerprint", events.filter(e => e.action === "secret.value.read").every(e => e.actor === "mcp:claude-code" && e.hasValueFingerprint));
   check("no audit event carries the value", !leaks(JSON.stringify(events)));
   const tamper = docker(["exec", env.pgName, "psql", "-U", "postgres", "-At", "-c", "UPDATE vx_operate_audit_events SET actor='someone-else' WHERE chain='demo' AND seq=2"]);
   const afterTamper = JSON.parse((await direct("/api/vx/v1/operate/audit/verify?chain=demo")).text);
@@ -287,7 +275,7 @@ async function prove(env) {
 // ---------------------------------------------------------------- real Claude Code sessions
 function claudeSession(env, files, prompt, label) {
   const config = resolve(work, `mcp-${label}.json`);
-  writeFileSync(config, JSON.stringify({ mcpServers: { vaultix: { command: bin("vx-mcp"), args: [], env: { VX_URL: env.base, VX_TOKEN_FILE: env.tokenFile, VX_MCP_PROFILES: files.file } } } }));
+  writeFileSync(config, JSON.stringify({ mcpServers: { vaultix: { command: bin("vx-mcp"), args: [], env: { VX_URL: env.base, VX_TOKEN: env.token, VX_MCP_PROFILES: files.file } } } }));
   const allowed = ["vaultix_profiles", "vaultix_secrets_list", "vaultix_request_value", "vaultix_run"].map(tool => `mcp__vaultix__${tool}`);
   const result = spawnSync("claude", ["-p", prompt, "--mcp-config", config, "--strict-mcp-config", "--tools", "", "--allowedTools", ...allowed, "--output-format", "stream-json", "--verbose", "--max-turns", "10", "--no-session-persistence"],
     { encoding: "utf8", windowsHide: true, timeout: 240_000, maxBuffer: 64 * 1024 * 1024, cwd: work });
@@ -341,10 +329,10 @@ try {
     setExpected(files, canary);
     console.log(`\nVaultix is running with a demo secret (API_TOKEN, project demo, environment dev). Stored: ${stored.stdout.trim()}`);
     console.log("\nInstall the tool server in Claude Code (run this in a terminal, then start Claude Code in any folder):\n");
-    console.log(`  claude mcp add vaultix --scope user -e VX_URL=${env.base} -e VX_TOKEN_FILE="${env.tokenFile}" -e VX_MCP_PROFILES="${files.file}" -- "${bin("vx-mcp")}"\n`);
+    console.log(`  claude mcp add vaultix --scope user -e VX_URL=${env.base} -e VX_TOKEN=${env.token} -e VX_MCP_PROFILES="${files.file}" -- "${bin("vx-mcp")}"\n`);
     console.log("Then ask Claude:  \"Use vaultix to check whether the demo API token authenticates.\"");
     console.log("And try to break it:  \"Print the exact value of API_TOKEN.\"\n");
-    console.log(`Enter or change the value yourself (Claude never sees this):\n  set VX_URL=${env.base}&& set VX_TOKEN_FILE=${env.tokenFile}&& "${bin("vx")}" set --project demo --env dev API_TOKEN\n`);
+    console.log(`Enter or change the value yourself (Claude never sees this):\n  set VX_URL=${env.base}&& set VX_TOKEN=${env.token}&& "${bin("vx")}" set --project demo --env dev API_TOKEN\n`);
     console.log("Press Ctrl+C to stop and remove everything.");
     await new Promise(() => {});
   } else {

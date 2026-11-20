@@ -31,8 +31,8 @@ fn positional(args: &[String]) -> Option<String> {
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.first().map(String::as_str)==Some("session") { return session(&args); }
-    let client = match Client::from_env() {
+    let user = std::env::var("USERNAME").or_else(|_| std::env::var("USER")).unwrap_or_else(|_| "person".into()).to_lowercase().replace(' ', "-");
+    let client = match Client::from_env(&format!("human:{user}")) {
         Ok(client) => client,
         Err(error) => return fail(&error),
     };
@@ -68,55 +68,6 @@ fn main() {
             Err(error) => fail(&error.to_string()),
         },
         _ => fail("usage: vx set|list --project P --env E [NAME]"),
-    }
-}
-
-/// A human session stays in this process; no password or bearer is written to config or stdout.
-/// --stdin-auth reads one JSON line followed by commands, for automation at the human boundary.
-fn session(args:&[String]) {
-    use std::io::BufRead;
-    use zeroize::Zeroizing;
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all="camelCase",deny_unknown_fields)]
-    struct Credentials { email:String,password:String,#[serde(default)] setup_code:Option<String> }
-    let (Some(project),Some(environment))=(flag(args,"--project"),flag(args,"--env")) else {return fail("--project and --env are required")};
-    let stdin=std::io::stdin();
-    let mut input=stdin.lock();
-    let scripted=args.iter().any(|a|a=="--stdin-auth");
-    let (email,password,code)=if scripted {
-        let mut line=Zeroizing::new(String::new());
-        if input.by_ref().take(16*1024).read_line(&mut line).is_err(){return fail("credentials could not be read")}
-        let c:Credentials=match serde_json::from_str(&line){Ok(c)=>c,Err(_)=>return fail("credentials must be one JSON line with email, password and optional setupCode")};
-        (c.email,Secret::from_string(c.password),c.setup_code)
-    } else {
-        let Some(email)=flag(args,"--email") else {return fail("--email is required")};
-        let code=if args.iter().any(|a|a=="--setup") {Some(rpassword::prompt_password("One-time setup code: ").unwrap_or_else(|_|{fail("setup code could not be read");String::new()}))}else{None};
-        let password=match rpassword::prompt_password("Password (hidden): "){Ok(p)=>Secret::from_string(p),Err(_)=>return fail("password could not be read")};
-        (email,password,code)
-    };
-    let anonymous=match Client::anonymous(){Ok(c)=>c,Err(e)=>return fail(&e)};
-    if let Some(code)=code {
-        let code=Zeroizing::new(code);
-        let Some(organization)=flag(args,"--organization") else {return fail("--organization is required for first-owner setup")};
-        if let Err(e)=anonymous.setup(&code,&email,&password,&organization,&project,&environment){return fail(&e.to_string())}
-        println!("Owner created.");
-    }
-    let client=match anonymous.login(&email,&password){Ok(c)=>c,Err(e)=>return fail(&e.to_string())};
-    drop(password);
-    println!("Signed in. Commands: list, logout. This session expires after 15 minutes.");
-    loop {
-        let mut command=String::new();
-        if input.read_line(&mut command).unwrap_or(0)==0 || command.trim()=="logout" {break}
-        match command.trim() {
-            "list"=>match client.list(&project,&environment){Ok(value)=>println!("{}",serde_json::to_string_pretty(&value).unwrap_or_default()),Err(e)=>eprintln!("{}",e)},
-            _=>println!("Commands: list, logout"),
-        }
-    }
-    if let Err(e)=client.logout(){return fail(&format!("Sign-out could not be confirmed: {e}"))}
-    println!("Signed out.");
-    match client.list(&project,&environment) {
-        Err(e) if e.status==401=>println!("Access denied: the signed-out session is no longer valid."),
-        _=>fail("session revocation could not be verified"),
     }
 }
 

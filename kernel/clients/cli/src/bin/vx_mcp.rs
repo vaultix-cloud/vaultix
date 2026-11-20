@@ -83,7 +83,7 @@ fn main() {
             .map(|file| file.profiles),
         Err(_) => Err("VX_MCP_PROFILES is not set, so no commands are approved".into()),
     };
-    let server = Server { client: Client::from_env(), profiles };
+    let server = Server { client: Client::from_env("mcp:claude-code"), profiles };
     let stdin = std::io::stdin();
     let mut out = std::io::stdout();
     for line in stdin.lock().lines() {
