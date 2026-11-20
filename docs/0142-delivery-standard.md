@@ -40,6 +40,13 @@ build), from the first user action to the observable result, including the failu
 3. survive a **mutation check**: the gate plants one bug in the owned source (for example, skip the audit write) and the flow must
    fail. A flow that cannot fail is rejected. `scripts/mutation-*.mjs` is the mechanism and each feature registers its mutations.
 
+**A test that no check runs is not a test.** cargo runs the server's integration tests only by name, so a new file under
+`kernel/server/tests` is run by nothing until a check names it, and the gate stays green. The first-owner-to-logout journeys
+(`auth.rs`) sat in that state until 2026-11-20. The gate's own tests now fail when any file there is named by no check, and the
+check that runs the auth journeys waits for the one that builds the `vx` client they drive. The rule for a database or process
+test is to run under `budget` with the processes it starts registered by `track` (`kernel/foundation/store/src/testing.rs`);
+that rule is a convention, and no check enforces it yet.
+
 **Source change triggers the flow.** The gate maps changed files through `owns` to features. A feature whose owned source changed
 must have a flow receipt for this commit. Source that no manifest owns fails the gate (nothing is unowned).
 

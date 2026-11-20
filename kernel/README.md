@@ -40,8 +40,9 @@ VX_DATABASE_URL=postgres://...  VX_LISTEN=127.0.0.1:8210  cargo run -p vaultixd
 ```
 
 `VX_ROOT_KEY_FILE` (the root key as hex or the recovery key) unseals it; without it the instance starts
-sealed. `VX_BOOTSTRAP_TOKEN` guards the operate routes until the identity domain exists; without it they
-answer 503.
+sealed. Every operate and secrets route needs a session. There is no bootstrap token and `VX_BOOTSTRAP_TOKEN`
+is ignored: an operator runs `vaultixd setup-code` once, the first owner redeems that code at
+`POST /api/vx/v1/auth/setup` within 15 minutes, and people then sign in at `POST /api/vx/v1/auth/sessions`.
 
 ## Test it
 
@@ -104,9 +105,9 @@ bypassing the gate fails five checks, and making handles replayable fails two.
   output is off by default (a profile returns the exit code and a message a person wrote), and turning it
   on is a person's decision about a specific program.
 - **The exit code is still a narrow channel** a hostile approved program could use.
-- **The tool server's credential sits in the client's configuration.** `VX_TOKEN` is a full-power
-  bootstrap token until the identity domain exists, so a model that can read the client's config file
-  (a tool with file access) could find it. The live sessions gave Claude only the Vaultix tools. The real
+- **The tool server's credential sits in the client's configuration.** `VX_TOKEN` is a session bearer
+  (it expires after 15 minutes and carries its owner's grants), so a model that can read the client's
+  config file (a tool with file access) could find it while it is live. The live sessions gave Claude only the Vaultix tools. The real
   fix is device-bound pairing and per-identity policy (docs/0124 step 4).
 - **A profile's program runs with the person's rights.** It can reach the network and files, so a profile
   is code a person reviews, not a setting.

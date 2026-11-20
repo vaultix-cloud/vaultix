@@ -278,6 +278,15 @@ pub fn render_for_trusted_client(values: &[(Address, Secret)]) -> serde_json::Va
     json!({ "values": items })
 }
 
+/// The addresses a handle was made for, so the caller can be authorized for each one before it redeems. It reads
+/// and consumes nothing. An unknown, used, expired or wrong-identity handle all answer `HandleInvalid`.
+pub async fn handle_addresses(pool: &PgPool, identity: &str, handle: &str) -> Result<Vec<Address>, SecretsError> {
+    let refs: Option<serde_json::Value> = sqlx::query_scalar("SELECT refs FROM vx_secrets_handles WHERE handle_hash=$1 AND identity=$2 AND used_at IS NULL AND expires_at>now()")
+        .bind(hash_handle(handle)).bind(identity).fetch_optional(pool).await?;
+    let refs: Vec<Ref> = serde_json::from_value(refs.ok_or(SecretsError::HandleInvalid)?).map_err(|_|SecretsError::HandleInvalid)?;
+    Ok(refs.into_iter().map(|r|r.address).collect())
+}
+
 /// Redeem a handle: once, for the identity it was made for. This is the only way a value leaves.
 pub async fn redeem(pool: &PgPool, ring: &Keyring, identity: &str, handle: &str) -> Result<Vec<(Address, Secret)>, SecretsError> {
     if !handle.starts_with(HANDLE_PREFIX) {

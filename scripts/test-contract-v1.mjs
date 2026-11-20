@@ -33,10 +33,10 @@ console.log("\nStatic types");
 if (run("npx", ["tsc", "--noEmit", "-p", "tsconfig.json"], { cwd: contract, shell: process.platform === "win32" }).status !== 0) fail("the generated types do not match the strictness assertions");
 
 console.log("\nContract tests against a real server");
-const stack = await startStack({ profile: "debug" });
+const stack = await startStack({ profile: "debug", provision: false });
 let status = 1;
 try {
-  status = run("node", ["--test", "tests/contract.test.mjs"], { cwd: contract, env: { ...process.env, VX_BASE: stack.base, VX_TOKEN: stack.token, VX_PSQL_CONTAINER: stack.pgName } }).status ?? 1;
+  status = run("node", ["--test", "tests/contract.test.mjs"], { cwd: contract, env: { ...process.env, VX_BASE: stack.base, VX_TEST_SETUP_CODE: stack.setupCode, VX_TEST_AUTH_PASSWORD: stack.credentials.password, VX_PSQL_CONTAINER: stack.pgName } }).status ?? 1;
 } finally { stack.stop(); }
 if (status !== 0) fail("the contract tests failed");
 console.log("\ncontract: v1 is consistent end to end");

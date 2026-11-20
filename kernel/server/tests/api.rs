@@ -6,6 +6,7 @@
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 use vx_store::testing::database;
+mod support;
 
 struct Server(Child);
 impl Drop for Server {
@@ -34,13 +35,10 @@ async fn get(url: &str, token: Option<&str>) -> (u16, serde_json::Value) {
     (status, serde_json::from_str(body).unwrap_or(serde_json::Value::Null))
 }
 
-async fn start(db_url: &str, token: Option<&str>) -> (Server, String) {
+async fn start(db_url: &str) -> (Server, String) {
     let port = free_port();
     let mut command = Command::new(env!("CARGO_BIN_EXE_vaultixd"));
     command.env("VX_DATABASE_URL", db_url).env("VX_LISTEN", format!("127.0.0.1:{port}")).stdout(Stdio::null()).stderr(Stdio::null());
-    if let Some(token) = token {
-        command.env("VX_BOOTSTRAP_TOKEN", token);
-    }
     let server = Server(command.spawn().unwrap());
     let base = format!("http://127.0.0.1:{port}");
     for _ in 0..100 {
@@ -69,7 +67,8 @@ async fn the_core_starts_sealed_and_guards_its_operate_routes_body() {
         eprintln!("skipped: VX_TEST_DATABASE_URL is not set");
         return;
     };
-    let (_server, root) = start(&database_url(&db.pool).await, Some("test-bootstrap-token")).await;
+    support::seed(&db.pool,"api","dev").await;
+    let (_server, root) = start(&database_url(&db.pool).await).await;
 
     let (health, _) = get(&format!("{root}/healthz"), None).await;
     assert_eq!(health, 200);
@@ -80,28 +79,28 @@ async fn the_core_starts_sealed_and_guards_its_operate_routes_body() {
     assert_eq!((denied, error["code"].as_str()), (401, Some("unauthorized")));
     let (wrong, _) = get(&format!("{root}/api/vx/v1/operate/jobs"), Some("not-the-token")).await;
     assert_eq!(wrong, 401);
-    let (ok, jobs) = get(&format!("{root}/api/vx/v1/operate/jobs"), Some("test-bootstrap-token")).await;
+    let (ok, jobs) = get(&format!("{root}/api/vx/v1/operate/jobs"), Some(support::TOKEN)).await;
     assert_eq!(ok, 200);
     assert!(jobs["jobs"].is_array());
-    let (_, schedules) = get(&format!("{root}/api/vx/v1/operate/schedules"), Some("test-bootstrap-token")).await;
+    let (_, schedules) = get(&format!("{root}/api/vx/v1/operate/schedules"), Some(support::TOKEN)).await;
     assert_eq!(schedules["schedules"][0]["name"], "operate.prune", "the built-in maintenance job is named and visible");
-    let (bad, error) = get(&format!("{root}/api/vx/v1/operate/jobs?status=bogus"), Some("test-bootstrap-token")).await;
+    let (bad, error) = get(&format!("{root}/api/vx/v1/operate/jobs?status=bogus"), Some(support::TOKEN)).await;
     assert_eq!((bad, error["code"].as_str()), (422, Some("invalid_status")));
     db.finish().await;
 }
 
 #[tokio::test]
-async fn without_a_bootstrap_token_the_operate_routes_are_off() {
-    vx_store::testing::budget("without_a_bootstrap_token_the_operate_routes_are_off", 300, without_a_bootstrap_token_the_operate_routes_are_off_body()).await
+async fn without_a_session_the_operate_routes_are_denied() {
+    vx_store::testing::budget("without_a_session_the_operate_routes_are_denied", 300, without_a_session_the_operate_routes_are_denied_body()).await
 }
 
-async fn without_a_bootstrap_token_the_operate_routes_are_off_body() {
+async fn without_a_session_the_operate_routes_are_denied_body() {
     let Some(db) = database().await else {
         eprintln!("skipped: VX_TEST_DATABASE_URL is not set");
         return;
     };
-    let (_server, root) = start(&database_url(&db.pool).await, None).await;
+    let (_server, root) = start(&database_url(&db.pool).await).await;
     let (code, body) = get(&format!("{root}/api/vx/v1/operate/jobs"), Some("anything")).await;
-    assert_eq!((code, body["code"].as_str()), (503, Some("not_configured")));
+    assert_eq!((code, body["code"].as_str()), (401, Some("unauthorized")));
     db.finish().await;
 }

@@ -19,6 +19,8 @@ rpassword = "7"
 serde = { workspace = true }
 serde_json = { workspace = true }
 ureq = { version = "2", features = ["json"] }
+url = "2"
+zeroize = { workspace = true }
 vx-gate = { path = "../../foundation/gate" }
 vx-secret = { path = "../../foundation/secret" }
 

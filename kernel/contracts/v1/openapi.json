@@ -15,6 +15,201 @@
     }
   ],
   "paths": {
+    "/api/vx/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "revokeSession",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vx/v1/auth/sessions": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "createSession",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vx/v1/auth/setup": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "setupOwner",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupOwnerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/vx/v1/operate/audit/events": {
       "get": {
         "tags": [
@@ -45,6 +240,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -112,6 +317,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -204,6 +419,16 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
           "422": {
             "description": "",
             "content": {
@@ -263,6 +488,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -338,6 +573,16 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
           "503": {
             "description": "",
             "content": {
@@ -402,6 +647,16 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
           "422": {
             "description": "",
             "content": {
@@ -435,20 +690,6 @@
         ],
         "summary": "Store a new version of a secret. This is the human's operation: the value is entered at a person's\nown terminal with `vx set`, never through an AI client, and is never returned by any operation but a redeem.",
         "operationId": "putSecret",
-        "parameters": [
-          {
-            "name": "x-vx-actor",
-            "in": "header",
-            "description": "Who is acting; up to 64 characters of letters, digits and : _ . -",
-            "required": false,
-            "schema": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -471,6 +712,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -525,20 +776,6 @@
         ],
         "summary": "Ask for a handle that lets the caller read the named secrets once. The handle is a permission, not a\nvalue: single use, short lived and bound to the identity that asked.",
         "operationId": "createInjection",
-        "parameters": [
-          {
-            "name": "x-vx-actor",
-            "in": "header",
-            "description": "Who is acting; the same identity must redeem",
-            "required": false,
-            "schema": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -561,6 +798,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -619,22 +866,10 @@
           {
             "name": "handle",
             "in": "path",
-            "description": "The handle from `POST /secrets/injections`",
+            "description": "The handle from `POST /secrets/injections`; bound to the issuing session",
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "x-vx-actor",
-            "in": "header",
-            "description": "Must match the identity the handle was made for",
-            "required": false,
-            "schema": {
-              "type": [
-                "string",
-                "null"
-              ]
             }
           }
         ],
@@ -650,6 +885,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -704,20 +949,6 @@
         ],
         "summary": "Record that a person is asked to supply a missing value. Nothing is stored but the request.",
         "operationId": "requestSecretValue",
-        "parameters": [
-          {
-            "name": "x-vx-actor",
-            "in": "header",
-            "description": "Who is acting",
-            "required": false,
-            "schema": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -740,6 +971,16 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -1058,6 +1299,45 @@
           }
         }
       },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "$ref": "#/components/schemas/SecretText"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "required": [
+          "revoked"
+        ],
+        "properties": {
+          "revoked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OwnerResponse": {
+        "type": "object",
+        "required": [
+          "userId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "PutOutcome": {
         "type": "string",
         "enum": [
@@ -1323,6 +1603,68 @@
         "maxLength": 65536,
         "minLength": 1
       },
+      "SessionResponse": {
+        "type": "object",
+        "required": [
+          "bearer",
+          "expiresAt",
+          "userId",
+          "organizationId"
+        ],
+        "properties": {
+          "bearer": {
+            "type": "string",
+            "description": "Credential returned only to the authenticating client. Never sent to a model or stored in logs."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "SetupOwnerRequest": {
+        "type": "object",
+        "required": [
+          "setupCode",
+          "email",
+          "password",
+          "organizationName",
+          "project",
+          "environment"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "password": {
+            "$ref": "#/components/schemas/SecretText"
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "setupCode": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StatusResponse": {
         "type": "object",
         "required": [
@@ -1412,11 +1754,15 @@
       "bearer": {
         "type": "http",
         "scheme": "bearer",
-        "description": "A bootstrap token until the identity domain exists (docs/0136)."
+        "description": "A short-lived, revocable session from /api/vx/v1/auth/sessions. Identity and scope are server-owned."
       }
     }
   },
   "tags": [
+    {
+      "name": "auth",
+      "description": "First-owner setup and built-in sessions"
+    },
     {
       "name": "status",
       "description": "Whether the instance is up and unsealed"

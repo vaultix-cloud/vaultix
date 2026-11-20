@@ -305,6 +305,25 @@ test("every real check is valid and names a script that exists", async () => {
   }
 });
 
+// A test file that no check runs proves nothing, and nothing says so: cargo runs only the server's integration tests that a check
+// names with --test, so a new file under kernel/server/tests was run by nothing. The first-owner-to-logout journeys sat in that
+// state and the gate was green. Every one of the server's test files must be named by a check.
+test("every integration test file of the server is run by a check, and the auth journeys get the client they run", async () => {
+  const { checks } = await import("./checks.mjs");
+  const root = resolve(here, "../..");
+  const files = readdirSync(resolve(root, "kernel/server/tests"), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith(".rs")).map(entry => entry.name.slice(0, -3));
+  assert.ok(files.includes("auth") && files.includes("api"), "the server's test files were found");
+  const named = new Set();
+  for (const item of checks) {
+    const { program, args } = item.command;
+    for (let index = 0; program === "cargo" && index < args.length - 1; index += 1) if (args[index] === "--test") named.add(args[index + 1]);
+  }
+  for (const file of files) assert.ok(named.has(file), `kernel/server/tests/${file}.rs is run by no check: add --test ${file} to a check in scripts/gate/checks.mjs`);
+  const server = checks.find(item => item.id === "kernel-server-tests");
+  assert.ok(server.after?.includes("kernel-client-build"), "the auth journeys run the vx client, so the check that runs them waits for the check that builds it");
+  assert.ok(checks.find(item => item.id === "kernel-client-build"), "the check that builds the vx client exists");
+});
+
 // ---- prerequisites (`after`) ----
 
 test("a check waits for its prerequisites, and runs once they pass", async () => {

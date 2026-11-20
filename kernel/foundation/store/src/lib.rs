@@ -35,6 +35,7 @@ const MIGRATIONS: &[(i32, &str, &str)] = &[
     (1, "0001_operate", include_str!("../migrations/0001_operate.sql")),
     (2, "0002_secrets", include_str!("../migrations/0002_secrets.sql")),
     (3, "0003_connectors", include_str!("../migrations/0003_connectors.sql")),
+    (4, "0004_auth", include_str!("../migrations/0004_auth.sql")),
 ];
 
 /// Connect with a pool sized for a small instance.

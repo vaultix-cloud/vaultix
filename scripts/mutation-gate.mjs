@@ -63,7 +63,11 @@ const mutations = [
 
   // alerts: a failure the next session must see (docs/0145)
   ["a failing check raises no alert", cli, /const announced = await announce\(root, record\);/, () => 'const announced = { record: "", key: "none", webhook: { sent: false } };'],
-  ["a passing check does not clear the alert it raised", cli, /if \(results\[index\]\.status === "pass"\) \{ clearCheck\(root, check\.id\); continue; \}/, () => 'if (results[index].status === "pass") { continue; }']
+  ["a passing check does not clear the alert it raised", cli, /if \(results\[index\]\.status === "pass"\) \{ clearCheck\(root, check\.id\); continue; \}/, () => 'if (results[index].status === "pass") { continue; }'],
+
+  // the registry: a test that nothing runs (docs/0142)
+  ["a server test file that no check runs", "scripts/gate/checks.mjs", /"--test", "api", "--test", "auth"\)/, '"--test", "api")'],
+  ["the auth journeys do not wait for the client they run", "scripts/gate/checks.mjs", /after: \["kernel-client-build"\], /, ""]
 ];
 
 // `node scripts/mutation-gate.mjs <text>` runs only the mutations whose label contains <text>.
@@ -76,7 +80,8 @@ const ok = await runMutations({
   // The gate imports the documents' schemas, and its tests check that every real check names a script that exists.
   // node_modules is COPIED (arktype and its two packages, 1.5 MB) and never linked: some of these mutations make the dependency
   // installer run `npm ci`, which deletes node_modules, and through a link that emptied the real one.
-  entries: ["scripts", "kernel/contracts/documents/src", "kernel/contracts/documents/package.json", "kernel/contracts/documents/package-lock.json", "kernel/contracts/documents/tsconfig.json", "kernel/Cargo.toml",
+  // kernel/server/tests: the registry test reads the server's test files to see that a check runs each one
+  entries: ["scripts", "kernel/server/tests", "kernel/contracts/documents/src","kernel/contracts/documents/package.json", "kernel/contracts/documents/package-lock.json", "kernel/contracts/documents/tsconfig.json", "kernel/Cargo.toml",
     // arktype's whole runtime closure, read from the lockfile: arktype, @ark/schema, @ark/util, arkregex
     "kernel/contracts/documents/node_modules/arktype", "kernel/contracts/documents/node_modules/@ark", "kernel/contracts/documents/node_modules/arkregex",
     "kernel/contracts/documents/node_modules/.vx-lock-hash"],

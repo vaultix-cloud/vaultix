@@ -101,12 +101,28 @@ export const ListSecretsResponse = type({
 }).onUndeclaredKey("reject").narrow(notAnArray);
 export type ListSecretsResponse = typeof ListSecretsResponse.infer;
 
-export const PutOutcome = type.enumerated("applied");
-export type PutOutcome = typeof PutOutcome.infer;
-
 /** The secret value. Accepted here and never returned by any other operation. */
 export const SecretText = type("string").and(type("1 <= string <= 65536"));
 export type SecretText = typeof SecretText.infer;
+
+export const LoginRequest = type({
+  "email": type("string"),
+  "password": SecretText
+}).onUndeclaredKey("reject").narrow(notAnArray);
+export type LoginRequest = typeof LoginRequest.infer;
+
+export const LogoutResponse = type({
+  "revoked": type("boolean")
+}).onUndeclaredKey("reject").narrow(notAnArray);
+export type LogoutResponse = typeof LogoutResponse.infer;
+
+export const OwnerResponse = type({
+  "userId": type("string.uuid")
+}).onUndeclaredKey("reject").narrow(notAnArray);
+export type OwnerResponse = typeof OwnerResponse.infer;
+
+export const PutOutcome = type.enumerated("applied");
+export type PutOutcome = typeof PutOutcome.infer;
 
 export const PutSecretRequest = type({
   "environment": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$")),
@@ -170,6 +186,24 @@ export const SchedulesResponse = type({
   "schedules": ScheduleRow.array()
 }).onUndeclaredKey("reject").narrow(notAnArray);
 export type SchedulesResponse = typeof SchedulesResponse.infer;
+
+export const SessionResponse = type({
+  "bearer": type("string"),
+  "expiresAt": type("string.date.iso").and(new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$")),
+  "organizationId": type("string.uuid"),
+  "userId": type("string.uuid")
+}).onUndeclaredKey("reject").narrow(notAnArray);
+export type SessionResponse = typeof SessionResponse.infer;
+
+export const SetupOwnerRequest = type({
+  "email": type("string"),
+  "environment": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$")),
+  "organizationName": type("string"),
+  "password": SecretText,
+  "project": type("string").and(new RegExp("^[a-z0-9][a-z0-9-]{0,62}$")),
+  "setupCode": type("string")
+}).onUndeclaredKey("reject").narrow(notAnArray);
+export type SetupOwnerRequest = typeof SetupOwnerRequest.infer;
 
 export const StatusResponse = type({
   "database": DatabaseState,
