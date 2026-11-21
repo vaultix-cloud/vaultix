@@ -10,6 +10,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { zodCandidates } from "./lib/zod-candidates.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -19,15 +20,20 @@ const CEILING = 2065;
 const IMPORT = /from\s+["'](zod(\/[^"']*)?|@tanstack\/zod-adapter|@hookform\/resolvers\/zod|fastify-type-provider-zod|zod-validation-error|@asteasolutions\/zod-to-openapi)["']|require\(["']zod["']\)/;
 // New code is held to zero from the start.
 const ZERO = /^(kernel|control|platform\/shippin)\//;
-const SOURCE = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
 // The one place allowed to import Zod outside the inherited count: tooling whose job is to compare Zod with
 // ArkType so Zod can be removed (docs/0137). It is not part of the product and goes when the count reaches zero.
 const MIGRATION_TOOLING = /^scripts\/zod-migration\//;
 
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, maxBuffer: 256 * 1024 * 1024 }).toString().split("\0").filter(Boolean);
+// Git grep does not follow source symlinks. Refuse them rather than let a link
+// bypass the import rule (ordinary source files remain the supported boundary).
+const entries = execFileSync("git", ["ls-files", "--stage", "-z"], { cwd: root, maxBuffer: 32 * 1024 * 1024 }).toString().split("\0");
+if (entries.some(entry => entry.startsWith("120000 ") && /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(entry.split("\t")[1] ?? ""))) {
+  console.error("zod ceiling: tracked source symlinks must be replaced with ordinary source files");
+  process.exit(1);
+}
 const importers = [];
-for (const file of tracked) {
-  if (!SOURCE.test(file) || file.startsWith("leftover/")) continue;
+for (const file of zodCandidates(root)) {
   let text;
   try { text = readFileSync(resolve(root, file), "utf8"); } catch { continue; }
   if (IMPORT.test(text)) importers.push(file);
