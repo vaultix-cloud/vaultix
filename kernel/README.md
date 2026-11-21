@@ -35,6 +35,26 @@ depends on `platform/` or `control/`.
 
 ## Run it
 
+### Independent build candidate
+
+`node scripts/build-kernel.mjs` from the repository root prepares an isolated
+kernel source directory and builds `kernel/Dockerfile.standalone-vaultix`.
+`--prepare-only` prepares the directory without Docker. The manifest in the
+printed `result.json` records the exact input hashes, source revision and dirty
+state. Only Rust sources, Cargo manifests/lockfile, migrations and the build
+recipe enter it. The inherited application, browser UI and local configuration
+do not. The local image contains `vaultixd`, `vx`, and `vx-mcp`; Postgres remains
+external. The image runs as UID 10001 and needs read access to its mounted root
+key file. A sealed start remains supported.
+
+This is an additive candidate, **not a completed cutover or an inherited-store
+upgrade**. Never point it at an existing application's database as a migration
+shortcut. Its image check exercises OpenAPI generation and a real HTTP journey
+through setup, login, secret write/list/redeem, session denial, logout and
+encrypted backup/restore on disposable Postgres databases.
+The existing self-hosted build command still builds the inherited application.
+See [minimal build status](../docs/0146-minimal-independent-build.md).
+
 ```text
 VX_DATABASE_URL=postgres://...  VX_LISTEN=127.0.0.1:8210  cargo run -p vaultixd
 ```
@@ -111,7 +131,8 @@ bypassing the gate fails five checks, and making handles replayable fails two.
   fix is device-bound pairing and per-identity policy (docs/0124 step 4).
 - **A profile's program runs with the person's rights.** It can reach the network and files, so a profile
   is code a person reviews, not a setting.
-- Nothing here has been run on Linux or in a container yet, and nothing at scale.
+- The standalone kernel image has passed its scoped auth/secrets/recovery journey
+  on Linux. Nothing here has been tested at scale.
 
 ## What exists and what does not
 
@@ -119,8 +140,11 @@ Built and tested: the secret type, store, jobs, audit chain, key hierarchy, outp
 metadata, single-use handles, redeem), the server's secrets and operate routes, the `vx` command and the
 `vx-mcp` tool server.
 
-Not built yet (docs/0134 section 5): the OpenAPI contract and generated clients, identity and sessions (a
-person and a machine each signing in as themselves), the policy evaluator, the other domains, the web
+Also built: the OpenAPI contract, generated ArkType validators, first-owner setup,
+built-in password login and expiring/revocable sessions with scope grants.
+
+Not built yet (docs/0134 section 5): complete human and machine identity workflows,
+the full policy evaluator, the other domains, the web
 frontend on this API, the importer, folders and environments as a tree, versions and rollback, approvals,
 and the local endpoint with device pairing. Nothing here replaces the inherited engine yet; it grows
 beside it and takes over domain by domain.

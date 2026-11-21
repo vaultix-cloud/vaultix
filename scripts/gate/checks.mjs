@@ -20,6 +20,7 @@ export const checks = [
   { id: "absorb-tests", tier: "fast", title: "Absorb, alerts, hygiene and the poke: tests against real git repositories", command: node("--test", "scripts/gate/absorb-land.test.mjs", "scripts/gate/absorb-safety.test.mjs", "scripts/gate/absorb-alerts.test.mjs", "scripts/gate/absorb-hygiene-poke.test.mjs", "scripts/gate/absorb-resume.test.mjs"), timeoutSeconds: 300, expect: "landing a branch, finishing one that stopped, the alerts and the hook text behave as specified against real git repositories" },
   { id: "kernel-boundaries", tier: "fast", title: "Kernel layering rules", command: node("scripts/check-kernel-boundaries.mjs"), timeoutSeconds: 60, expect: "no kernel crate depends on one it must not" },
   { id: "kernel-boundaries-tests", tier: "fast", title: "Kernel layering rules: the rules' own tests", command: node("--test", "scripts/check-kernel-boundaries.test.mjs"), timeoutSeconds: 60, expect: "the layering rules catch each violation they are written to catch" },
+  { id: "kernel-package-tests", tier: "fast", title: "Kernel build context isolation", command: node("--test", "scripts/kernel-package.test.mjs"), timeoutSeconds: 60, expect: "kernel packaging excludes inherited paths, private state, links and identical import blobs" },
   { id: "zod-ceiling", tier: "fast", title: "Zod ceiling", command: node("scripts/check-zod-ceiling.mjs"), timeoutSeconds: 60, expect: "no new code imports Zod and the inherited count has not risen" },
   { id: "lineage-ceiling", tier: "fast", title: "Lineage ceiling", command: node("scripts/lineage-census.mjs", "--check"), timeoutSeconds: 120, expect: "the count of files identical to the upstream import has not risen" },
   { id: "lexicon", tier: "fast", title: "Lexicon", command: node("--test", "scripts/lexicon.test.mjs"), timeoutSeconds: 60, expect: "the lexicon is well formed and every term resolves" },
@@ -39,7 +40,8 @@ export const checks = [
   { id: "documents-mutation", tier: "full", title: "Delivery-gate documents: planted bugs are caught", command: node("scripts/mutation-gate-documents.mjs"), timeoutSeconds: 600, expect: "every planted bug in the delivery-gate documents makes a test fail" },
   { id: "gate-mutation", tier: "full", title: "The gate itself: planted bugs are caught", command: node("scripts/mutation-gate.mjs"), timeoutSeconds: 900, expect: "every planted bug in the gate makes one of its tests fail" },
   { id: "absorb-mutation", tier: "full", title: "Absorb, alerts, hygiene and the poke: planted bugs are caught", command: node("scripts/mutation-absorb.mjs"), timeoutSeconds: 1200, expect: "every planted bug in absorb, alerts, hygiene and the poke makes one of their tests fail" },
-  { id: "table-namespaces", tier: "full", title: "Table namespaces", command: node("scripts/check-table-namespaces.mjs"), timeoutSeconds: 600, expect: "every table name and route follows the namespace rules" }
+  { id: "table-namespaces", tier: "full", title: "Table namespaces", command: node("scripts/check-table-namespaces.mjs"), timeoutSeconds: 600, expect: "every table name and route follows the namespace rules" },
+  { id: "kernel-image", tier: "full", title: "Independent kernel image and auth/secrets/recovery journey", command: node("scripts/build-kernel.mjs"), timeoutSeconds: 1800, expect: "the isolated kernel image builds and passes setup, secret redemption, revocation and encrypted recovery" }
 ];
 
 export const gaps = [

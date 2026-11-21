@@ -1,0 +1,25 @@
+# Built with the isolated context prepared by scripts/build-kernel.mjs.
+# This is the kernel candidate, not an upgrade of the inherited application.
+FROM rust:1.98.1-trixie AS build
+WORKDIR /src
+COPY . .
+RUN cargo build --locked --release -p vaultixd -p vx-client --bins
+# Preserve dependency notices in this local candidate. The complete downloaded
+# source is retained in the build stage; notices accompany the runtime binaries.
+RUN mkdir -p /notices && find /usr/local/cargo/registry/src -type f \
+    \( -iname '*license*' -o -iname '*notice*' -o -iname '*copying*' \) \
+    -exec cp --parents '{}' /notices/ \;
+
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 vaultix && useradd --uid 10001 --gid vaultix --no-create-home vaultix
+COPY --from=build /src/target/release/vaultixd /usr/local/bin/vaultixd
+COPY --from=build /src/target/release/vx /usr/local/bin/vx
+COPY --from=build /src/target/release/vx-mcp /usr/local/bin/vx-mcp
+COPY --from=build /notices/ /usr/share/vaultix/notices/
+ENV VX_LISTEN=0.0.0.0:8210
+EXPOSE 8210
+USER 10001:10001
+STOPSIGNAL SIGINT
+ENTRYPOINT ["vaultixd"]
