@@ -12,9 +12,11 @@ Vaultix is being rewritten as a Rust engine in `kernel/`, under the
 The locally built image still ships the inherited engine in `platform/engine/`, which
 shrinks as complete workflows move. Owner: AngryVibes LLC. Host: shippin.ai.
 
-Start with the [owned rewrite path](docs/0141-owned-rewrite-path.md): break runtime
-dependence on the inherited engine, turn lessons and complaints into acceptance cases,
-and deliver Auth → Secrets workflows before retiring each replaced domain.
+Start with the [complete execution path](docs/0147-execution-path.md): extend the
+absorbed kernel through signed-in secret use, shared domain patterns, the owned UI,
+independent installation, safe data cutover and complete inherited-engine retirement.
+**Next: P1, the signed-in secret workflow.** The isolated kernel image is proven;
+the default delivery and existing instances have not switched to it yet.
 
 **Vaultix.cloud** is the primary product; **DevSCIF.com** is the enterprise and
 government-tailored suite. Every existing product-code module is subject to

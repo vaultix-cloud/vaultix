@@ -1,5 +1,9 @@
 # kernel: the Vaultix engine, rewritten
 
+Follow [0147: the complete execution path](../docs/0147-execution-path.md) for the
+next packet, shared patterns and the gates through full inherited-engine retirement.
+P0's isolated image is absorbed; P1 completes signed-in human secret use next.
+
 The foundation from `docs/0134-foundation-rewrite.md`, in Rust. It does not port the inherited engine;
 it is built from the lessons in `docs/0135-process-review-and-redesign.md`. One process, one Postgres,
 no cache and no queue service.

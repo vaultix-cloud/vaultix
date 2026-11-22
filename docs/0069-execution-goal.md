@@ -1,5 +1,9 @@
 # Vaultix execution goal and ordered delivery plan
 
+**Historical queue.** Current execution order and patterns are in
+[0147](0147-execution-path.md); architecture is [0136](0136-kernel-platform-control-and-schemas.md).
+The dated React/Go targets and packet statuses below are retained as history.
+
 Owner: AngryVibes LLC. Product: Vaultix.cloud. Suite: DevSCIF.com.
 Planning checkpoint: 2026-10-29, following merged source `e42b6367`.
 This is the current execution queue for the existing migration goal, not a new

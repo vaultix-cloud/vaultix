@@ -1,10 +1,15 @@
 # 0146: Minimum independent build, before the rest of the rewrite
 
+**Continued by [0147](0147-execution-path.md), 2026-11-21.** The image work below
+is absorbed. The continuation establishes the minimum usable workflow, patterns,
+default-delivery switch, data cutover and complete capability-retirement queue.
+
 Owner request, 2026-11-20: prioritize the bare essentials needed to stop shipping
 the inherited application. Full parity remains a product obligation; it must not
 be confused with the ability to build a separate, explicitly scoped candidate.
-The question of which workflows the owner needs in that first candidate remains
-unanswered. No current workflow was removed by this change.
+The candidate did not yet establish a minimum usable product scope; 0147 now
+defines that implementation milestone without cutting the remaining capabilities.
+No current workflow was removed by this change.
 
 ## Why the existing work did not produce independence
 

@@ -1,5 +1,9 @@
 # 0141: Break from upstream, absorb the lessons, own the workflows
 
+**Continued by [0147](0147-execution-path.md), 2026-11-21.** Use it for current
+code status, the ready next packet and the full pattern-based execution order.
+This proposal remains the record of the earlier findings and obligations.
+
 **Status:** execution proposal, 2026-11-16, responding to the owner's request for a clear path.
 **Authority:** [0136](0136-kernel-platform-control-and-schemas.md) sets the Rust kernel architecture;
 [0130](0130-vaultix-program-plan.md) retains the product capability obligations.

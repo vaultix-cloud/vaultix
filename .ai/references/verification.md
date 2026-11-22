@@ -34,5 +34,6 @@ bootstrap and is explicitly labeled; unavailable earlier chats are not claimed
 as captured. Complete ongoing capture needs agent/client submission. Local
 digests and passing declared checks are not independent attestations.
 
-Next product packet remains AUTH-02 in `docs/0069-execution-goal.md`. Apply these
-skills to the real identity authority trace and its subsequent acceptance work.
+At that checkpoint the next packet was AUTH-02 in `docs/0069-execution-goal.md`.
+For current work use `docs/0147-execution-path.md`; this file remains historical
+evidence for the AI setup, not the current product queue.

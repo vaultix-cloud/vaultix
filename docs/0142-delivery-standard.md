@@ -2,6 +2,10 @@
 
 Owner decision, 2026-11-17. One developer, one alpha. This is how work is delivered until the owner changes it.
 
+Current product packet order is [0147](0147-execution-path.md). Its P1 supplies
+the first scoped feature and its guards; the dated status and next-work list below
+are historical. This delivery standard and its acceptance gates still apply.
+
 ## 1. Unit of delivery
 
 A **feature** is delivered whole: every capability it declares is authored, then committed on one branch, then accepted only

@@ -10,6 +10,12 @@ This file is the agent router. Specs live in `docs/`. Humans start at
 
 ## Current direction
 
+Execution (2026-11-21): **read `docs/0147-execution-path.md` for the current full
+work order and reusable patterns. Next is P1, signed-in secret use.** Extend the
+absorbed kernel; follow its dependencies through independent fresh delivery,
+safe existing-instance cutover and full inherited-engine retirement. It supersedes
+older scheduling/status notes, not capability, data-preservation or delivery gates.
+
 New product, 0.5.0-alpha (2026-11-15, owner): Vaultix is treated as a new product; there is no v1, v2 or v3
 compatibility. Three parts, no `core` folder: **`kernel/`** (the engine, every feature, Rust, nested by
 context: foundation, domains, server, clients, services), **`platform/`** (the hosted offering; depends on the
@@ -206,10 +212,11 @@ the plan. Passing a schema or selected test is not whole-implementation proof.
 
 | Task | Read |
 | --- | --- |
+| Current full path, next packet, reusable patterns and inherited-engine retirement | `docs/0147-execution-path.md` |
 | Delivering anything: whole features, flow-proof tests, the gate, receipts, failure records, the merge guard | `docs/0142-delivery-standard.md` + `node scripts/gate.mjs --list` |
 | Landing a branch on main, deleting it, loud failures that reach the agent (alerts, hooks, webhook) | `docs/0145-absorb-and-alerts.md` + `node scripts/absorb.mjs --status` |
 | Vocabulary: the one term for a thing, and what the owner calls it | `docs/lexicon.json` |
-| What is left to finish, in order | `docs/0130-vaultix-program-plan.md` (0122 is the earlier record) |
+| What is left to finish, in order | `docs/0147-execution-path.md`; `docs/0130-vaultix-program-plan.md` retains product obligations |
 | Single point of failure, scale ladder, failure drills, roadmap from one node to a fleet | `docs/0140-roadmap-single-instance-to-fleet.md` + `docs/0134-foundation-rewrite.md` |
 | The new Rust core, kernel/platform/control, schemas (ArkType), v1 contract | `docs/0136-kernel-platform-control-and-schemas.md` + `docs/0134-foundation-rewrite.md` + `kernel/README.md` |
 | Retiring Zod (what it does here, ArkType equivalence, the method) | `docs/0137-zod-retirement.md` + `node scripts/zod-census.mjs` + `scripts/zod-migration/` |

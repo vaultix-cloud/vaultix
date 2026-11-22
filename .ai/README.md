@@ -1,7 +1,7 @@
 # Project AI workspace
 
 This is development context for Vaultix, independent of an AI provider. The
-product roadmap remains [0069](../docs/0069-execution-goal.md); this tooling does
+current execution path is [0147](../docs/0147-execution-path.md); this tooling does
 not change the Auth → Secrets → Mesh sequence or establish product readiness.
 
 Read the root instructions, then run `node scripts/ai-journal.mjs context FOLDER`
@@ -38,8 +38,8 @@ Do not put credentials in command arguments or payload files. `start` receives:
 ```json
 {
   "title": "Work packet title",
-  "goal_ref": "docs/0069-execution-goal.md",
-  "work_packet": "AUTH-02",
+  "goal_ref": "docs/0147-execution-path.md",
+  "work_packet": "P1",
   "capture": "visible-messages",
   "history_coverage": "Capture starts here; older context is summarized explicitly."
 }

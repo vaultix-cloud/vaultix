@@ -1,6 +1,10 @@
 # 0130 — The Vaultix program plan
 
-**Status:** proposed for the owner's approval, 2026-11-14. **Owner:** AngryVibes LLC.
+**Execution continuation, 2026-11-21:** [0147](0147-execution-path.md) sets the
+current packet order, shared patterns and retirement gates. Product obligations
+below remain; dated scheduling and status do not override that path.
+
+**Original status:** proposed for the owner's approval, 2026-11-14. **Owner:** AngryVibes LLC.
 **Replaces:** the work order in [0122](0122-completion-plan.md). 0122 stays as the record of what
 was found and done. Specs this plan builds on: [0125](0125-hosted-control-panel.md) (hosting),
 [0126](0126-ai-configuration-schema.md) (AI), [0127](0127-one-api-infisical-as-a-source.md) (one
